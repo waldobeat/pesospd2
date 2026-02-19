@@ -80,7 +80,7 @@ export const historyService = {
 
             return {
                 id: docRef.id,
-                ...newRecordData
+                ...safeRecord
             } as HistoryItem;
         } catch (e) {
             console.error("Failed to save record to Firestore", e);
