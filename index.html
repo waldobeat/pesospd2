@@ -1,0 +1,18 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>pd2-scale-interface</title>
+  </head>
+  <body style="background-color: #09090b; color: white;">
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      window.onerror = function(msg, url, line, col, error) {
+        document.body.innerHTML += '<div style="color:red; background:black; padding:20px; border:1px solid red; margin:20px;">' + msg + '<br>' + url + ':' + line + ':' + col + '<br>' + (error ? error.stack : '') + '</div>';
+      };
+    </script>
+  </body>
+</html>
