@@ -11,6 +11,7 @@ import clsx from 'clsx';
 import { serialService } from './services/SerialService';
 import { auth } from './firebase'; // Import auth
 import { onAuthStateChanged, signOut, type User } from 'firebase/auth';
+import { Login } from './components/Login';
 
 function App() {
   // Auth State
