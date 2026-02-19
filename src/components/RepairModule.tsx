@@ -207,7 +207,7 @@ export const RepairModule: React.FC<RepairModuleProps> = ({ isOpen, onClose }) =
         };
 
         // Render Original (Top)
-        renderReport(0, "ORIGINAL - CLIENTE");
+        renderReport(0, "ORIGINAL");
 
         // Cut Line
         doc.setDrawColor(100);
@@ -222,7 +222,7 @@ export const RepairModule: React.FC<RepairModuleProps> = ({ isOpen, onClose }) =
         doc.text("- - - - - - - - CORTAR AQUÍ - - - - - - - - -", 105, 148.5, { align: 'center', baseline: 'middle' });
 
         // Render Copy (Bottom)
-        renderReport(148.5, "COPIA - ARCHIVO");
+        renderReport(148.5, "COPIA");
 
         doc.save(`Reporte_Doble_${model}_${serial}.pdf`);
     };

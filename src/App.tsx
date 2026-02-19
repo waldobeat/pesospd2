@@ -24,6 +24,11 @@ function App() {
   const [authLoading, setAuthLoading] = useState(true);
   const { role, isAdmin, loading: roleLoading } = useAuthRole(user); // RBAC
 
+  const {
+    weight, unit, isStable, isZero, isNet, isConnected, isConnecting, error,
+    lastReceived, rawBuffer, connect, disconnect
+  } = useScale();
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
       setUser(currentUser);
