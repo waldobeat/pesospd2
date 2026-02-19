@@ -139,9 +139,10 @@ export const CalibrationTest: React.FC<CalibrationTestProps> = ({ isOpen, onClos
         if (passed) {
             try {
                 await historyService.save({
-                    model,
-                    serial,
-                    note,
+                    model: model || "PD-2",
+                    serial: serial || "SIN-SERIAL",
+                    branch: "Central",
+                    note: note || "",
                     finalWeight: isGrams ? totalMeasured / 1000 : totalMeasured,
                     targetWeight: totalTarget,
                     passed: true
