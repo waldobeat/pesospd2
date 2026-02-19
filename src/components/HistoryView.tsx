@@ -1,4 +1,5 @@
-import React, { useState, useEffect } from 'react';
+import { auth } from '../firebase';
+import { useAuthRole } from '../hooks/useAuthRole';
 import { historyService, type HistoryItem } from '../services/HistoryService';
 import { X, Trash2, FileText, Search, FileDown, Wrench, CheckCircle, AlertTriangle } from 'lucide-react';
 import clsx from 'clsx';

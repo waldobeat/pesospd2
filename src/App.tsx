@@ -6,17 +6,23 @@ import { CalibrationTest } from './components/CalibrationTest';
 import { HistoryView } from './components/HistoryView';
 import { ReportIssueModal } from './components/ReportIssueModal';
 import { RepairModule } from './components/RepairModule';
-import { Zap, Beaker, LayoutDashboard, ClipboardCheck, History, Wrench, LogOut, AlertTriangle } from 'lucide-react';
+import { Zap, Beaker, LayoutDashboard, ClipboardCheck, History, Wrench, LogOut, AlertTriangle, Shield, Users } from 'lucide-react';
 import clsx from 'clsx';
 import { serialService } from './services/SerialService';
 import { auth } from './firebase'; // Import auth
 import { onAuthStateChanged, signOut, type User } from 'firebase/auth';
 import { Login } from './components/Login';
 
+import { UserManagementModal } from './components/UserManagementModal';
+import { useAuthRole } from './hooks/useAuthRole'; // Hook Integration
+
+// ... other imports
+
 function App() {
   // Auth State
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
+  const { role, isAdmin, loading: roleLoading } = useAuthRole(user); // RBAC
 
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
@@ -26,17 +32,12 @@ function App() {
     return () => unsubscribe();
   }, []);
 
-  const {
-    weight, unit, isStable, isZero, isNet, isConnected, isConnecting, error,
-    lastReceived, rawBuffer, connect, disconnect
-  } = useScale();
-
-
   const [isTestWindowOpen, setIsTestWindowOpen] = useState(false);
   const [isCalibrationOpen, setIsCalibrationOpen] = useState(false);
   const [isRepairOpen, setIsRepairOpen] = useState(false);
   const [isIssueOpen, setIsIssueOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
+  const [isUserMgmtOpen, setIsUserMgmtOpen] = useState(false); // New Modal State
   const [isSimulating, setIsSimulating] = useState(false);
   const simInterval = useRef<number | null>(null);
 
@@ -149,49 +150,53 @@ function App() {
 
         {/* Controls */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-xl mx-auto">
-          {!isConnected && !isSimulating ? (
-            <button
-              onClick={() => connect()}
-              disabled={isConnecting}
-              className="px-6 py-4 bg-blue-600 hover:bg-blue-500 rounded-xl transition-all duration-300 shadow-lg shadow-blue-900/20 flex items-center justify-center gap-2 font-bold text-lg"
-            >
-              <Zap className={clsx("w-5 h-5", isConnecting && "animate-pulse")} />
-              {isConnecting ? "CONECTANDO..." : "CONECTAR BALANZA"}
-            </button>
-          ) : (
-            <button
-              onClick={isConnected ? disconnect : () => setIsSimulating(false)}
-              className="px-6 py-4 bg-red-500/10 hover:bg-red-500/20 border border-red-500/50 text-red-500 rounded-xl transition-all duration-300 font-bold text-lg"
-            >
-              {isConnected ? "DESCONECTAR" : "DETENER SIMULACIÓN"}
-            </button>
+          {isAdmin && (
+            <>
+              {!isConnected && !isSimulating ? (
+                <button
+                  onClick={() => connect()}
+                  disabled={isConnecting}
+                  className="px-6 py-4 bg-blue-600 hover:bg-blue-500 rounded-xl transition-all duration-300 shadow-lg shadow-blue-900/20 flex items-center justify-center gap-2 font-bold text-lg"
+                >
+                  <Zap className={clsx("w-5 h-5", isConnecting && "animate-pulse")} />
+                  {isConnecting ? "CONECTANDO..." : "CONECTAR BALANZA"}
+                </button>
+              ) : (
+                <button
+                  onClick={isConnected ? disconnect : () => setIsSimulating(false)}
+                  className="px-6 py-4 bg-red-500/10 hover:bg-red-500/20 border border-red-500/50 text-red-500 rounded-xl transition-all duration-300 font-bold text-lg"
+                >
+                  {isConnected ? "DESCONECTAR" : "DETENER SIMULACIÓN"}
+                </button>
+              )}
+
+              <button
+                onClick={() => serialService.send('W')}
+                className="px-6 py-4 bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/50 text-yellow-400 rounded-xl transition-all duration-300 font-bold text-lg flex items-center justify-center gap-2 shadow-lg shadow-yellow-900/20"
+              >
+                <Zap className="w-5 h-5" />
+                RESET (W)
+              </button>
+
+              <button
+                onClick={() => setIsTestWindowOpen(true)}
+                className="px-6 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl transition-all duration-300 font-bold text-lg flex items-center justify-center gap-2"
+              >
+                <LayoutDashboard className="w-5 h-5" />
+                MONITOR SERIAL
+              </button>
+
+              <button
+                onClick={() => setIsRepairOpen(true)}
+                className="px-6 py-4 bg-orange-600/20 hover:bg-orange-600/30 border border-orange-500/50 text-orange-300 rounded-xl transition-all duration-300 font-bold text-lg flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-orange-900/20"
+              >
+                <Wrench className="w-5 h-5" />
+                PROCESOS MANUALES
+              </button>
+            </>
           )}
 
-          <button
-            onClick={() => serialService.send('W')}
-            className="px-6 py-4 bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/50 text-yellow-400 rounded-xl transition-all duration-300 font-bold text-lg flex items-center justify-center gap-2 shadow-lg shadow-yellow-900/20"
-          >
-            <Zap className="w-5 h-5" />
-            RESET (W)
-          </button>
-
-
-          <button
-            onClick={() => setIsTestWindowOpen(true)}
-            className="px-6 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl transition-all duration-300 font-bold text-lg flex items-center justify-center gap-2"
-          >
-            <LayoutDashboard className="w-5 h-5" />
-            MONITOR SERIAL
-          </button>
-
-          <button
-            onClick={() => setIsRepairOpen(true)}
-            className="px-6 py-4 bg-orange-600/20 hover:bg-orange-600/30 border border-orange-500/50 text-orange-300 rounded-xl transition-all duration-300 font-bold text-lg flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-orange-900/20"
-          >
-            <Wrench className="w-5 h-5" />
-            PROCESOS MANUALES
-          </button>
-
+          {/* Available to All Users (Standard & Admin) */}
           <button
             onClick={() => setIsIssueOpen(true)}
             className="px-6 py-4 bg-red-600/20 hover:bg-red-600/30 border border-red-500/50 text-red-300 rounded-xl transition-all duration-300 font-bold text-lg flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-red-900/20"
@@ -208,16 +213,28 @@ function App() {
             HISTORIAL DE OPERACIONES
           </button>
 
-          <button
-            onClick={() => {
-              serialService.send('W'); // Ensure scale is awake before starting
-              setIsCalibrationOpen(true);
-            }}
-            className="col-span-1 md:col-span-2 px-6 py-4 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/50 text-purple-300 rounded-xl transition-all duration-300 font-bold text-lg flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-purple-900/20"
-          >
-            <ClipboardCheck className="w-5 h-5" />
-            PRUEBA DE 3 PUNTOS
-          </button>
+          {isAdmin && (
+            <>
+              <button
+                onClick={() => {
+                  serialService.send('W');
+                  setIsCalibrationOpen(true);
+                }}
+                className="col-span-1 md:col-span-2 px-6 py-4 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/50 text-purple-300 rounded-xl transition-all duration-300 font-bold text-lg flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-purple-900/20"
+              >
+                <ClipboardCheck className="w-5 h-5" />
+                PRUEBA DE 3 PUNTOS
+              </button>
+
+              <button
+                onClick={() => setIsUserMgmtOpen(true)}
+                className="col-span-1 md:col-span-2 px-6 py-4 bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/50 text-blue-300 rounded-xl transition-all duration-300 font-bold text-lg flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-blue-900/20"
+              >
+                <Shield className="w-5 h-5" />
+                GESTIÓN DE USUARIOS
+              </button>
+            </>
+          )}
         </div>
 
         {/* Simulation Toggle (Dev Tool) */}
@@ -263,6 +280,11 @@ function App() {
       <ReportIssueModal
         isOpen={isIssueOpen}
         onClose={() => setIsIssueOpen(false)}
+      />
+
+      <UserManagementModal
+        isOpen={isUserMgmtOpen}
+        onClose={() => setIsUserMgmtOpen(false)}
       />
 
       <HistoryView
