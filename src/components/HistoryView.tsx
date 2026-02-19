@@ -70,7 +70,11 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
             if (r.type === 'repair') {
                 status = r.repaired ? "Reparado" : "Pendiente";
                 detail = r.diagnosis;
+            } else if (r.type === 'issue') {
+                status = r.status === 'resolved' ? "Resuelto" : r.status === 'in_repair' ? "En Taller" : "Abierto";
+                detail = r.description;
             } else {
+                // Calibration
                 status = r.passed ? "Aprobado" : "Fallido";
                 detail = `${r.finalWeight} / ${r.targetWeight} kg`;
             }
