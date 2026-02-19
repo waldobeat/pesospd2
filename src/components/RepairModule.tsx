@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { auth } from '../firebase';
 import { Wrench, FileDown, X, Check, AlertTriangle } from 'lucide-react';
 import clsx from 'clsx';
 import jsPDF from 'jspdf';
@@ -44,7 +45,8 @@ export const RepairModule: React.FC<RepairModuleProps> = ({ isOpen, onClose }) =
                 diagnosis,
                 solution,
                 note,
-                repaired
+                repaired,
+                user: auth.currentUser?.email || "Desconocido"
             }, 'repair');
 
             // 2. Generate PDF

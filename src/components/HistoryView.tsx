@@ -82,6 +82,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
             return [
                 new Date(r.date).toLocaleDateString(),
                 r.type === 'repair' ? 'Reparación' : 'Calibración',
+                r.user || "N/A", // User Column
                 r.model,
                 r.serial,
                 r.branch || "N/A",
@@ -92,11 +93,11 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
 
         autoTable(doc, {
             startY: 35,
-            head: [['Fecha', 'Tipo', 'Modelo', 'Serial', 'Sucursal', 'Estado', 'Detalle']],
+            head: [['Fecha', 'Tipo', 'Usuario', 'Modelo', 'Serial', 'Sucursal', 'Estado', 'Detalle']],
             body: tableBody,
             theme: 'grid',
             headStyles: { fillColor: [41, 128, 185] },
-            styles: { fontSize: 8 },
+            styles: { fontSize: 7 }, // Reduced font size to fit extra column
         });
 
         // Footer
@@ -115,6 +116,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
         r.serial.toLowerCase().includes(searchTerm.toLowerCase()) ||
         r.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
         r.note.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (r.user && r.user.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (r.type === 'repair' && (r.diagnosis.toLowerCase().includes(searchTerm.toLowerCase()) || r.solution.toLowerCase().includes(searchTerm.toLowerCase())))
     );
 
@@ -182,6 +184,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                             <tr>
                                 <th className="p-4 text-xs font-bold text-white/40 uppercase tracking-wider w-[120px]">Tipo</th>
                                 <th className="p-4 text-xs font-bold text-white/40 uppercase tracking-wider w-[150px]">Fecha</th>
+                                <th className="p-4 text-xs font-bold text-white/40 uppercase tracking-wider">Usuario</th>
                                 <th className="p-4 text-xs font-bold text-white/40 uppercase tracking-wider">Modelo / Serial</th>
                                 <th className="p-4 text-xs font-bold text-white/40 uppercase tracking-wider text-right">Resultado / Estado</th>
                                 <th className="p-4 text-xs font-bold text-white/40 uppercase tracking-wider">Detalles</th>
@@ -191,7 +194,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                         <tbody className="divide-y divide-white/5">
                             {filteredRecords.length === 0 ? (
                                 <tr>
-                                    <td colSpan={6} className="p-12 text-center text-white/20">
+                                    <td colSpan={7} className="p-12 text-center text-white/20">
                                         {loading ? "..." : "No hay registros encontrados."}
                                     </td>
                                 </tr>
@@ -218,6 +221,12 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                             <span className="block text-xs text-white/30">
                                                 {new Date(record.date).toLocaleTimeString()}
                                             </span>
+                                        </td>
+                                        <td className="p-4">
+                                            <div className="text-sm font-medium text-white/80">{record.user || "N/A"}</div>
+                                            <div className="text-xs text-white/30 truncate max-w-[150px]">
+                                                {record.user === 'admin@sisdepe.com' ? 'Administrador' : 'Técnico'}
+                                            </div>
                                         </td>
                                         <td className="p-4">
                                             <div className="font-bold text-white">{record.model}</div>

@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { auth } from '../firebase';
 import { CheckCircle, AlertTriangle, RotateCcw, FileDown, ArrowRight, X } from 'lucide-react';
 import clsx from 'clsx';
 import jsPDF from 'jspdf';
@@ -145,7 +146,8 @@ export const CalibrationTest: React.FC<CalibrationTestProps> = ({ isOpen, onClos
                     note: note || "",
                     finalWeight: isGrams ? totalMeasured / 1000 : totalMeasured,
                     targetWeight: totalTarget,
-                    passed: true
+                    passed: true,
+                    user: auth.currentUser?.email || "Desconocido"
                 }, 'calibration');
             } catch (e) {
                 console.error("Error saving calibration history to cloud", e);

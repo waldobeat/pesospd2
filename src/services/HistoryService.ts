@@ -8,6 +8,7 @@ export interface BaseRecord {
     serial: string;
     branch?: string;
     note: string;
+    user?: string; // Email of the user who performed the action
 }
 
 export interface CalibrationRecord extends BaseRecord {
@@ -83,9 +84,10 @@ export const historyService = {
                 type,
                 branch: record.branch || "N/A",
                 note: record.note || "",
-                // ReportedBy is optional on Base but specific to Issue. 
-                // If it is in record, use it, else default.
-                reportedBy: 'reportedBy' in record ? (record as IssueRecord).reportedBy || "Anon" : undefined
+                // ReportedBy is specific to Issue, but we now have generic 'user' on BaseRecord
+                user: record.user || "Anon",
+                // Keep reportedBy for backward compatibility or specific issue logic if needed
+                reportedBy: 'reportedBy' in record ? (record as IssueRecord).reportedBy : record.user
             };
 
             // Remove undefined keys specifically if any remain

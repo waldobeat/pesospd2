@@ -32,7 +32,8 @@ export const ReportIssueModal: React.FC<ReportIssueModalProps> = ({ isOpen, onCl
                 issueType,
                 description,
                 status: sendToRepair ? 'in_repair' : 'open',
-                reportedBy: auth.currentUser?.email || "Usuario Estándar"
+                reportedBy: auth.currentUser?.email || "Usuario Estándar",
+                user: auth.currentUser?.email || "Usuario Estándar"
             }, 'issue');
 
             setSuccess(true);
