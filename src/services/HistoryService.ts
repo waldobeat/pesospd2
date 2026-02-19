@@ -45,27 +45,29 @@ export const historyService = {
 
             if (isAdmin) {
                 // Admin sees ALL records
-                q = query(historyRef, orderBy("date", "desc"));
+                const q = query(historyRef, orderBy("date", "desc"));
+                const snapshot = await getDocs(q);
+                return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as HistoryItem));
             } else if (userEmail) {
-                // Standard user sees ONLY their own records
-                // We assume 'reportedBy' field is used for Issues. 
-                // For Calibrations/Repairs created by 'system' or before this feature, 
-                // they might not have 'reportedBy'. 
-                // Policy: Standard users only see issues they REPORTED.
-                q = query(historyRef, where("reportedBy", "==", userEmail), orderBy("date", "desc"));
+                // Standard user: Query by 'user' OR 'reportedBy'
+                // We run two queries in parallel and merge results.
+                const q1 = query(historyRef, where("user", "==", userEmail));
+                const q2 = query(historyRef, where("reportedBy", "==", userEmail));
+
+                const [snap1, snap2] = await Promise.all([getDocs(q1), getDocs(q2)]);
+
+                const results = new Map<string, HistoryItem>();
+
+                [...snap1.docs, ...snap2.docs].forEach(doc => {
+                    results.set(doc.id, { id: doc.id, ...doc.data() } as HistoryItem);
+                });
+
+                const items = Array.from(results.values());
+                // Sort in memory
+                return items.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
             } else {
                 return []; // No public access
             }
-
-            const snapshot = await getDocs(q);
-
-            return snapshot.docs.map(doc => {
-                const data = doc.data();
-                return {
-                    id: doc.id,
-                    ...data
-                } as HistoryItem;
-            });
         } catch (e) {
             console.error("Failed to load history from Firestore", e);
             return [];
