@@ -160,13 +160,13 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                 </div>
 
                 {/* Table */}
-                <div className="overflow-auto bg-black/40 flex-1 relative">
+                <div className="overflow-x-auto overflow-y-auto bg-black/40 flex-1 relative">
                     {loading && (
                         <div className="absolute inset-0 bg-black/50 backdrop-blur-sm z-20 flex items-center justify-center text-white">
                             Cargando historial...
                         </div>
                     )}
-                    <table className="w-full text-left border-collapse">
+                    <table className="w-full text-left border-collapse min-w-[800px]">
                         <thead className="bg-white/5 sticky top-0 backdrop-blur-md z-10">
                             <tr>
                                 <th className="p-4 text-xs font-bold text-white/40 uppercase tracking-wider w-[120px]">Tipo</th>
