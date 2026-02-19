@@ -6,6 +6,7 @@ import { CalibrationTest } from './components/CalibrationTest';
 import { HistoryView } from './components/HistoryView';
 import { ReportIssueModal } from './components/ReportIssueModal';
 import { RepairModule } from './components/RepairModule';
+import { DashboardTicker } from './components/DashboardTicker';
 import { Zap, Beaker, LayoutDashboard, ClipboardCheck, History, Wrench, LogOut, AlertTriangle, Shield, Users } from 'lucide-react';
 import clsx from 'clsx';
 import { serialService } from './services/SerialService';
@@ -141,6 +142,8 @@ function App() {
           <h2 className="text-2xl font-bold text-white">Sistema de Pesaje Certificado</h2>
           <p className="text-white/40 text-sm">Empresarial (SISDEPE)</p>
         </div>
+
+        <DashboardTicker />
 
         {/* Scoreboard */}
         <Scoreboard
