@@ -13,17 +13,25 @@ interface HistoryViewProps {
 export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => {
     const [records, setRecords] = useState<HistoryItem[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
+    const [loading, setLoading] = useState(false);
 
     useEffect(() => {
         if (isOpen) {
-            setRecords(historyService.getAll());
+            loadRecords();
         }
     }, [isOpen]);
 
-    const handleDelete = (id: string) => {
+    const loadRecords = async () => {
+        setLoading(true);
+        const data = await historyService.getAll();
+        setRecords(data);
+        setLoading(false);
+    };
+
+    const handleDelete = async (id: string) => {
         if (confirm("¿Está seguro de eliminar este registro?")) {
-            historyService.delete(id);
-            setRecords(historyService.getAll());
+            await historyService.delete(id);
+            loadRecords(); // Reload after delete
         }
     };
 
@@ -152,7 +160,12 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                 </div>
 
                 {/* Table */}
-                <div className="overflow-auto bg-black/40 flex-1">
+                <div className="overflow-auto bg-black/40 flex-1 relative">
+                    {loading && (
+                        <div className="absolute inset-0 bg-black/50 backdrop-blur-sm z-20 flex items-center justify-center text-white">
+                            Cargando historial...
+                        </div>
+                    )}
                     <table className="w-full text-left border-collapse">
                         <thead className="bg-white/5 sticky top-0 backdrop-blur-md z-10">
                             <tr>
@@ -168,7 +181,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                             {filteredRecords.length === 0 ? (
                                 <tr>
                                     <td colSpan={6} className="p-12 text-center text-white/20">
-                                        No hay registros encontrados.
+                                        {loading ? "..." : "No hay registros encontrados."}
                                     </td>
                                 </tr>
                             ) : (
@@ -237,7 +250,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
 
                 {/* Footer */}
                 <div className="p-4 bg-white/5 border-t border-white/10 text-center text-xs text-white/20">
-                    Los registros se guardan localmente en este navegador via LocalStorage.
+                    Sincronizado con Firebase Cloud
                 </div>
             </div>
         </div>

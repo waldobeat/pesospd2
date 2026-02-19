@@ -5,11 +5,26 @@ import { TestWeightWindow } from './components/TestWeightWindow';
 import { CalibrationTest } from './components/CalibrationTest';
 import { HistoryView } from './components/HistoryView';
 import { RepairModule } from './components/RepairModule';
-import { Zap, Beaker, LayoutDashboard, ClipboardCheck, History, Wrench } from 'lucide-react';
+import { Login } from './components/Login'; // Import Login
+import { Zap, Beaker, LayoutDashboard, ClipboardCheck, History, Wrench, LogOut } from 'lucide-react';
 import clsx from 'clsx';
 import { serialService } from './services/SerialService';
+import { auth } from './firebase'; // Import auth
+import { onAuthStateChanged, signOut, type User } from 'firebase/auth';
 
 function App() {
+  // Auth State
+  const [user, setUser] = useState<User | null>(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (currentUser) => {
+      setUser(currentUser);
+      setAuthLoading(false);
+    });
+    return () => unsubscribe();
+  }, []);
+
   const {
     weight, unit, isStable, isZero, isNet, isConnected, isConnecting, error,
     lastReceived, rawBuffer, connect, disconnect
@@ -53,6 +68,18 @@ function App() {
     };
   }, [isSimulating]);
 
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-[#09090b] flex items-center justify-center text-white">
+        Cargando sistema...
+      </div>
+    );
+  }
+
+  if (!user) {
+    return <Login />;
+  }
+
   return (
     <div className="min-h-screen bg-[#09090b] text-white selection:bg-blue-500/30 flex flex-col items-center justify-center p-4 relative overflow-hidden font-sans">
 
@@ -64,7 +91,14 @@ function App() {
       <div className="w-full max-w-4xl z-10 flex flex-col gap-8">
 
         {/* Title */}
-        <div className="text-center space-y-2">
+        <div className="text-center space-y-2 relative">
+          <button
+            onClick={() => signOut(auth)}
+            className="absolute right-0 top-0 p-2 hover:bg-white/10 rounded-lg text-white/30 hover:text-white transition-colors"
+            title="Cerrar Sesión"
+          >
+            <LogOut className="w-5 h-5" />
+          </button>
           <h1 className="text-4xl md:text-5xl font-bold tracking-tighter bg-gradient-to-r from-blue-100 to-blue-400/50 bg-clip-text text-transparent">
             Sistema de Pesaje Certificado Empresarial (SISDEPE)
           </h1>

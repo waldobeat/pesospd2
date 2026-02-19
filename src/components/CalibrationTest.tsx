@@ -114,7 +114,7 @@ export const CalibrationTest: React.FC<CalibrationTestProps> = ({ isOpen, onClos
         setNote("");
     };
 
-    const generatePDF = (totalTarget: number, totalMeasured: number, diff: number, isGrams: boolean, passed: boolean, note: string = "") => {
+    const generatePDF = async (totalTarget: number, totalMeasured: number, diff: number, isGrams: boolean, passed: boolean, note: string = "") => {
         const doc = new jsPDF();
 
         const title = "NOTA DE ENTREGA";
@@ -137,14 +137,19 @@ export const CalibrationTest: React.FC<CalibrationTestProps> = ({ isOpen, onClos
         // Meta Data
         doc.setFontSize(10);
         if (passed) {
-            historyService.save({
-                model,
-                serial,
-                note,
-                finalWeight: isGrams ? totalMeasured / 1000 : totalMeasured, // totalMeasured is raw, convert to kg if it was grams
-                targetWeight: totalTarget,
-                passed: true
-            }, 'calibration');
+            try {
+                await historyService.save({
+                    model,
+                    serial,
+                    note,
+                    finalWeight: isGrams ? totalMeasured / 1000 : totalMeasured, // totalMeasured is raw, convert to kg if it was grams
+                    targetWeight: totalTarget,
+                    passed: true
+                }, 'calibration');
+            } catch (e) {
+                console.error("Error saving calibration history", e);
+                alert("Error al guardar historial, pero se generará el PDF.");
+            }
         }
 
         doc.save(`Certificado_${model}_${serial || 'SinSerial'}_${new Date().toISOString().split('T')[0]}.pdf`);

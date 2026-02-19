@@ -29,34 +29,36 @@ export const RepairModule: React.FC<RepairModuleProps> = ({ isOpen, onClose }) =
         setRepaired(true);
     };
 
-    const handleSaveAndGenerate = () => {
+    const handleSaveAndGenerate = async () => {
         if (!serial || !diagnosis || !solution) {
             alert("Por favor complete los campos obligatorios (Serial, Diagnóstico, Solución)");
             return;
         }
 
-        // 1. Save to History
-        historyService.save({
-            model,
-            serial,
-            branch,
-            diagnosis,
-            solution,
-            note,
-            repaired
-        }, 'repair');
+        try {
+            // 1. Save to History (Async)
+            await historyService.save({
+                model,
+                serial,
+                branch,
+                diagnosis,
+                solution,
+                note,
+                repaired
+            }, 'repair');
 
-        // 2. Generate PDF
-        generatePDF();
+            // 2. Generate PDF
+            generatePDF();
 
-        // 3. Close & Reset
-        // onClose(); // Optional: keep open? User might want to do another.
-        // resetForm();
-        if (confirm("Registro guardado y PDF generado. ¿Desea cerrar el módulo?")) {
-            onClose();
-            resetForm();
-        } else {
-            resetForm();
+            if (confirm("Registro guardado y PDF generado. ¿Desea cerrar el módulo?")) {
+                onClose();
+                resetForm();
+            } else {
+                resetForm();
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Error al guardar en la nube.");
         }
     };
 

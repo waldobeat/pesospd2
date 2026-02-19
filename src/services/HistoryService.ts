@@ -1,3 +1,6 @@
+import { db } from '../firebase';
+import { collection, getDocs, addDoc, deleteDoc, doc, query, orderBy, Timestamp } from 'firebase/firestore';
+
 export interface BaseRecord {
     id: string;
     date: string; // ISO string
@@ -23,57 +26,56 @@ export interface RepairRecord extends BaseRecord {
 
 export type HistoryItem = CalibrationRecord | RepairRecord;
 
-const STORAGE_KEY = 'calibration_history';
+const COLLECTION_NAME = 'history';
 
 export const historyService = {
-    getAll: (): HistoryItem[] => {
+    getAll: async (): Promise<HistoryItem[]> => {
         try {
-            const raw = localStorage.getItem(STORAGE_KEY);
-            const parsed = raw ? JSON.parse(raw) : [];
-            if (!Array.isArray(parsed)) return [];
+            const historyRef = collection(db, COLLECTION_NAME);
+            const q = query(historyRef, orderBy("date", "desc"));
+            const snapshot = await getDocs(q);
 
-            // Migration/Backward Compatibility: If 'type' is missing, assume 'calibration'
-            return parsed.map((item: any) => {
-                if (!item.type) {
-                    return { ...item, type: 'calibration' } as CalibrationRecord;
-                }
-                return item as HistoryItem;
+            return snapshot.docs.map(doc => {
+                const data = doc.data();
+                return {
+                    id: doc.id,
+                    ...data
+                } as HistoryItem;
             });
         } catch (e) {
-            console.error("Failed to load history", e);
+            console.error("Failed to load history from Firestore", e);
             return [];
         }
     },
 
-    save: (record: Omit<CalibrationRecord, 'id' | 'date' | 'type'> | Omit<RepairRecord, 'id' | 'date' | 'type'>, type: 'calibration' | 'repair') => {
+    save: async (record: Omit<CalibrationRecord, 'id' | 'date' | 'type'> | Omit<RepairRecord, 'id' | 'date' | 'type'>, type: 'calibration' | 'repair'): Promise<HistoryItem | null> => {
         try {
-            const history = historyService.getAll();
-            const newRecord: HistoryItem = {
+            const date = new Date().toISOString();
+            const newRecordData = {
                 ...record,
-                id: crypto.randomUUID(),
-                date: new Date().toISOString(),
+                date,
                 type
-            } as HistoryItem; // TS casting purely because we are constructing it dynamically
+            };
 
-            history.unshift(newRecord);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
-            return newRecord;
+            const docRef = await addDoc(collection(db, COLLECTION_NAME), newRecordData);
+
+            return {
+                id: docRef.id,
+                ...newRecordData
+            } as HistoryItem;
         } catch (e) {
-            console.error("Failed to save record", e);
-            return null;
+            console.error("Failed to save record to Firestore", e);
+            throw e;
         }
     },
 
-    delete: (id: string) => {
+    delete: async (id: string): Promise<void> => {
         try {
-            const history = historyService.getAll().filter(r => r.id !== id);
-            localStorage.setItem(STORAGE_KEY, JSON.stringify(history));
+            await deleteDoc(doc(db, COLLECTION_NAME, id));
         } catch (e) {
             console.error("Failed to delete record", e);
+            throw e;
         }
-    },
-
-    clear: () => {
-        localStorage.removeItem(STORAGE_KEY);
     }
 };
+
