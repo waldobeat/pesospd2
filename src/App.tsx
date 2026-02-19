@@ -143,7 +143,7 @@ function App() {
           <p className="text-white/40 text-sm">Empresarial (SISDEPE)</p>
         </div>
 
-        <DashboardTicker />
+        <DashboardTicker userEmail={user?.email || undefined} isAdmin={isAdmin} />
 
         {/* Scoreboard */}
         <Scoreboard
