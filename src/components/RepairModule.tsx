@@ -100,7 +100,7 @@ export const RepairModule: React.FC<RepairModuleProps> = ({ isOpen, onClose }) =
         let sealImg: HTMLImageElement | null = null;
         try {
             const img = new Image();
-            img.src = '/sello.jpg';
+            img.src = '/sello.png'; // Corrected extension
             await new Promise((resolve) => {
                 img.onload = resolve;
                 img.onerror = resolve; // Continue if missing
@@ -243,7 +243,7 @@ export const RepairModule: React.FC<RepairModuleProps> = ({ isOpen, onClose }) =
                 // Image 30x30.
                 // Top-left of image = x: (45 - 15) = 30, y: (signatureY - 20)
                 try {
-                    doc.addImage(sealImg, 'JPEG', 30, signatureY - 25, 30, 30);
+                    doc.addImage(sealImg, 'PNG', 30, signatureY - 25, 30, 30);
                 } catch (e) { /* ignore */ }
             }
 
