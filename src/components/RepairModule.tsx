@@ -78,7 +78,7 @@ export const RepairModule: React.FC<RepairModuleProps> = ({ isOpen, onClose }) =
             }, 'repair');
 
             // 2. Generate PDF
-            generatePDF();
+            await generatePDF();
 
             if (confirm("Registro guardado y PDF generado. ¿Desea cerrar el módulo?")) {
                 onClose();
@@ -92,9 +92,23 @@ export const RepairModule: React.FC<RepairModuleProps> = ({ isOpen, onClose }) =
         }
     };
 
-    const generatePDF = () => {
+    const generatePDF = async () => {
         // A4 Portrait: 210 x 297 mm
         const doc = new jsPDF();
+
+        // Load Seal Image
+        let sealImg: HTMLImageElement | null = null;
+        try {
+            const img = new Image();
+            img.src = '/sello.jpg';
+            await new Promise((resolve) => {
+                img.onload = resolve;
+                img.onerror = resolve; // Continue if missing
+            });
+            sealImg = img;
+        } catch (e) {
+            console.warn("Seal image not found or failed to load");
+        }
 
         const renderReport = (startY: number, typeLabel: string) => {
             const pageHeight = 148.5; // Half of A4
@@ -113,7 +127,6 @@ export const RepairModule: React.FC<RepairModuleProps> = ({ isOpen, onClose }) =
             doc.setTextColor(230);
             doc.setFontSize(50);
             doc.setFont("helvetica", "bold");
-            // Rotate? No, jsPDF simpler without rotation plugin sometimes. 
             // Text plain center.
             doc.text(typeLabel.split(" - ")[0], centerX, startY + (pageHeight / 2), { align: 'center', baseline: 'middle' });
 
@@ -219,6 +232,21 @@ export const RepairModule: React.FC<RepairModuleProps> = ({ isOpen, onClose }) =
 
             // Technician
             doc.line(20, signatureY, 70, signatureY);
+
+            // Seal Image Placement
+            if (sealImg) {
+                // Place over the signature area
+                // Signature Y is 'signatureY' (bottom line)
+                // We want center of seal to be roughly center of signature line?
+                // Line is 20 to 70 (width 50). Center 45.
+                // signatureY is baseline.
+                // Image 30x30.
+                // Top-left of image = x: (45 - 15) = 30, y: (signatureY - 20)
+                try {
+                    doc.addImage(sealImg, 'JPEG', 30, signatureY - 25, 30, 30);
+                } catch (e) { /* ignore */ }
+            }
+
             doc.setFont("times", "italic");
             doc.setFontSize(10);
             doc.text("Jesus Infante", 45, signatureY - 2, { align: 'center' });
