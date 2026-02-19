@@ -1,5 +1,5 @@
 import { db } from '../firebase';
-import { collection, getDocs, addDoc, deleteDoc, doc, query, orderBy, Timestamp } from 'firebase/firestore';
+import { collection, getDocs, addDoc, deleteDoc, doc, query, orderBy, where, Timestamp } from 'firebase/firestore';
 
 export interface BaseRecord {
     id: string;
@@ -37,10 +37,25 @@ export type HistoryItem = CalibrationRecord | RepairRecord | IssueRecord;
 const COLLECTION_NAME = 'history';
 
 export const historyService = {
-    getAll: async (): Promise<HistoryItem[]> => {
+    getAll: async (userEmail?: string, isAdmin: boolean = false): Promise<HistoryItem[]> => {
         try {
             const historyRef = collection(db, COLLECTION_NAME);
-            const q = query(historyRef, orderBy("date", "desc"));
+            let q;
+
+            if (isAdmin) {
+                // Admin sees ALL records
+                q = query(historyRef, orderBy("date", "desc"));
+            } else if (userEmail) {
+                // Standard user sees ONLY their own records
+                // We assume 'reportedBy' field is used for Issues. 
+                // For Calibrations/Repairs created by 'system' or before this feature, 
+                // they might not have 'reportedBy'. 
+                // Policy: Standard users only see issues they REPORTED.
+                q = query(historyRef, where("reportedBy", "==", userEmail), orderBy("date", "desc"));
+            } else {
+                return []; // No public access
+            }
+
             const snapshot = await getDocs(q);
 
             return snapshot.docs.map(doc => {

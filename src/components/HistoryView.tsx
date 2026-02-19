@@ -1,3 +1,4 @@
+import React, { useState, useEffect } from 'react';
 import { auth } from '../firebase';
 import { useAuthRole } from '../hooks/useAuthRole';
 import { historyService, type HistoryItem } from '../services/HistoryService';
@@ -16,15 +17,20 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
     const [searchTerm, setSearchTerm] = useState("");
     const [loading, setLoading] = useState(false);
 
+    // Get Current User Role for Filtering
+    const { isAdmin } = useAuthRole(auth.currentUser);
+
     useEffect(() => {
         if (isOpen) {
             loadRecords();
         }
-    }, [isOpen]);
+    }, [isOpen, isAdmin]);
 
     const loadRecords = async () => {
         setLoading(true);
-        const data = await historyService.getAll();
+        // Pass user email and admin status to service
+        const userEmail = auth.currentUser?.email || "";
+        const data = await historyService.getAll(userEmail, isAdmin);
         setRecords(data);
         setLoading(false);
     };
