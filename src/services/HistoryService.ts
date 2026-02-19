@@ -103,6 +103,16 @@ export const historyService = {
         }
     },
 
+    update: async (id: string, updates: Partial<HistoryItem>): Promise<void> => {
+        try {
+            const docRef = doc(db, COLLECTION_NAME, id);
+            await import('firebase/firestore').then(({ updateDoc }) => updateDoc(docRef, updates));
+        } catch (e) {
+            console.error("Failed to update record", e);
+            throw e;
+        }
+    },
+
     delete: async (id: string): Promise<void> => {
         try {
             await deleteDoc(doc(db, COLLECTION_NAME, id));

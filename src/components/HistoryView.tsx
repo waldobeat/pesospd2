@@ -231,13 +231,34 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                                     {record.repaired ? "Reparado" : "Pendiente"}
                                                 </span>
                                             ) : record.type === 'issue' ? (
-                                                <span className={clsx("inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium",
-                                                    record.status === 'resolved' ? "bg-green-500/10 text-green-400" :
-                                                        record.status === 'in_repair' ? "bg-orange-500/10 text-orange-400" : "bg-red-500/10 text-red-400"
-                                                )}>
-                                                    {record.status === 'resolved' ? "Resuelto" :
-                                                        record.status === 'in_repair' ? "En Taller" : "Abierto"}
-                                                </span>
+                                                isAdmin ? (
+                                                    <select
+                                                        value={record.status}
+                                                        onChange={async (e) => {
+                                                            const newStatus = e.target.value as any;
+                                                            if (confirm(`¿Cambiar estado a ${newStatus}?`)) {
+                                                                await historyService.update(record.id, { status: newStatus });
+                                                                loadRecords();
+                                                            }
+                                                        }}
+                                                        className={clsx("inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium cursor-pointer bg-black/50 border border-white/10 outline-none",
+                                                            record.status === 'resolved' ? "text-green-400" :
+                                                                record.status === 'in_repair' ? "text-orange-400" : "text-red-400"
+                                                        )}
+                                                    >
+                                                        <option value="open">Abierto</option>
+                                                        <option value="in_repair">En Taller</option>
+                                                        <option value="resolved">Resuelto</option>
+                                                    </select>
+                                                ) : (
+                                                    <span className={clsx("inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium",
+                                                        record.status === 'resolved' ? "bg-green-500/10 text-green-400" :
+                                                            record.status === 'in_repair' ? "bg-orange-500/10 text-orange-400" : "bg-red-500/10 text-red-400"
+                                                    )}>
+                                                        {record.status === 'resolved' ? "Resuelto" :
+                                                            record.status === 'in_repair' ? "En Taller" : "Abierto"}
+                                                    </span>
+                                                )
                                             ) : (
                                                 <div className="font-mono text-blue-300">
                                                     {record.finalWeight.toFixed(2)} / {record.targetWeight.toFixed(2)} kg

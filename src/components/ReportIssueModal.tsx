@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { auth } from '../firebase';
 import { historyService, type IssueRecord } from '../services/HistoryService';
 import { X, AlertTriangle, Send, CheckCircle } from 'lucide-react';
 import clsx from 'clsx';
@@ -31,7 +32,7 @@ export const ReportIssueModal: React.FC<ReportIssueModalProps> = ({ isOpen, onCl
                 issueType,
                 description,
                 status: sendToRepair ? 'in_repair' : 'open',
-                reportedBy: "Usuario Estándar" // Auth user could go here
+                reportedBy: auth.currentUser?.email || "Usuario Estándar"
             }, 'issue');
 
             setSuccess(true);

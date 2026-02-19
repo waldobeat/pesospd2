@@ -242,23 +242,7 @@ function App() {
           )}
         </div>
 
-        {/* Simulation Toggle (Dev Tool) */}
-        {!isConnected && (
-          <div className="flex justify-center mt-4">
-            <button
-              onClick={() => setIsSimulating(!isSimulating)}
-              className={clsx(
-                "text-xs flex items-center gap-2 px-3 py-1 rounded-full border transition-all",
-                isSimulating
-                  ? "bg-yellow-500/20 border-yellow-500/50 text-yellow-400"
-                  : "bg-white/5 border-white/10 text-white/30 hover:text-white/50"
-              )}
-            >
-              <Beaker className="w-3 h-3" />
-              {isSimulating ? "MODO SIMULACIÓN ACTIVO" : "Simular Datos"}
-            </button>
-          </div>
-        )}
+
 
       </div>
 
