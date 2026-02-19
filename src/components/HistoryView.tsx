@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { historyService, type HistoryItem } from '../services/HistoryService';
-import { X, Trash2, FileText, Search, FileDown, Wrench, CheckCircle } from 'lucide-react';
+import { X, Trash2, FileText, Search, FileDown, Wrench, CheckCircle, AlertTriangle } from 'lucide-react';
 import clsx from 'clsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -192,6 +192,10 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                                 <div className="w-8 h-8 rounded-full bg-orange-500/20 flex items-center justify-center text-orange-400" title="Reparación Manual">
                                                     <Wrench className="w-4 h-4" />
                                                 </div>
+                                            ) : record.type === 'issue' ? (
+                                                <div className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center text-red-400" title="Avería Reportada">
+                                                    <AlertTriangle className="w-4 h-4" />
+                                                </div>
                                             ) : (
                                                 <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400" title="Calibración">
                                                     <CheckCircle className="w-4 h-4" />
@@ -215,6 +219,14 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                                 )}>
                                                     {record.repaired ? "Reparado" : "Pendiente"}
                                                 </span>
+                                            ) : record.type === 'issue' ? (
+                                                <span className={clsx("inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium",
+                                                    record.status === 'resolved' ? "bg-green-500/10 text-green-400" :
+                                                        record.status === 'in_repair' ? "bg-orange-500/10 text-orange-400" : "bg-red-500/10 text-red-400"
+                                                )}>
+                                                    {record.status === 'resolved' ? "Resuelto" :
+                                                        record.status === 'in_repair' ? "En Taller" : "Abierto"}
+                                                </span>
                                             ) : (
                                                 <div className="font-mono text-blue-300">
                                                     {record.finalWeight.toFixed(2)} / {record.targetWeight.toFixed(2)} kg
@@ -225,6 +237,10 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                             {record.type === 'repair' ? (
                                                 <div className="truncate text-white/50" title={record.diagnosis}>
                                                     <span className="text-orange-300/50">Diag:</span> {record.diagnosis}
+                                                </div>
+                                            ) : record.type === 'issue' ? (
+                                                <div className="truncate text-white/50" title={record.description}>
+                                                    <span className="text-red-300/50">Fallo:</span> {record.description}
                                                 </div>
                                             ) : (
                                                 <div className="truncate text-white/50">

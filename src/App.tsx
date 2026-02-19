@@ -4,9 +4,8 @@ import { Scoreboard } from './components/Scoreboard';
 import { TestWeightWindow } from './components/TestWeightWindow';
 import { CalibrationTest } from './components/CalibrationTest';
 import { HistoryView } from './components/HistoryView';
-import { RepairModule } from './components/RepairModule';
-import { Login } from './components/Login'; // Import Login
-import { Zap, Beaker, LayoutDashboard, ClipboardCheck, History, Wrench, LogOut } from 'lucide-react';
+import { ReportIssueModal } from './components/ReportIssueModal';
+import { Zap, Beaker, LayoutDashboard, ClipboardCheck, History, Wrench, LogOut, AlertTriangle } from 'lucide-react';
 import clsx from 'clsx';
 import { serialService } from './services/SerialService';
 import { auth } from './firebase'; // Import auth
@@ -34,6 +33,7 @@ function App() {
   const [isTestWindowOpen, setIsTestWindowOpen] = useState(false);
   const [isCalibrationOpen, setIsCalibrationOpen] = useState(false);
   const [isRepairOpen, setIsRepairOpen] = useState(false);
+  const [isIssueOpen, setIsIssueOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
   const simInterval = useRef<number | null>(null);
@@ -191,6 +191,14 @@ function App() {
           </button>
 
           <button
+            onClick={() => setIsIssueOpen(true)}
+            className="px-6 py-4 bg-red-600/20 hover:bg-red-600/30 border border-red-500/50 text-red-300 rounded-xl transition-all duration-300 font-bold text-lg flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-red-900/20"
+          >
+            <AlertTriangle className="w-5 h-5" />
+            REPORTAR AVERÍA
+          </button>
+
+          <button
             onClick={() => setIsHistoryOpen(true)}
             className="col-span-1 md:col-span-2 px-6 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl transition-all duration-300 font-bold text-lg flex items-center justify-center gap-2"
           >
@@ -248,6 +256,11 @@ function App() {
       <RepairModule
         isOpen={isRepairOpen}
         onClose={() => setIsRepairOpen(false)}
+      />
+
+      <ReportIssueModal
+        isOpen={isIssueOpen}
+        onClose={() => setIsIssueOpen(false)}
       />
 
       <HistoryView

@@ -24,7 +24,15 @@ export interface RepairRecord extends BaseRecord {
     repaired: boolean;
 }
 
-export type HistoryItem = CalibrationRecord | RepairRecord;
+export interface IssueRecord extends BaseRecord {
+    type: 'issue';
+    issueType: 'damaged_scale' | 'weight_error' | 'component_failure' | 'other';
+    description: string;
+    status: 'open' | 'in_repair' | 'resolved'; // Default 'open'
+    reportedBy?: string;
+}
+
+export type HistoryItem = CalibrationRecord | RepairRecord | IssueRecord;
 
 const COLLECTION_NAME = 'history';
 
@@ -48,7 +56,7 @@ export const historyService = {
         }
     },
 
-    save: async (record: Omit<CalibrationRecord, 'id' | 'date' | 'type'> | Omit<RepairRecord, 'id' | 'date' | 'type'>, type: 'calibration' | 'repair'): Promise<HistoryItem | null> => {
+    save: async (record: Omit<CalibrationRecord, 'id' | 'date' | 'type'> | Omit<RepairRecord, 'id' | 'date' | 'type'> | Omit<IssueRecord, 'id' | 'date' | 'type'>, type: 'calibration' | 'repair' | 'issue'): Promise<HistoryItem | null> => {
         try {
             const date = new Date().toISOString();
             const newRecordData = {
