@@ -5,6 +5,7 @@ import { TestWeightWindow } from './components/TestWeightWindow';
 import { CalibrationTest } from './components/CalibrationTest';
 import { HistoryView } from './components/HistoryView';
 import { ReportIssueModal } from './components/ReportIssueModal';
+import { RepairModule } from './components/RepairModule';
 import { Zap, Beaker, LayoutDashboard, ClipboardCheck, History, Wrench, LogOut, AlertTriangle } from 'lucide-react';
 import clsx from 'clsx';
 import { serialService } from './services/SerialService';
