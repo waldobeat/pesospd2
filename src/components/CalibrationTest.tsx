@@ -142,13 +142,15 @@ export const CalibrationTest: React.FC<CalibrationTestProps> = ({ isOpen, onClos
                     model,
                     serial,
                     note,
-                    finalWeight: isGrams ? totalMeasured / 1000 : totalMeasured, // totalMeasured is raw, convert to kg if it was grams
+                    finalWeight: isGrams ? totalMeasured / 1000 : totalMeasured,
                     targetWeight: totalTarget,
                     passed: true
                 }, 'calibration');
             } catch (e) {
-                console.error("Error saving calibration history", e);
-                alert("Error al guardar historial, pero se generará el PDF.");
+                console.error("Error saving calibration history to cloud", e);
+                // Non-blocking alert or toast would be better, but standard alert is fine for now
+                // "Error al guardar en la nube (Posiblemente permisos o internet). El certificado se generará localmente."
+                alert("Atención: No se pudo guardar en el historial en la nube (Verifique internet/permisos).\n\nSin embargo, EL CERTIFICADO PDF SE GENERARÁ LOCALMENTE.");
             }
         }
 

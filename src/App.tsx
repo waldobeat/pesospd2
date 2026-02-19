@@ -87,22 +87,51 @@ function App() {
       <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-blue-500/10 blur-[120px] rounded-full pointing-events-none select-none" />
       <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-purple-500/10 blur-[120px] rounded-full pointing-events-none select-none" />
 
-      {/* Main Container */}
-      <div className="w-full max-w-4xl z-10 flex flex-col gap-8">
+      {/* Fixed Professional Header */}
+      <header className="fixed top-0 left-0 w-full h-16 bg-black/80 backdrop-blur-md border-b border-white/10 z-50 flex items-center justify-between px-4 md:px-8 shadow-2xl">
+        <div className="flex items-center gap-4">
+          {/* Small Logo for Header */}
+          <div className="w-10 h-10 relative group cursor-pointer">
+            <div className="absolute inset-0 bg-blue-500/20 blur-md rounded-full group-hover:bg-blue-500/30 transition-all"></div>
+            <div className="relative w-full h-full bg-gradient-to-br from-[#1e293b] to-[#0f172a] border border-white/10 rounded-xl flex items-center justify-center overflow-hidden">
+              <div className="w-6 h-6 border-2 border-blue-500/30 rounded-full flex items-center justify-center relative">
+                <div className="absolute w-0.5 h-2 bg-orange-500 top-0.5 rounded-full origin-bottom animate-pulse"></div>
+              </div>
+            </div>
+          </div>
+          <div>
+            <h1 className="text-lg md:text-xl font-black tracking-tight text-white leading-none">
+              SISDEPE
+            </h1>
+            <p className="text-[10px] md:text-xs text-blue-200/60 font-medium tracking-wide uppercase hidden md:block">
+              Sistema de Pesaje Certificado Empresarial
+            </p>
+          </div>
+        </div>
 
-        {/* Title */}
-        <div className="text-center space-y-2 relative">
+        <div className="flex items-center gap-4">
+          <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/5">
+            <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'} animate-pulse`}></div>
+            <span className="text-xs font-bold text-white/50">{isConnected ? 'ONLINE' : 'OFFLINE'}</span>
+          </div>
           <button
             onClick={() => signOut(auth)}
-            className="absolute right-0 top-0 p-2 hover:bg-white/10 rounded-lg text-white/30 hover:text-white transition-colors"
+            className="p-2 hover:bg-white/10 rounded-lg text-white/50 hover:text-red-400 transition-colors flex items-center gap-2"
             title="Cerrar Sesión"
           >
+            <span className="text-xs font-bold hidden md:block">SALIR</span>
             <LogOut className="w-5 h-5" />
           </button>
-          <h1 className="text-4xl md:text-5xl font-bold tracking-tighter bg-gradient-to-r from-blue-100 to-blue-400/50 bg-clip-text text-transparent">
-            Sistema de Pesaje Certificado Empresarial (SISDEPE)
-          </h1>
-          <p className="text-white/40 font-medium">Marca no comercial programada por Jesus Infante</p>
+        </div>
+      </header>
+
+      {/* Main Container - Added pt-24 for header spacing */}
+      <div className="w-full max-w-5xl z-10 flex flex-col gap-6 md:gap-8 px-4 pt-24 pb-10">
+
+        {/* Hero / Welcome Section (Mobile Only or Compact) */}
+        <div className="text-center md:hidden space-y-2">
+          <h2 className="text-2xl font-bold text-white">Sistema de Pesaje Certificado</h2>
+          <p className="text-white/40 text-sm">Empresarial (SISDEPE)</p>
         </div>
 
         {/* Scoreboard */}
