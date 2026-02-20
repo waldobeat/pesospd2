@@ -15,19 +15,24 @@ export interface ChatMessage {
 const COLLECTION_NAME = 'messages';
 
 export const supportService = {
-    sendMessage: async (sender: string, recipient: string, text: string, senderName?: string) => {
+    sendMessage: async (sender: string, recipient: string, text: string, senderName?: string, isAdmin?: boolean) => {
         try {
-            // Consistent chatId: always "email-admin" for simplicity
-            const userEmail = sender === 'admin@sisdepe.com' ? recipient : sender;
-            const chatId = `${userEmail}-admin`;
+            // Functional identities: sucursales talk to 'workshop'
+            // If sender is admin, their functional ID is 'workshop'
+            const functionalSender = isAdmin ? 'workshop' : sender;
+            const functionalRecipient = isAdmin ? recipient : 'workshop';
+
+            const userEmail = isAdmin ? recipient : sender;
+            const chatId = `${userEmail.toLowerCase()}-workshop`;
 
             await addDoc(collection(db, COLLECTION_NAME), {
-                sender,
-                recipient,
+                sender: functionalSender,
+                realSender: sender, // the actual email for tracking
+                recipient: functionalRecipient,
                 text,
                 timestamp: serverTimestamp(),
                 seen: false,
-                senderName: senderName || sender.split('@')[0],
+                senderName: isAdmin ? 'Taller' : (senderName || sender.split('@')[0]),
                 chatId
             });
         } catch (error) {
@@ -38,11 +43,10 @@ export const supportService = {
 
     // Subscribe to all messages for a specific user (between them and admin)
     subscribeToUserMessages: (userEmail: string, callback: (messages: ChatMessage[]) => void) => {
-        const chatId = `${userEmail}-admin`;
+        const chatId = `${userEmail.toLowerCase()}-workshop`;
         const q = query(
             collection(db, COLLECTION_NAME),
             where('chatId', '==', chatId)
-            // Removed orderBy to avoid requiring composite index, sorting locally instead
         );
 
         return onSnapshot(q, (snapshot) => {
@@ -73,10 +77,11 @@ export const supportService = {
             const latestMsgs: { [email: string]: ChatMessage } = {};
             snapshot.docs.forEach(doc => {
                 const data = doc.data() as ChatMessage;
-                const otherParty = data.sender === 'admin@sisdepe.com' ? data.recipient : data.sender;
+                // In this model, chatId is always {userEmail}-workshop
+                // The 'otherParty' from the admin perspective is the one who isn't 'workshop'
+                const otherParty = data.sender === 'workshop' ? data.recipient : data.sender;
 
-                // Exclude self-conversations for admin
-                if (otherParty && otherParty !== 'admin@sisdepe.com' && !latestMsgs[otherParty]) {
+                if (otherParty && otherParty !== 'workshop' && !latestMsgs[otherParty]) {
                     latestMsgs[otherParty] = { id: doc.id, ...data };
                 }
             });
@@ -93,8 +98,8 @@ export const supportService = {
 
     getUnseenCount: async (userEmail: string, isAdmin: boolean) => {
         const q = isAdmin
-            ? query(collection(db, COLLECTION_NAME), where('recipient', '==', 'admin@sisdepe.com'), where('seen', '==', false))
-            : query(collection(db, COLLECTION_NAME), where('recipient', '==', userEmail), where('seen', '==', false));
+            ? query(collection(db, COLLECTION_NAME), where('recipient', '==', 'workshop'), where('seen', '==', false))
+            : query(collection(db, COLLECTION_NAME), where('recipient', '==', userEmail.toLowerCase()), where('seen', '==', false));
 
         const snapshot = await getDocs(q);
         return snapshot.size;

@@ -56,8 +56,8 @@ function App() {
   useEffect(() => {
     if (user) {
       const q = isAdmin
-        ? query(collection(db, 'messages'), where('recipient', '==', 'admin@sisdepe.com'), where('seen', '==', false))
-        : query(collection(db, 'messages'), where('recipient', '==', user.email), where('seen', '==', false));
+        ? query(collection(db, 'messages'), where('recipient', '==', 'workshop'), where('seen', '==', false))
+        : query(collection(db, 'messages'), where('recipient', '==', user.email?.toLowerCase()), where('seen', '==', false));
 
       const unsubscribe = onSnapshot(q, (snapshot) => {
         setUnseenSupportMessages(snapshot.size);

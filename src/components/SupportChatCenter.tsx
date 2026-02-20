@@ -55,7 +55,7 @@ export const SupportChatCenter: React.FC<SupportChatCenterProps> = ({ isOpen, on
 
                     // Mark as seen
                     const unseenIds = data
-                        .filter(m => !m.seen && (isAdmin ? m.recipient === 'admin@sisdepe.com' : m.recipient === currentUserEmail))
+                        .filter(m => !m.seen && (isAdmin ? m.recipient === 'workshop' : m.recipient === currentUserEmail.toLowerCase()))
                         .map(m => m.id as string);
                     if (unseenIds.length > 0) {
                         supportService.markAsSeen(unseenIds);
@@ -86,7 +86,7 @@ export const SupportChatCenter: React.FC<SupportChatCenterProps> = ({ isOpen, on
         if (!recipient) return;
 
         try {
-            await supportService.sendMessage(currentUserEmail, recipient, newMessage.trim());
+            await supportService.sendMessage(currentUserEmail, recipient, newMessage.trim(), undefined, isAdmin);
             setNewMessage('');
         } catch (error) {
             console.error("Error sending message:", error);
@@ -186,7 +186,7 @@ export const SupportChatCenter: React.FC<SupportChatCenterProps> = ({ isOpen, on
                                                         {latest.text}
                                                     </div>
                                                 </div>
-                                                {!latest.seen && latest.recipient === 'admin@sisdepe.com' && (
+                                                {!latest.seen && latest.recipient === 'workshop' && (
                                                     <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse shadow-[0_0_10px_rgba(59,130,246,0.5)]" />
                                                 )}
                                                 <div className="text-[8px] font-black text-white/10 uppercase ml-2">
@@ -219,7 +219,11 @@ export const SupportChatCenter: React.FC<SupportChatCenterProps> = ({ isOpen, on
                                     messages.map((msg) => {
                                         const myEmail = currentUserEmail.toLowerCase();
                                         const senderEmail = (msg.sender || '').toLowerCase();
-                                        const isMe = senderEmail === myEmail;
+
+                                        // Specific logic for 'Workshop' identity
+                                        // If I am admin, "me" is 'workshop'
+                                        // If I am user, "me" is my own email
+                                        const isMe = isAdmin ? senderEmail === 'workshop' : senderEmail === myEmail;
 
                                         return (
                                             <div key={msg.id} className={clsx(
