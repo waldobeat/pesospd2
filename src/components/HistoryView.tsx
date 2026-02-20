@@ -248,7 +248,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                         </td>
                                         <td className="p-4">
                                             <div className="text-sm font-medium text-white/80">
-                                                {record.user && record.user !== 'Anon' ? record.user.split('@')[0] : "Anon"}
+                                                {record.user && record.user !== 'Desconocido' ? record.user.split('@')[0] : "Desconocido"}
                                             </div>
                                             <div className="text-xs text-white/30 truncate max-w-[150px]">
                                                 {record.user === 'admin@sisdepe.com' ? 'Administrador' : 'Usuario'}

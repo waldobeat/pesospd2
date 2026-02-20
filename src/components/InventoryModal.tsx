@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { auth } from '../firebase';
+import { useAuthRole } from '../hooks/useAuthRole';
 import { historyService, type InventoryRecord } from '../services/HistoryService';
 import { PackagePlus, X, Box, CheckCircle2 } from 'lucide-react';
 import clsx from 'clsx';
@@ -17,6 +18,20 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ isOpen, onClose 
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
 
+    const { isAdmin } = useAuthRole(auth.currentUser);
+
+    React.useEffect(() => {
+        if (isOpen && !isAdmin && auth.currentUser?.email) {
+            const prefix = auth.currentUser.email.split('@')[0].toLowerCase();
+            const branchMap: Record<string, string> = {
+                'sandiego': 'SAN DIEGO',
+                'sanjuan': 'SAN JUAN',
+                'santarita': 'SANTA RITA',
+            };
+            setBranch(branchMap[prefix] || prefix.toUpperCase());
+        }
+    }, [isOpen, isAdmin]);
+
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setLoading(true);
@@ -33,7 +48,7 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ isOpen, onClose 
                 serial,
                 branch,
                 note,
-                user: auth.currentUser?.email || 'Unknown',
+                user: auth.currentUser?.email || 'Desconocido',
             } as InventoryRecord, 'inventory');
 
             setSuccess(true);
@@ -121,7 +136,8 @@ export const InventoryModal: React.FC<InventoryModalProps> = ({ isOpen, onClose 
                                     <select
                                         value={branch}
                                         onChange={e => setBranch(e.target.value)}
-                                        className="w-full bg-[#050505] border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-blue-500/50 outline-none transition-all text-lg appearance-none cursor-pointer"
+                                        disabled={!isAdmin}
+                                        className="w-full bg-[#050505] border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-blue-500/50 outline-none transition-all text-lg appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
                                         required
                                     >
                                         <option value="" disabled>Seleccione Sucursal</option>

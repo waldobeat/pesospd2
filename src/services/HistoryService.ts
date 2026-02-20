@@ -99,7 +99,7 @@ export const historyService = {
                 branch: record.branch || "N/A",
                 note: record.note || "",
                 // ReportedBy is specific to Issue, but we now have generic 'user' on BaseRecord
-                user: record.user || "Anon",
+                user: record.user || "Desconocido",
                 // Keep reportedBy for backward compatibility or specific issue logic if needed
                 reportedBy: 'reportedBy' in record ? (record as IssueRecord).reportedBy : record.user
             };

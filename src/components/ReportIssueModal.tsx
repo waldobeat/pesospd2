@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { auth } from '../firebase';
+import { useAuthRole } from '../hooks/useAuthRole';
 import { historyService, type IssueRecord } from '../services/HistoryService';
 import { AlertTriangle, X, Wrench, Settings, ArrowRightLeft, Cpu, Activity, Send } from 'lucide-react';
 import clsx from 'clsx';
@@ -26,6 +27,20 @@ export const ReportIssueModal: React.FC<ReportIssueModalProps> = ({ isOpen, onCl
     const [description, setDescription] = useState('');
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
+
+    const { isAdmin } = useAuthRole(auth.currentUser);
+
+    React.useEffect(() => {
+        if (isOpen && !isAdmin && auth.currentUser?.email) {
+            const prefix = auth.currentUser.email.split('@')[0].toLowerCase();
+            const branchMap: Record<string, string> = {
+                'sandiego': 'SAN DIEGO',
+                'sanjuan': 'SAN JUAN',
+                'santarita': 'SANTA RITA',
+            };
+            setBranch(branchMap[prefix] || prefix.toUpperCase());
+        }
+    }, [isOpen, isAdmin]);
 
     const generatePDF = (reportStatus: string) => {
         const doc = new jsPDF();
@@ -117,7 +132,7 @@ export const ReportIssueModal: React.FC<ReportIssueModalProps> = ({ isOpen, onCl
                 issueType,
                 description,
                 status: initialStatus,
-                reportedBy: auth.currentUser?.email || 'Unknown',
+                reportedBy: auth.currentUser?.email || 'Desconocido',
                 adminStatusSeen: false,
             } as IssueRecord, 'issue');
 
@@ -225,7 +240,8 @@ export const ReportIssueModal: React.FC<ReportIssueModalProps> = ({ isOpen, onCl
                                     <select
                                         value={branch}
                                         onChange={e => setBranch(e.target.value)}
-                                        className="w-full bg-[#050505] border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-red-500/50 outline-none transition-all text-lg appearance-none cursor-pointer"
+                                        disabled={!isAdmin}
+                                        className="w-full bg-[#050505] border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-red-500/50 outline-none transition-all text-lg appearance-none disabled:opacity-50 disabled:cursor-not-allowed"
                                         required
                                     >
                                         <option value="" disabled>Seleccione Sucursal</option>

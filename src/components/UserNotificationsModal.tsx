@@ -115,9 +115,27 @@ export const UserNotificationsModal: React.FC<UserNotificationsModalProps> = ({ 
                                 </div>
                             </div>
 
-                            {receipt.adminMessage && (
+                            {receipt.adminMessage && !isAdmin && (
                                 <div className="text-sm text-indigo-200/90 bg-indigo-500/10 p-4 rounded-xl border border-indigo-500/20 my-2">
-                                    <span className="font-black uppercase text-[10px] tracking-widest text-indigo-400 block mb-1">Mensaje de Taller</span>
+                                    <span className="font-black uppercase text-[10px] tracking-widest text-indigo-400 block mb-1">
+                                        El Taller te dejó un mensaje:
+                                    </span>
+                                    {receipt.adminMessage}
+                                </div>
+                            )}
+
+                            {receipt.userMessage && isAdmin && (
+                                <div className="text-sm text-blue-200/90 bg-blue-500/10 p-4 rounded-xl border border-blue-500/20 my-2">
+                                    <span className="font-black uppercase text-[10px] tracking-widest text-blue-400 block mb-1">
+                                        Usuario {receipt.reportedBy?.split('@')[0] || receipt.branch || 'Sucursal'} te dejó un mensaje:
+                                    </span>
+                                    {receipt.userMessage}
+                                </div>
+                            )}
+
+                            {receipt.adminMessage && isAdmin && (
+                                <div className="text-sm text-indigo-200/90 bg-indigo-500/10 p-4 rounded-xl border border-indigo-500/20 my-2 opacity-50">
+                                    <span className="font-black uppercase text-[10px] tracking-widest text-indigo-400 block mb-1">Tu último mensaje enviado:</span>
                                     {receipt.adminMessage}
                                 </div>
                             )}
