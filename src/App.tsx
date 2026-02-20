@@ -7,7 +7,7 @@ import { HistoryView } from './components/HistoryView';
 import { ReportIssueModal } from './components/ReportIssueModal';
 import { RepairModule } from './components/RepairModule';
 import { DashboardTicker } from './components/DashboardTicker';
-import { Zap, Beaker, LayoutDashboard, ClipboardCheck, History, Wrench, LogOut, AlertTriangle, Shield, Users } from 'lucide-react';
+import { Zap, LayoutDashboard, ClipboardCheck, History, Wrench, LogOut, AlertTriangle, Shield } from 'lucide-react';
 import clsx from 'clsx';
 import { serialService } from './services/SerialService';
 import { auth } from './firebase'; // Import auth
@@ -23,7 +23,7 @@ function App() {
   // Auth State
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
-  const { role, isAdmin, loading: roleLoading } = useAuthRole(user); // RBAC
+  const { isAdmin } = useAuthRole(user); // RBAC
 
   const {
     weight, unit, isStable, isZero, isNet, isConnected, isConnecting, error,
@@ -157,49 +157,61 @@ function App() {
         />
 
         {/* Controls */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-5xl mx-auto mt-4 px-2">
           {isAdmin && (
             <>
               {!isConnected && !isSimulating ? (
                 <button
                   onClick={() => connect()}
                   disabled={isConnecting}
-                  className="px-6 py-4 bg-blue-600 hover:bg-blue-500 rounded-xl transition-all duration-300 shadow-lg shadow-blue-900/20 flex items-center justify-center gap-2 font-bold text-lg"
+                  className="group relative px-6 py-6 bg-gradient-to-br from-blue-600 to-blue-800 hover:from-blue-500 hover:to-blue-700 rounded-2xl transition-all duration-300 shadow-[0_0_40px_-10px_rgba(59,130,246,0.4)] border border-blue-400/30 flex flex-col items-center justify-center gap-3 font-bold text-lg overflow-hidden"
                 >
-                  <Zap className={clsx("w-5 h-5", isConnecting && "animate-pulse")} />
-                  {isConnecting ? "CONECTANDO..." : "CONECTAR BALANZA"}
+                  <div className="absolute inset-0 bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity"></div>
+                  <div className={clsx("w-12 h-12 rounded-full bg-white/10 flex items-center justify-center", isConnecting && "animate-pulse")}>
+                    <Zap className="w-6 h-6 text-white" />
+                  </div>
+                  <span>{isConnecting ? "CONECTANDO..." : "CONECTAR BALANZA"}</span>
                 </button>
               ) : (
                 <button
                   onClick={isConnected ? disconnect : () => setIsSimulating(false)}
-                  className="px-6 py-4 bg-red-500/10 hover:bg-red-500/20 border border-red-500/50 text-red-500 rounded-xl transition-all duration-300 font-bold text-lg"
+                  className="group relative px-6 py-6 bg-gradient-to-br from-red-900/40 to-red-950/40 hover:from-red-900/60 hover:to-red-950/60 border border-red-500/30 text-red-500 rounded-2xl transition-all duration-300 shadow-[0_0_30px_-10px_rgba(239,68,68,0.2)] flex flex-col items-center justify-center gap-3 font-bold text-lg overflow-hidden"
                 >
-                  {isConnected ? "DESCONECTAR" : "DETENER SIMULACIÓN"}
+                  <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                    <Zap className="w-6 h-6 text-red-500" />
+                  </div>
+                  <span>{isConnected ? "DESCONECTAR" : "DETENER SIMULACIÓN"}</span>
                 </button>
               )}
 
               <button
                 onClick={() => serialService.send('W')}
-                className="px-6 py-4 bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/50 text-yellow-400 rounded-xl transition-all duration-300 font-bold text-lg flex items-center justify-center gap-2 shadow-lg shadow-yellow-900/20"
+                className="group relative px-6 py-6 bg-gradient-to-br from-yellow-600/20 to-yellow-900/20 hover:from-yellow-500/30 hover:to-yellow-800/30 border border-yellow-500/30 text-yellow-400 rounded-2xl transition-all duration-300 shadow-[0_0_30px_-10px_rgba(234,179,8,0.15)] flex flex-col items-center justify-center gap-3 font-bold text-lg overflow-hidden"
               >
-                <Zap className="w-5 h-5" />
-                RESET (W)
+                <div className="w-12 h-12 rounded-full bg-yellow-500/10 flex items-center justify-center group-hover:rotate-12 transition-transform">
+                  <Zap className="w-6 h-6 text-yellow-400" />
+                </div>
+                <span>RESET (W)</span>
               </button>
 
               <button
                 onClick={() => setIsTestWindowOpen(true)}
-                className="px-6 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl transition-all duration-300 font-bold text-lg flex items-center justify-center gap-2"
+                className="group relative px-6 py-6 bg-gradient-to-br from-white/5 to-white/10 hover:from-white/10 hover:to-white/15 border border-white/10 text-white rounded-2xl transition-all duration-300 flex flex-col items-center justify-center gap-3 font-bold text-lg"
               >
-                <LayoutDashboard className="w-5 h-5" />
-                MONITOR SERIAL
+                <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center group-hover:bg-white/10 transition-colors">
+                  <LayoutDashboard className="w-6 h-6 text-white/80" />
+                </div>
+                <span>MONITOR SERIAL</span>
               </button>
 
               <button
                 onClick={() => setIsRepairOpen(true)}
-                className="px-6 py-4 bg-orange-600/20 hover:bg-orange-600/30 border border-orange-500/50 text-orange-300 rounded-xl transition-all duration-300 font-bold text-lg flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-orange-900/20"
+                className="group relative px-6 py-6 bg-gradient-to-br from-orange-600/20 to-orange-900/20 hover:from-orange-500/30 hover:to-orange-800/30 border border-orange-500/30 text-orange-400 rounded-2xl transition-all duration-300 shadow-[0_0_30px_-10px_rgba(249,115,22,0.15)] flex flex-col items-center justify-center gap-3 font-bold text-lg"
               >
-                <Wrench className="w-5 h-5" />
-                PROCESOS MANUALES
+                <div className="w-12 h-12 rounded-full bg-orange-500/10 flex items-center justify-center group-hover:rotate-45 transition-transform duration-500">
+                  <Wrench className="w-6 h-6 text-orange-400" />
+                </div>
+                <span>PROCESO MANUAL</span>
               </button>
             </>
           )}
@@ -207,18 +219,22 @@ function App() {
           {/* Available to All Users (Standard & Admin) */}
           <button
             onClick={() => setIsIssueOpen(true)}
-            className="px-6 py-4 bg-red-600/20 hover:bg-red-600/30 border border-red-500/50 text-red-300 rounded-xl transition-all duration-300 font-bold text-lg flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-red-900/20"
+            className="group relative px-6 py-6 bg-gradient-to-br from-red-600/20 to-red-900/20 hover:from-red-500/30 hover:to-red-800/30 border border-red-500/30 text-red-400 rounded-2xl transition-all duration-300 shadow-[0_0_30px_-10px_rgba(239,68,68,0.15)] flex flex-col items-center justify-center gap-3 font-bold text-lg"
           >
-            <AlertTriangle className="w-5 h-5" />
-            REPORTAR AVERÍA
+            <div className="w-12 h-12 rounded-full bg-red-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+              <AlertTriangle className="w-6 h-6 text-red-500" />
+            </div>
+            <span>REPORTAR AVERÍA</span>
           </button>
 
           <button
             onClick={() => setIsHistoryOpen(true)}
-            className="col-span-1 md:col-span-2 px-6 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl transition-all duration-300 font-bold text-lg flex items-center justify-center gap-2"
+            className="group relative px-6 py-6 bg-gradient-to-br from-white/5 to-white/10 hover:from-white/10 hover:to-white/15 border border-white/10 text-white rounded-2xl transition-all duration-300 flex flex-col items-center justify-center gap-3 font-bold text-lg"
           >
-            <History className="w-5 h-5" />
-            HISTORIAL DE OPERACIONES
+            <div className="w-12 h-12 rounded-full bg-white/5 flex items-center justify-center group-hover:-translate-y-1 transition-transform">
+              <History className="w-6 h-6 text-white/80" />
+            </div>
+            <span>HISTORIAL</span>
           </button>
 
           {isAdmin && (
@@ -228,18 +244,22 @@ function App() {
                   serialService.send('W');
                   setIsCalibrationOpen(true);
                 }}
-                className="col-span-1 md:col-span-2 px-6 py-4 bg-purple-600/20 hover:bg-purple-600/30 border border-purple-500/50 text-purple-300 rounded-xl transition-all duration-300 font-bold text-lg flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-purple-900/20"
+                className="group relative px-6 py-6 bg-gradient-to-br from-purple-600/20 to-purple-900/20 hover:from-purple-500/30 hover:to-purple-800/30 border border-purple-500/30 text-purple-400 rounded-2xl transition-all duration-300 shadow-[0_0_30px_-10px_rgba(168,85,247,0.15)] flex flex-col items-center justify-center gap-3 font-bold text-lg"
               >
-                <ClipboardCheck className="w-5 h-5" />
-                PRUEBA DE 3 PUNTOS
+                <div className="w-12 h-12 rounded-full bg-purple-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <ClipboardCheck className="w-6 h-6 text-purple-400" />
+                </div>
+                <span>CALIBRACIÓN</span>
               </button>
 
               <button
                 onClick={() => setIsUserMgmtOpen(true)}
-                className="col-span-1 md:col-span-2 px-6 py-4 bg-blue-600/20 hover:bg-blue-600/30 border border-blue-500/50 text-blue-300 rounded-xl transition-all duration-300 font-bold text-lg flex items-center justify-center gap-2 hover:shadow-lg hover:shadow-blue-900/20"
+                className="group relative px-6 py-6 bg-gradient-to-br from-teal-600/20 to-teal-900/20 hover:from-teal-500/30 hover:to-teal-800/30 border border-teal-500/30 text-teal-400 rounded-2xl transition-all duration-300 shadow-[0_0_30px_-10px_rgba(20,184,166,0.15)] flex flex-col items-center justify-center gap-3 font-bold text-lg"
               >
-                <Shield className="w-5 h-5" />
-                GESTIÓN DE USUARIOS
+                <div className="w-12 h-12 rounded-full bg-teal-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                  <Shield className="w-6 h-6 text-teal-400" />
+                </div>
+                <span>USUARIOS</span>
               </button>
             </>
           )}

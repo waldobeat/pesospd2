@@ -29,8 +29,10 @@ export interface IssueRecord extends BaseRecord {
     type: 'issue';
     issueType: 'damaged_scale' | 'weight_error' | 'component_failure' | 'other';
     description: string;
-    status: 'open' | 'in_repair' | 'resolved'; // Default 'open'
+    status: 'en_proceso' | 'recibido' | 'en_taller' | 'resuelto' | 'dado_de_baja';
     reportedBy?: string;
+    diagnostic?: string;
+    solution?: string;
 }
 
 export type HistoryItem = CalibrationRecord | RepairRecord | IssueRecord;

@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { auth } from '../firebase';
 import { useAuthRole } from '../hooks/useAuthRole';
 import { historyService, type HistoryItem } from '../services/HistoryService';
-import { X, Trash2, FileText, Search, FileDown, Wrench, CheckCircle, AlertTriangle } from 'lucide-react';
+import { X, Trash2, FileText, Search, FileDown, Wrench, CheckCircle, AlertTriangle, Edit } from 'lucide-react';
 import clsx from 'clsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -71,8 +71,11 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                 status = r.repaired ? "Reparado" : "Pendiente";
                 detail = r.diagnosis;
             } else if (r.type === 'issue') {
-                status = r.status === 'resolved' ? "Resuelto" : r.status === 'in_repair' ? "En Taller" : "Abierto";
-                detail = r.description;
+                status = r.status === 'resuelto' ? "Resuelto" :
+                    r.status === 'en_taller' ? "En Taller" :
+                        r.status === 'recibido' ? "Recibido" :
+                            r.status === 'dado_de_baja' ? "Dado de Baja" : "En Proceso";
+                detail = `${r.description} | Diag: ${r.diagnostic || 'N/A'} | Sol: ${r.solution || 'N/A'}`;
             } else {
                 // Calibration
                 status = r.passed ? "Aprobado" : "Fallido";
@@ -117,7 +120,8 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
         r.model.toLowerCase().includes(searchTerm.toLowerCase()) ||
         r.note.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (r.user && r.user.toLowerCase().includes(searchTerm.toLowerCase())) ||
-        (r.type === 'repair' && (r.diagnosis.toLowerCase().includes(searchTerm.toLowerCase()) || r.solution.toLowerCase().includes(searchTerm.toLowerCase())))
+        (r.type === 'repair' && (r.diagnosis.toLowerCase().includes(searchTerm.toLowerCase()) || r.solution.toLowerCase().includes(searchTerm.toLowerCase()))) ||
+        (r.type === 'issue' && ((r.diagnostic && r.diagnostic.toLowerCase().includes(searchTerm.toLowerCase())) || (r.solution && r.solution.toLowerCase().includes(searchTerm.toLowerCase()))))
     );
 
     if (!isOpen) return null;
@@ -251,21 +255,29 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                                             }
                                                         }}
                                                         className={clsx("inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium cursor-pointer bg-black/50 border border-white/10 outline-none",
-                                                            record.status === 'resolved' ? "text-green-400" :
-                                                                record.status === 'in_repair' ? "text-orange-400" : "text-red-400"
+                                                            record.status === 'resuelto' ? "text-green-400" :
+                                                                record.status === 'en_taller' ? "text-orange-400" :
+                                                                    record.status === 'recibido' ? "text-blue-400" :
+                                                                        record.status === 'dado_de_baja' ? "text-gray-400" : "text-yellow-400"
                                                         )}
                                                     >
-                                                        <option value="open">Abierto</option>
-                                                        <option value="in_repair">En Taller</option>
-                                                        <option value="resolved">Resuelto</option>
+                                                        <option value="en_proceso">En Proceso</option>
+                                                        <option value="recibido">Recibido</option>
+                                                        <option value="en_taller">En Taller</option>
+                                                        <option value="resuelto">Resuelto</option>
+                                                        <option value="dado_de_baja">Dado de Baja</option>
                                                     </select>
                                                 ) : (
                                                     <span className={clsx("inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium",
-                                                        record.status === 'resolved' ? "bg-green-500/10 text-green-400" :
-                                                            record.status === 'in_repair' ? "bg-orange-500/10 text-orange-400" : "bg-red-500/10 text-red-400"
+                                                        record.status === 'resuelto' ? "bg-green-500/10 text-green-400" :
+                                                            record.status === 'en_taller' ? "bg-orange-500/10 text-orange-400" :
+                                                                record.status === 'recibido' ? "bg-blue-500/10 text-blue-400" :
+                                                                    record.status === 'dado_de_baja' ? "bg-gray-500/10 text-gray-400" : "bg-yellow-500/10 text-yellow-400"
                                                     )}>
-                                                        {record.status === 'resolved' ? "Resuelto" :
-                                                            record.status === 'in_repair' ? "En Taller" : "Abierto"}
+                                                        {record.status === 'resuelto' ? "Resuelto" :
+                                                            record.status === 'en_taller' ? "En Taller" :
+                                                                record.status === 'recibido' ? "Recibido" :
+                                                                    record.status === 'dado_de_baja' ? "Dado de Baja" : "En Proceso"}
                                                     </span>
                                                 )
                                             ) : (
@@ -280,8 +292,10 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                                     <span className="text-orange-300/50">Diag:</span> {record.diagnosis}
                                                 </div>
                                             ) : record.type === 'issue' ? (
-                                                <div className="truncate text-white/50" title={record.description}>
-                                                    <span className="text-red-300/50">Fallo:</span> {record.description}
+                                                <div className="text-white/80" title={record.description}>
+                                                    <div><span className="text-red-400 font-medium">Fallo:</span> {record.description}</div>
+                                                    {record.diagnostic && <div className="mt-1"><span className="text-orange-400 font-medium">Diag:</span> <span className="text-white/60">{record.diagnostic}</span></div>}
+                                                    {record.solution && <div className="mt-1"><span className="text-green-400 font-medium">Solución:</span> <span className="text-white/60">{record.solution}</span></div>}
                                                 </div>
                                             ) : (
                                                 <div className="truncate text-white/50">
@@ -290,13 +304,33 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                             )}
                                         </td>
                                         <td className="p-4 text-center">
-                                            <button
-                                                onClick={() => handleDelete(record.id)}
-                                                className="p-2 hover:bg-red-500/20 text-white/20 hover:text-red-400 rounded-lg transition-all opacity-0 group-hover:opacity-100"
-                                                title="Eliminar Registro"
-                                            >
-                                                <Trash2 className="w-4 h-4" />
-                                            </button>
+                                            <div className="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                                {isAdmin && record.type === 'issue' && (
+                                                    <button
+                                                        onClick={async () => {
+                                                            const newDiag = prompt("Ingrese Diagnóstico:", record.diagnostic || "");
+                                                            if (newDiag !== null) {
+                                                                const newSol = prompt("Ingrese Solución:", record.solution || "");
+                                                                if (newSol !== null) {
+                                                                    await historyService.update(record.id, { diagnostic: newDiag, solution: newSol });
+                                                                    loadRecords();
+                                                                }
+                                                            }
+                                                        }}
+                                                        className="p-2 bg-blue-500/10 hover:bg-blue-500/30 text-blue-400 rounded-lg transition-all"
+                                                        title="Editar Diagnóstico y Solución"
+                                                    >
+                                                        <Edit className="w-4 h-4" />
+                                                    </button>
+                                                )}
+                                                <button
+                                                    onClick={() => handleDelete(record.id)}
+                                                    className="p-2 bg-red-500/10 hover:bg-red-500/30 text-red-400 rounded-lg transition-all"
+                                                    title="Eliminar Registro"
+                                                >
+                                                    <Trash2 className="w-4 h-4" />
+                                                </button>
+                                            </div>
                                         </td>
                                     </tr>
                                 ))

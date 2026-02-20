@@ -14,7 +14,6 @@ export const ReportIssueModal: React.FC<ReportIssueModalProps> = ({ isOpen, onCl
     const [serial, setSerial] = useState("");
     const [issueType, setIssueType] = useState<IssueRecord['issueType']>('weight_error');
     const [description, setDescription] = useState("");
-    const [sendToRepair, setSendToRepair] = useState(false);
 
     const [loading, setLoading] = useState(false);
     const [success, setSuccess] = useState(false);
@@ -31,7 +30,7 @@ export const ReportIssueModal: React.FC<ReportIssueModalProps> = ({ isOpen, onCl
                 note: description, // Mapping description to note for BaseRecord compatibility
                 issueType,
                 description,
-                status: sendToRepair ? 'in_repair' : 'open',
+                status: 'en_proceso',
                 reportedBy: auth.currentUser?.email || "Usuario Estándar",
                 user: auth.currentUser?.email || "Usuario Estándar"
             }, 'issue');
@@ -55,7 +54,6 @@ export const ReportIssueModal: React.FC<ReportIssueModalProps> = ({ isOpen, onCl
         setSerial("");
         setDescription("");
         setIssueType('weight_error');
-        setSendToRepair(false);
     };
 
     if (!isOpen) return null;
@@ -136,18 +134,7 @@ export const ReportIssueModal: React.FC<ReportIssueModalProps> = ({ isOpen, onCl
                                 />
                             </div>
 
-                            <div className="flex items-center gap-3 p-4 bg-white/5 rounded-xl border border-white/5 hover:border-white/10 transition-colors cursor-pointer" onClick={() => setSendToRepair(!sendToRepair)}>
-                                <div className={clsx(
-                                    "w-5 h-5 rounded border flex items-center justify-center transition-colors",
-                                    sendToRepair ? "bg-red-500 border-red-500" : "border-white/30"
-                                )}>
-                                    {sendToRepair && <CheckCircle className="w-3 h-3 text-white" />}
-                                </div>
-                                <div>
-                                    <span className="block text-sm font-bold text-white">Marcar 'Enviado a Reparación'</span>
-                                    <span className="block text-xs text-white/40">Cambia el estado inmediato a reparación</span>
-                                </div>
-                            </div>
+
 
                             <button
                                 type="submit"
