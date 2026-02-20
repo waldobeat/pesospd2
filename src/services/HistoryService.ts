@@ -37,6 +37,7 @@ export interface IssueRecord extends BaseRecord {
     diagnostic?: string;
     solution?: string;
     adminMessage?: string;
+    userMessage?: string; // Dos vías: mensaje del usuario hacia el admin
     trackingNumber?: string; // Guía de retorno
     needsReturn?: boolean; // If it needs tracking upon completing repair
 }

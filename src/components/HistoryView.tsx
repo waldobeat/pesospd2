@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { auth } from '../firebase';
 import { useAuthRole } from '../hooks/useAuthRole';
 import { historyService, type HistoryItem, type IssueRecord } from '../services/HistoryService';
-import { X, Calendar, ClipboardCheck, Wrench, AlertTriangle, Trash2, Download, Search, Edit3, MessageSquare, PackagePlus } from 'lucide-react';
+import { X, Calendar, ClipboardCheck, Wrench, AlertTriangle, Trash2, Download, Search, MessageSquare, PackagePlus } from 'lucide-react';
 import clsx from 'clsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -247,9 +247,11 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                             </span>
                                         </td>
                                         <td className="p-4">
-                                            <div className="text-sm font-medium text-white/80">{record.user || "N/A"}</div>
+                                            <div className="text-sm font-medium text-white/80">
+                                                {record.user && record.user !== 'Anon' ? record.user.split('@')[0] : "Anon"}
+                                            </div>
                                             <div className="text-xs text-white/30 truncate max-w-[150px]">
-                                                {record.user === 'admin@sisdepe.com' ? 'Administrador' : 'Técnico'}
+                                                {record.user === 'admin@sisdepe.com' ? 'Administrador' : 'Usuario'}
                                             </div>
                                         </td>
                                         <td className="p-4">
@@ -334,8 +336,20 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                                             <div className="absolute inset-0 bg-gradient-to-r from-green-500/5 to-transparent"></div>
                                                             <MessageSquare className="w-5 h-5 text-green-400 shrink-0 relative z-10" />
                                                             <div className="relative z-10">
-                                                                <span className="text-[10px] uppercase tracking-wider text-green-400/80 font-black block mb-1">Mensaje de Resolución (Admin)</span>
+                                                                <span className="text-[10px] uppercase tracking-wider text-green-400/80 font-black block mb-1">Mensaje de Resolución (Taller)</span>
                                                                 <p className="text-green-50/90 text-sm font-medium whitespace-pre-wrap">{(record as IssueRecord).adminMessage}</p>
+                                                            </div>
+                                                        </div>
+                                                    )}
+
+                                                    {/* User Message Highlight */}
+                                                    {(record as IssueRecord).userMessage && (
+                                                        <div className="mt-2 p-4 bg-blue-500/10 rounded-xl border border-blue-500/30 flex gap-3 relative overflow-hidden group">
+                                                            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-transparent"></div>
+                                                            <MessageSquare className="w-5 h-5 text-blue-400 shrink-0 relative z-10" />
+                                                            <div className="relative z-10">
+                                                                <span className="text-[10px] uppercase tracking-wider text-blue-400/80 font-black block mb-1">Mensaje del Usuario</span>
+                                                                <p className="text-blue-50/90 text-sm font-medium whitespace-pre-wrap">{(record as IssueRecord).userMessage}</p>
                                                             </div>
                                                         </div>
                                                     )}
@@ -348,116 +362,169 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                         </td>
                                         <td className="p-4 text-center">
                                             <div className="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                {isAdmin && record.type === 'issue' && (
-                                                    <div className="mt-4 pt-4 border-t border-white/10 flex justify-end gap-2 text-sm">
-                                                        <div className="flex flex-col gap-2 w-full max-w-[200px] ml-auto">
+                                                {record.type === 'issue' && (
+                                                    <div className="flex flex-col gap-2 w-full max-w-[200px] mx-auto text-sm">
 
-                                                            {record.status === 'enviado_a_taller' && (
-                                                                <button
-                                                                    onClick={async () => {
-                                                                        if (confirm("¿Confirmar recepción de equipo en taller?")) {
-                                                                            await historyService.update(record.id!, { status: 'en_taller', statusSeen: false });
-                                                                            loadRecords();
-                                                                        }
-                                                                    }}
-                                                                    className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-lg shadow-lg"
-                                                                >
-                                                                    RECIBIR EN TALLER
-                                                                </button>
-                                                            )}
-
-                                                            {record.status === 'en_taller' && (
-                                                                <button
-                                                                    onClick={async () => {
-                                                                        const diag = prompt("Escriba el diagnóstico de la reparación:", record.diagnostic || "");
-                                                                        if (diag === null) return;
-                                                                        const sol = prompt("Escriba la solución aplicada:", record.solution || "");
-                                                                        if (sol === null) return;
-
-                                                                        if (confirm("¿Marcar equipo como REPARADO?")) {
-                                                                            await historyService.update(record.id!, {
-                                                                                status: 'reparado',
-                                                                                diagnostic: diag,
-                                                                                solution: sol,
-                                                                                statusSeen: false
-                                                                            });
-                                                                            loadRecords();
-                                                                        }
-                                                                    }}
-                                                                    className="w-full py-2 bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold rounded-lg shadow-lg"
-                                                                >
-                                                                    MARCAR REPARADO
-                                                                </button>
-                                                            )}
-
-                                                            {record.status === 'reparado' && (
-                                                                <button
-                                                                    onClick={async () => {
-                                                                        const tracking = prompt("Ingrese el Número de Guía o Transferencia para el envío a la sucursal:");
-                                                                        if (!tracking) {
-                                                                            alert("Debe ingresar un número de guía para proceder con el envío.");
-                                                                            return;
-                                                                        }
-                                                                        const msg = prompt("Mensaje de cierre para el usuario (opcional):", "Equipo reparado. Por favor confirme recepción al llegar.");
-                                                                        if (confirm(`¿Proceder con el envío (Guía: ${tracking})?`)) {
-                                                                            await historyService.update(record.id!, {
-                                                                                status: 'enviado_a_sucursal',
-                                                                                trackingNumber: tracking,
-                                                                                adminMessage: msg || undefined,
-                                                                                statusSeen: false
-                                                                            });
-                                                                            loadRecords();
-                                                                        }
-                                                                    }}
-                                                                    className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg shadow-lg"
-                                                                >
-                                                                    ENVIAR A SUCURSAL
-                                                                </button>
-                                                            )}
-
-                                                            {record.status !== 'dado_de_baja' && (
-                                                                <button
-                                                                    onClick={async () => {
-                                                                        const confirmacion = prompt("ATENCIÓN: Para dar de baja, escriba 'BAJA':");
-                                                                        if (confirmacion === 'BAJA') {
-                                                                            const motive = prompt("Motivo de la baja definitiva:");
-                                                                            await historyService.update(record.id!, {
-                                                                                status: 'dado_de_baja',
-                                                                                adminMessage: motive ? `BAJA DEFINITIVA: ${motive}` : 'Equipo desincorporado.',
-                                                                                statusSeen: false
-                                                                            });
-                                                                            loadRecords();
-                                                                        }
-                                                                    }}
-                                                                    className="w-full py-1.5 mt-2 bg-red-950/40 border border-red-500/20 text-red-500/70 hover:bg-red-900 border hover:border-red-500 hover:text-white text-[10px] font-bold rounded-lg transition-all"
-                                                                >
-                                                                    DAR DE BAJA
-                                                                </button>
-                                                            )}
-
-                                                        </div>
-
-                                                        <button
-                                                            onClick={async () => {
-                                                                const newDiag = prompt("Ingrese Diagnóstico:", record.diagnostic || "");
-                                                                if (newDiag !== null) {
-                                                                    const newSol = prompt("Ingrese Solución:", record.solution || "");
-                                                                    if (newSol !== null) {
-                                                                        let adminMsg = (record as IssueRecord).adminMessage;
-                                                                        if (record.status === 'dado_de_baja') {
-                                                                            adminMsg = prompt("Editar mensaje de Resolución (Admin):", (record as IssueRecord).adminMessage || "") || undefined;
-                                                                        }
-
-                                                                        await historyService.update(record.id!, { diagnostic: newDiag, solution: newSol, adminMessage: adminMsg });
+                                                        {!isAdmin && record.status === 'pendiente_envio' && (
+                                                            <button
+                                                                onClick={async () => {
+                                                                    if (confirm("¿Confirmar que el equipo ha sido enviado físicamente al taller?")) {
+                                                                        await historyService.update(record.id!, {
+                                                                            status: 'enviado_a_taller',
+                                                                            adminStatusSeen: false
+                                                                        });
                                                                         loadRecords();
                                                                     }
-                                                                }
-                                                            }}
-                                                            className="px-3 py-1.5 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg font-bold transition-colors flex items-center gap-2 ml-4"
-                                                        >
-                                                            <Edit3 className="w-4 h-4 mr-1" />
-                                                            Editar Info
-                                                        </button>
+                                                                }}
+                                                                className="w-full py-2 bg-yellow-600 hover:bg-yellow-500 text-white text-xs font-bold rounded-lg shadow-[0_0_15px_rgba(202,138,4,0.3)] transition-all"
+                                                            >
+                                                                MARCAR ENVIADO A TALLER
+                                                            </button>
+                                                        )}
+
+                                                        {isAdmin && (
+                                                            <>
+                                                                {record.status === 'enviado_a_taller' && (
+                                                                    <button
+                                                                        onClick={async () => {
+                                                                            if (confirm("¿Confirmar recepción de equipo en taller?")) {
+                                                                                await historyService.update(record.id!, { status: 'en_taller', statusSeen: false });
+                                                                                loadRecords();
+                                                                            }
+                                                                        }}
+                                                                        className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-lg shadow-lg"
+                                                                    >
+                                                                        RECIBIR EN TALLER
+                                                                    </button>
+                                                                )}
+
+                                                                {record.status === 'en_taller' && (
+                                                                    <button
+                                                                        onClick={async () => {
+                                                                            const diag = prompt("Escriba el diagnóstico de la reparación:", record.diagnostic || "");
+                                                                            if (diag === null) return;
+                                                                            const sol = prompt("Escriba la solución aplicada:", record.solution || "");
+                                                                            if (sol === null) return;
+
+                                                                            if (confirm("¿Marcar equipo como REPARADO?")) {
+                                                                                await historyService.update(record.id!, {
+                                                                                    status: 'reparado',
+                                                                                    diagnostic: diag,
+                                                                                    solution: sol,
+                                                                                    statusSeen: false
+                                                                                });
+                                                                                loadRecords();
+                                                                            }
+                                                                        }}
+                                                                        className="w-full py-2 bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold rounded-lg shadow-lg"
+                                                                    >
+                                                                        MARCAR REPARADO
+                                                                    </button>
+                                                                )}
+
+                                                                {record.status === 'reparado' && (
+                                                                    <button
+                                                                        onClick={async () => {
+                                                                            const tracking = prompt("Ingrese el Número de Guía o Transferencia para el envío a la sucursal:");
+                                                                            if (!tracking) {
+                                                                                alert("Debe ingresar un número de guía para proceder con el envío.");
+                                                                                return;
+                                                                            }
+                                                                            const msg = prompt("Mensaje de cierre para el usuario (opcional):", "Equipo reparado. Por favor confirme recepción al llegar.");
+                                                                            if (confirm(`¿Proceder con el envío(Guía: ${tracking}) ? `)) {
+                                                                                await historyService.update(record.id!, {
+                                                                                    status: 'enviado_a_sucursal',
+                                                                                    trackingNumber: tracking,
+                                                                                    adminMessage: msg || undefined,
+                                                                                    statusSeen: false
+                                                                                });
+                                                                                loadRecords();
+                                                                            }
+                                                                        }}
+                                                                        className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg shadow-lg"
+                                                                    >
+                                                                        ENVIAR A SUCURSAL
+                                                                    </button>
+                                                                )}
+
+                                                                {record.status !== 'dado_de_baja' && (
+                                                                    <button
+                                                                        onClick={async () => {
+                                                                            const confirmacion = prompt("ATENCIÓN: Para dar de baja, escriba 'BAJA':");
+                                                                            if (confirmacion === 'BAJA') {
+                                                                                const motive = prompt("Motivo de la baja definitiva:");
+                                                                                await historyService.update(record.id!, {
+                                                                                    status: 'dado_de_baja',
+                                                                                    adminMessage: motive ? `BAJA DEFINITIVA: ${motive} ` : 'Equipo desincorporado.',
+                                                                                    statusSeen: false
+                                                                                });
+                                                                                loadRecords();
+                                                                            }
+                                                                        }}
+                                                                        className="w-full py-1.5 mt-2 bg-red-950/40 border border-red-500/20 text-red-500/70 hover:bg-red-900 border hover:border-red-500 hover:text-white text-[10px] font-bold rounded-lg transition-all"
+                                                                    >
+                                                                        DAR DE BAJA
+                                                                    </button>
+                                                                )}
+
+                                                                <button
+                                                                    onClick={async () => {
+                                                                        const adminMsg = prompt("Enviar mensaje al Usuario sobre este equipo:", (record as IssueRecord).adminMessage || "");
+                                                                        if (adminMsg !== null) {
+                                                                            await historyService.update(record.id!, {
+                                                                                adminMessage: adminMsg,
+                                                                                statusSeen: false
+                                                                            });
+                                                                            loadRecords();
+                                                                        }
+                                                                    }}
+                                                                    className="w-full py-1.5 mt-2 bg-green-500/10 hover:bg-green-500/20 text-green-300 border border-green-500/20 text-[10px] font-bold rounded-lg transition-all"
+                                                                >
+                                                                    MENSAJE AL USUARIO
+                                                                </button>
+
+                                                                <button
+                                                                    onClick={async () => {
+                                                                        const newDiag = prompt("Ingrese Diagnóstico:", record.diagnostic || "");
+                                                                        if (newDiag !== null) {
+                                                                            const newSol = prompt("Ingrese Solución:", record.solution || "");
+                                                                            if (newSol !== null) {
+                                                                                let adminMsg = (record as IssueRecord).adminMessage;
+                                                                                if (record.status === 'dado_de_baja') {
+                                                                                    adminMsg = prompt("Editar mensaje de Resolución (Admin):", (record as IssueRecord).adminMessage || "") || undefined;
+                                                                                }
+
+                                                                                await historyService.update(record.id!, { diagnostic: newDiag, solution: newSol, adminMessage: adminMsg });
+                                                                                loadRecords();
+                                                                            }
+                                                                        }
+                                                                    }}
+                                                                    className="w-full py-1.5 mt-2 bg-white/5 border border-white/10 text-white/50 hover:bg-white/10 hover:text-white text-[10px] font-bold rounded-lg transition-all"
+                                                                >
+                                                                    EDITAR REPORTE
+                                                                </button>
+                                                            </>
+                                                        )}
+
+                                                        {/* User Chat Button */}
+                                                        {!isAdmin && record.status !== 'dado_de_baja' && record.status !== 'pendiente_envio' && record.status !== 'recibido_en_sucursal' && (
+                                                            <button
+                                                                onClick={async () => {
+                                                                    const userMsg = prompt("Enviar mensaje al Taller sobre este equipo:", (record as IssueRecord).userMessage || "");
+                                                                    if (userMsg !== null) {
+                                                                        await historyService.update(record.id!, {
+                                                                            userMessage: userMsg,
+                                                                            adminStatusSeen: false
+                                                                        });
+                                                                        loadRecords();
+                                                                    }
+                                                                }}
+                                                                className="w-full py-1.5 mt-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 border border-blue-500/20 text-[10px] font-bold rounded-lg transition-all"
+                                                            >
+                                                                MENSAJE AL TALLER
+                                                            </button>
+                                                        )}
+
                                                     </div>
                                                 )}
                                                 <button
