@@ -6,6 +6,7 @@ import { X, Calendar, ClipboardCheck, Wrench, AlertTriangle, Trash2, Download, S
 import clsx from 'clsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
+import { TicketChatModal } from './TicketChatModal';
 
 interface HistoryViewProps {
     isOpen: boolean;
@@ -16,6 +17,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
     const [records, setRecords] = useState<HistoryItem[]>([]);
     const [searchTerm, setSearchTerm] = useState("");
     const [loading, setLoading] = useState(false);
+    const [chatTicket, setChatTicket] = useState<IssueRecord | null>(null);
 
     // Get Current User Role for Filtering
     const { isAdmin } = useAuthRole(auth.currentUser);
@@ -330,29 +332,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                                         </div>
                                                     )}
 
-                                                    {/* Admin Message Highlight */}
-                                                    {(record as IssueRecord).adminMessage && (
-                                                        <div className="mt-4 p-4 bg-green-500/10 rounded-xl border border-green-500/30 flex gap-3 relative overflow-hidden group">
-                                                            <div className="absolute inset-0 bg-gradient-to-r from-green-500/5 to-transparent"></div>
-                                                            <MessageSquare className="w-5 h-5 text-green-400 shrink-0 relative z-10" />
-                                                            <div className="relative z-10">
-                                                                <span className="text-[10px] uppercase tracking-wider text-green-400/80 font-black block mb-1">Mensaje de Resolución (Taller)</span>
-                                                                <p className="text-green-50/90 text-sm font-medium whitespace-pre-wrap">{(record as IssueRecord).adminMessage}</p>
-                                                            </div>
-                                                        </div>
-                                                    )}
 
-                                                    {/* User Message Highlight */}
-                                                    {(record as IssueRecord).userMessage && (
-                                                        <div className="mt-2 p-4 bg-blue-500/10 rounded-xl border border-blue-500/30 flex gap-3 relative overflow-hidden group">
-                                                            <div className="absolute inset-0 bg-gradient-to-r from-blue-500/5 to-transparent"></div>
-                                                            <MessageSquare className="w-5 h-5 text-blue-400 shrink-0 relative z-10" />
-                                                            <div className="relative z-10">
-                                                                <span className="text-[10px] uppercase tracking-wider text-blue-400/80 font-black block mb-1">Mensaje del Usuario</span>
-                                                                <p className="text-blue-50/90 text-sm font-medium whitespace-pre-wrap">{(record as IssueRecord).userMessage}</p>
-                                                            </div>
-                                                        </div>
-                                                    )}
                                                 </div>
                                             ) : (
                                                 <div className="truncate text-white/50">
@@ -467,21 +447,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                                                     </button>
                                                                 )}
 
-                                                                <button
-                                                                    onClick={async () => {
-                                                                        const adminMsg = prompt("Enviar mensaje al Usuario sobre este equipo:", (record as IssueRecord).adminMessage || "");
-                                                                        if (adminMsg !== null) {
-                                                                            await historyService.update(record.id!, {
-                                                                                adminMessage: adminMsg,
-                                                                                statusSeen: false
-                                                                            });
-                                                                            loadRecords();
-                                                                        }
-                                                                    }}
-                                                                    className="w-full py-1.5 mt-2 bg-green-500/10 hover:bg-green-500/20 text-green-300 border border-green-500/20 text-[10px] font-bold rounded-lg transition-all"
-                                                                >
-                                                                    MENSAJE AL USUARIO
-                                                                </button>
+
 
                                                                 <button
                                                                     onClick={async () => {
@@ -506,22 +472,14 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                                             </>
                                                         )}
 
-                                                        {/* User Chat Button */}
-                                                        {!isAdmin && record.status !== 'dado_de_baja' && record.status !== 'pendiente_envio' && record.status !== 'recibido_en_sucursal' && (
+                                                        {/* Chat Activation */}
+                                                        {record.status !== 'pendiente_envio' && (
                                                             <button
-                                                                onClick={async () => {
-                                                                    const userMsg = prompt("Enviar mensaje al Taller sobre este equipo:", (record as IssueRecord).userMessage || "");
-                                                                    if (userMsg !== null) {
-                                                                        await historyService.update(record.id!, {
-                                                                            userMessage: userMsg,
-                                                                            adminStatusSeen: false
-                                                                        });
-                                                                        loadRecords();
-                                                                    }
-                                                                }}
-                                                                className="w-full py-1.5 mt-2 bg-blue-500/10 hover:bg-blue-500/20 text-blue-300 border border-blue-500/20 text-[10px] font-bold rounded-lg transition-all"
+                                                                onClick={() => setChatTicket(record as IssueRecord)}
+                                                                className="w-full py-1.5 mt-2 bg-[#18181b] border border-[#27272a] hover:border-blue-500/50 hover:bg-black/50 text-white/70 hover:text-white text-[10px] font-bold rounded-lg transition-all flex items-center justify-center gap-2"
                                                             >
-                                                                MENSAJE AL TALLER
+                                                                <MessageSquare className="w-3 h-3" />
+                                                                CHAT DE TICKET
                                                             </button>
                                                         )}
 
@@ -548,6 +506,14 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                     Sincronizado con Firebase Cloud
                 </div>
             </div>
+            {/* Embedded Floating Chat */}
+            <TicketChatModal
+                isOpen={!!chatTicket}
+                onClose={() => setChatTicket(null)}
+                record={chatTicket}
+                isAdmin={isAdmin}
+                onUpdate={loadRecords}
+            />
         </div>
     );
 };
