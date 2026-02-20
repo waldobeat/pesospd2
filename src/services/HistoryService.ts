@@ -39,7 +39,12 @@ export interface IssueRecord extends BaseRecord {
     needsReturn?: boolean; // If it needs tracking upon completing repair
 }
 
-export type HistoryItem = CalibrationRecord | RepairRecord | IssueRecord;
+export interface InventoryRecord extends BaseRecord {
+    type: 'inventory';
+    // BaseRecord already has model, serial, branch, and user
+}
+
+export type HistoryItem = CalibrationRecord | RepairRecord | IssueRecord | InventoryRecord;
 
 const COLLECTION_NAME = 'history';
 
@@ -78,7 +83,7 @@ export const historyService = {
         }
     },
 
-    save: async (record: Omit<CalibrationRecord, 'id' | 'date' | 'type'> | Omit<RepairRecord, 'id' | 'date' | 'type'> | Omit<IssueRecord, 'id' | 'date' | 'type'>, type: 'calibration' | 'repair' | 'issue'): Promise<HistoryItem | null> => {
+    save: async (record: Omit<CalibrationRecord, 'id' | 'date' | 'type'> | Omit<RepairRecord, 'id' | 'date' | 'type'> | Omit<IssueRecord, 'id' | 'date' | 'type'> | Omit<InventoryRecord, 'id' | 'date' | 'type'>, type: 'calibration' | 'repair' | 'issue' | 'inventory'): Promise<HistoryItem | null> => {
         try {
             const date = new Date().toISOString();
             // Sanitize data: Firestore does not accept 'undefined'

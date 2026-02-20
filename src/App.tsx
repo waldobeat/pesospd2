@@ -6,13 +6,13 @@ import { CalibrationTest } from './components/CalibrationTest';
 import { HistoryView } from './components/HistoryView';
 import { ReportIssueModal } from './components/ReportIssueModal';
 import { RepairModule } from './components/RepairModule';
-import { DashboardTicker } from './components/DashboardTicker';
-import { AlertTriangle, Shield, CheckCircle2, Truck, Zap, LayoutDashboard, ClipboardCheck, History, Wrench, LogOut } from 'lucide-react';
+import { UserNotificationsModal } from './components/UserNotificationsModal';
+import { InventoryModal } from './components/InventoryModal';
+import { AlertTriangle, Shield, Zap, LayoutDashboard, ClipboardCheck, History, Wrench, LogOut, PackagePlus } from 'lucide-react';
 import clsx from 'clsx';
 import { serialService } from './services/SerialService';
 import { auth } from './firebase'; // Import auth
 import { onAuthStateChanged, signOut, type User } from 'firebase/auth';
-import { historyService, type IssueRecord } from './services/HistoryService';
 import { Login } from './components/Login';
 
 import { UserManagementModal } from './components/UserManagementModal';
@@ -44,44 +44,10 @@ function App() {
   const [isRepairOpen, setIsRepairOpen] = useState(false);
   const [isIssueOpen, setIsIssueOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-  const [isUserMgmtOpen, setIsUserMgmtOpen] = useState(false); // New Modal State
+  const [isUserMgmtOpen, setIsUserMgmtOpen] = useState(false);
+  const [isInventoryOpen, setIsInventoryOpen] = useState(false); // Inventory modal toggle
   const [isSimulating, setIsSimulating] = useState(false);
   const simInterval = useRef<number | null>(null);
-
-  // Tracking Notification State
-  const [pendingReceipts, setPendingReceipts] = useState<IssueRecord[]>([]);
-
-  // Fetch Pending Receipts
-  useEffect(() => {
-    if (!user) return;
-
-    const fetchPending = async () => {
-      // Find all records that are 'enviado_a_sucursal'
-      const records = await historyService.getAll(user.email || "", isAdmin);
-      const pending = records.filter(r => r.type === 'issue' && r.status === 'enviado_a_sucursal') as IssueRecord[];
-
-      // If not admin, we only show their own
-      if (!isAdmin) {
-        setPendingReceipts(pending.filter(p => p.user === user.email));
-      } else {
-        // Admin sees all pending
-        setPendingReceipts(pending);
-      }
-    };
-
-    fetchPending();
-    // Refresh every 30s
-    const interval = setInterval(fetchPending, 30000);
-    return () => clearInterval(interval);
-  }, [user, isAdmin]);
-
-  const handleConfirmReceipt = async (id: string) => {
-    if (confirm("Al confirmar, está declarando que ha recibido el equipo físicamente en su sucursal. ¿Proceder?")) {
-      await historyService.update(id, { status: 'recibido_en_sucursal' });
-      // Update local state to remove it instantly
-      setPendingReceipts(prev => prev.filter(p => p.id !== id));
-    }
-  };
 
   // Simulation Logic
   useEffect(() => {
@@ -179,68 +145,21 @@ function App() {
           <p className="text-white/40 text-sm">Empresarial (SISDEPE)</p>
         </div>
 
-        {/* Global Notifications Banner */}
-        {pendingReceipts.length > 0 && (
-          <div className="w-full bg-gradient-to-r from-indigo-900/50 to-blue-900/50 border border-indigo-500/30 rounded-2xl p-6 shadow-[0_0_50px_rgba(79,70,229,0.15)] flex flex-col gap-4 animate-in fade-in slide-in-from-top-4">
-            <div className="flex items-center gap-3">
-              <div className="w-12 h-12 bg-indigo-500/20 rounded-xl flex items-center justify-center shrink-0 border border-indigo-500/30">
-                <Truck className="w-6 h-6 text-indigo-400" />
-              </div>
-              <div>
-                <h3 className="text-lg font-black text-white flex items-center gap-2">
-                  ATENCIÓN: Equipos en Tránsito hacia su Sucursal <span className="bg-indigo-500 text-white text-xs px-2 py-0.5 rounded-full">{pendingReceipts.length}</span>
-                </h3>
-                <p className="text-indigo-200/70 text-sm">
-                  {isAdmin ? "Hay equipos enviados a sucursales pendientes de confirmación." : "Se le han despachado los siguientes equipos reparados. Por favor confirme su recepción física."}
-                </p>
-              </div>
-            </div>
+        {/* User Notifications Auto-Modal */}
+        <UserNotificationsModal isAdmin={isAdmin} />
 
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-2">
-              {pendingReceipts.map(receipt => (
-                <div key={receipt.id} className="bg-black/40 border border-white/5 rounded-xl p-4 flex flex-col gap-3">
-                  <div className="flex justify-between items-start">
-                    <div>
-                      <div className="font-bold text-white text-lg">{receipt.model}</div>
-                      <div className="text-white/50 font-mono text-sm leading-none">{receipt.serial}</div>
-                    </div>
-                    <div className="text-right">
-                      <div className="text-[10px] text-white/40 uppercase font-bold">Guía / Envío</div>
-                      <div className="text-blue-300 font-mono font-bold bg-blue-500/10 px-2 py-0.5 rounded">{receipt.trackingNumber || 'PENDIENTE'}</div>
-                    </div>
-                  </div>
-                  {receipt.adminMessage && (
-                    <div className="text-sm text-indigo-200/80 bg-indigo-500/10 p-2 rounded-lg border border-indigo-500/20">
-                      <span className="font-bold">Mensaje Taller:</span> {receipt.adminMessage}
-                    </div>
-                  )}
-                  {!isAdmin && (
-                    <button
-                      onClick={() => receipt.id && handleConfirmReceipt(receipt.id)}
-                      className="mt-2 w-full py-2 bg-green-600/20 hover:bg-green-600/30 text-green-400 border border-green-500/30 rounded-lg text-sm font-bold flex items-center justify-center gap-2 transition-colors"
-                    >
-                      <CheckCircle2 className="w-4 h-4" />
-                      CONFIRMAR RECEPCIÓN FÍSICA
-                    </button>
-                  )}
-                </div>
-              ))}
-            </div>
-          </div>
+        {/* Scoreboard - ONLY VISIBLE TO ADMINS */}
+        {isAdmin && (
+          <Scoreboard
+            weight={weight}
+            unit={unit}
+            isStable={isStable}
+            isZero={isZero}
+            isNet={isNet}
+            isConnected={isConnected || isSimulating}
+            error={error}
+          />
         )}
-
-        <DashboardTicker userEmail={user?.email || undefined} isAdmin={isAdmin} />
-
-        {/* Scoreboard */}
-        <Scoreboard
-          weight={weight}
-          unit={unit}
-          isStable={isStable}
-          isZero={isZero}
-          isNet={isNet}
-          isConnected={isConnected || isSimulating}
-          error={error}
-        />
 
         {/* Controls */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-5xl mx-auto mt-4 px-2">
@@ -314,6 +233,16 @@ function App() {
           </button>
 
           <button
+            onClick={() => setIsInventoryOpen(true)}
+            className="group relative px-6 py-6 bg-gradient-to-br from-blue-600/20 to-blue-900/20 hover:from-blue-500/30 hover:to-blue-800/30 border border-blue-500/30 text-blue-400 rounded-2xl transition-all duration-300 shadow-[0_0_30px_-10px_rgba(59,130,246,0.15)] flex flex-col items-center justify-center gap-3 font-bold text-lg"
+          >
+            <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center group-hover:-translate-y-1 transition-transform">
+              <PackagePlus className="w-6 h-6 text-blue-400" />
+            </div>
+            <span>REGISTRO INVENTARIO</span>
+          </button>
+
+          <button
             onClick={() => setIsHistoryOpen(true)}
             className="group relative px-6 py-6 bg-gradient-to-br from-white/5 to-white/10 hover:from-white/10 hover:to-white/15 border border-white/10 text-white rounded-2xl transition-all duration-300 flex flex-col items-center justify-center gap-3 font-bold text-lg"
           >
@@ -382,6 +311,11 @@ function App() {
       <UserManagementModal
         isOpen={isUserMgmtOpen}
         onClose={() => setIsUserMgmtOpen(false)}
+      />
+
+      <InventoryModal
+        isOpen={isInventoryOpen}
+        onClose={() => setIsInventoryOpen(false)}
       />
 
       <HistoryView

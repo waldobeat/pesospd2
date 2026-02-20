@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { auth } from '../firebase';
 import { useAuthRole } from '../hooks/useAuthRole';
 import { historyService, type HistoryItem, type IssueRecord } from '../services/HistoryService';
-import { X, Calendar, ClipboardCheck, Wrench, AlertTriangle, Trash2, Download, Search, Edit3, MessageSquare } from 'lucide-react';
+import { X, Calendar, ClipboardCheck, Wrench, AlertTriangle, Trash2, Download, Search, Edit3, MessageSquare, PackagePlus } from 'lucide-react';
 import clsx from 'clsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -80,6 +80,9 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                     r.status === 'dado_de_baja' ? "Dado de Baja" : "Pendiente Envío";
                 detail = `${r.description} | Diag: ${r.diagnostic || 'N/A'} | Sol: ${r.solution || 'N/A'} `;
                 adminMessage = (r as IssueRecord).adminMessage || 'N/A';
+            } else if (r.type === 'inventory') {
+                status = "Registrado";
+                detail = r.note || "Alta de Inventario";
             } else {
                 // Calibration
                 status = r.passed ? "Aprobado" : "Fallido";
@@ -88,7 +91,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
 
             return [
                 new Date(r.date).toLocaleDateString(),
-                r.type === 'repair' ? 'Reparación' : r.type === 'issue' ? 'Avería' : 'Calibración',
+                r.type === 'repair' ? 'Reparación' : r.type === 'issue' ? 'Avería' : r.type === 'inventory' ? 'Inventario' : 'Calibración',
                 r.user || "N/A", // User Column
                 r.model,
                 r.serial,
@@ -227,8 +230,12 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                                 <div className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center text-red-400" title="Avería Reportada">
                                                     <AlertTriangle className="w-4 h-4" />
                                                 </div>
+                                            ) : record.type === 'inventory' ? (
+                                                <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400" title="Registro de Inventario">
+                                                    <PackagePlus className="w-4 h-4" />
+                                                </div>
                                             ) : (
-                                                <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400" title="Calibración">
+                                                <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400" title="Calibración">
                                                     <Calendar className="w-4 h-4" />
                                                 </div>
                                             )}
@@ -282,9 +289,13 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                                         {record.status.replace(/_/g, ' ')}
                                                     </span>
                                                 )
+                                            ) : record.type === 'inventory' ? (
+                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                                                    Alta de Inventario
+                                                </span>
                                             ) : (
-                                                <div className="font-mono text-blue-300">
-                                                    {record.finalWeight.toFixed(2)} / {record.targetWeight.toFixed(2)} kg
+                                                <div className="font-mono text-emerald-300">
+                                                    {record.finalWeight?.toFixed(2)} / {record.targetWeight?.toFixed(2)} kg
                                                 </div>
                                             )}
                                         </td>

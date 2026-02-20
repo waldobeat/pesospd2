@@ -19,7 +19,7 @@ const issueTypes = [
 
 export const ReportIssueModal: React.FC<ReportIssueModalProps> = ({ isOpen, onClose }) => {
     const [serial, setSerial] = useState('');
-    const [model, setModel] = useState('PD-2');
+    const [model, setModel] = useState('PESO');
     const [issueType, setIssueType] = useState<'damaged_scale' | 'weight_error' | 'component_failure' | 'other'>('damaged_scale');
     const [branch, setBranch] = useState('');
     const [sentToWorkshop, setSentToWorkshop] = useState<boolean | null>(null);
@@ -199,32 +199,50 @@ export const ReportIssueModal: React.FC<ReportIssueModalProps> = ({ isOpen, onCl
                                     <input
                                         type="text"
                                         value={serial}
-                                        onChange={e => setSerial(e.target.value)}
+                                        onChange={e => setSerial(e.target.value.toUpperCase())}
                                         placeholder="Ingrese el SN..."
-                                        className="w-full bg-[#050505] border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-red-500/50 outline-none transition-all placeholder:text-white/20 text-lg"
+                                        className="w-full bg-[#050505] border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-red-500/50 outline-none transition-all placeholder:text-white/20 text-lg uppercase"
                                         required
                                     />
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black tracking-widest text-white/50 uppercase ml-1">Modelo de Equipo <span className="text-red-500">*</span></label>
-                                    <input
-                                        type="text"
+                                    <select
                                         value={model}
                                         onChange={e => setModel(e.target.value)}
-                                        className="w-full bg-[#050505] border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-red-500/50 outline-none transition-all text-lg"
+                                        className="w-full bg-[#050505] border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-red-500/50 outline-none transition-all text-lg appearance-none cursor-pointer"
                                         required
-                                    />
+                                    >
+                                        <option value="PESO">PESO</option>
+                                        <option value="BALANZA">BALANZA</option>
+                                        <option value="MONITOR">MONITOR</option>
+                                        <option value="FUENTE">FUENTE</option>
+                                    </select>
                                 </div>
                                 <div className="space-y-2">
                                     <label className="text-[10px] font-black tracking-widest text-white/50 uppercase ml-1">Sucursal Origen <span className="text-red-500">*</span></label>
-                                    <input
-                                        type="text"
+                                    <select
                                         value={branch}
                                         onChange={e => setBranch(e.target.value)}
-                                        placeholder="EJ: C.C. Las Americas"
-                                        className="w-full bg-[#050505] border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-red-500/50 outline-none transition-all placeholder:text-white/20 text-lg"
+                                        className="w-full bg-[#050505] border border-white/10 rounded-2xl px-5 py-4 text-white focus:border-red-500/50 outline-none transition-all text-lg appearance-none cursor-pointer"
                                         required
-                                    />
+                                    >
+                                        <option value="" disabled>Seleccione Sucursal</option>
+                                        <option value="GUACARA">GUACARA</option>
+                                        <option value="VILLAS">VILLAS</option>
+                                        <option value="MORA">MORA</option>
+                                        <option value="ACACIAS">ACACIAS</option>
+                                        <option value="CASTAÑO">CASTAÑO</option>
+                                        <option value="SAN DIEGO">SAN DIEGO</option>
+                                        <option value="TUCACAS">TUCACAS</option>
+                                        <option value="SAN JUAN">SAN JUAN</option>
+                                        <option value="VICTORIA">VICTORIA</option>
+                                        <option value="NAGUANAGUA">NAGUANAGUA</option>
+                                        <option value="BOSQUE">BOSQUE</option>
+                                        <option value="CIRCULO">CIRCULO</option>
+                                        <option value="IPSFA">IPSFA</option>
+                                        <option value="SANTA RITA">SANTA RITA</option>
+                                    </select>
                                 </div>
                             </div>
 
