@@ -8,7 +8,10 @@ import { ReportIssueModal } from './components/ReportIssueModal';
 import { RepairModule } from './components/RepairModule';
 import { UserNotificationsModal } from './components/UserNotificationsModal';
 import { InventoryView } from './components/InventoryView';
-import { AlertTriangle, Shield, Zap, LayoutDashboard, ClipboardCheck, History, Wrench, LogOut, Box } from 'lucide-react';
+import { SupportChatCenter } from './components/SupportChatCenter';
+import { onSnapshot, collection, query, where } from 'firebase/firestore';
+import { db } from './firebase';
+import { AlertTriangle, Shield, Zap, LayoutDashboard, ClipboardCheck, History, Wrench, LogOut, Box, MessageCircle } from 'lucide-react';
 import clsx from 'clsx';
 import { serialService } from './services/SerialService';
 import { auth } from './firebase'; // Import auth
@@ -17,8 +20,6 @@ import { Login } from './components/Login';
 
 import { UserManagementModal } from './components/UserManagementModal';
 import { useAuthRole } from './hooks/useAuthRole'; // Hook Integration
-
-// ... other imports
 
 function App() {
   // Auth State
@@ -47,7 +48,23 @@ function App() {
   const [isUserMgmtOpen, setIsUserMgmtOpen] = useState(false);
   const [isInventoryOpen, setIsInventoryOpen] = useState(false); // Inventory modal toggle
   const [isSimulating, setIsSimulating] = useState(false);
+  const [isSupportChatOpen, setIsSupportChatOpen] = useState(false);
+  const [unseenSupportMessages, setUnseenSupportMessages] = useState(0);
   const simInterval = useRef<number | null>(null);
+
+  // Listener for unseen support messages
+  useEffect(() => {
+    if (user) {
+      const q = isAdmin
+        ? query(collection(db, 'messages'), where('recipient', '==', 'admin@sisdepe.com'), where('seen', '==', false))
+        : query(collection(db, 'messages'), where('recipient', '==', user.email), where('seen', '==', false));
+
+      const unsubscribe = onSnapshot(q, (snapshot) => {
+        setUnseenSupportMessages(snapshot.size);
+      });
+      return () => unsubscribe();
+    }
+  }, [user, isAdmin]);
 
   // Simulation Logic
   useEffect(() => {
@@ -56,7 +73,6 @@ function App() {
       simInterval.current = window.setInterval(() => {
         simWeight += 0.1;
         if (simWeight > 20) simWeight = 0;
-        // Frame: <STX>12.34<CR> or <STX>?<STATUS><CR> random error
 
         const isError = Math.random() > 0.98; // 2% chance of error
         let frame = "";
@@ -95,15 +111,14 @@ function App() {
     <div className="min-h-screen bg-[#09090b] text-white selection:bg-blue-500/30 flex flex-col items-center justify-center p-4 relative overflow-hidden font-sans">
 
       {/* Background Ambience */}
-      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-blue-500/10 blur-[120px] rounded-full pointing-events-none select-none" />
-      <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-purple-500/10 blur-[120px] rounded-full pointing-events-none select-none" />
+      <div className="absolute top-[-20%] left-[-10%] w-[50%] h-[50%] bg-blue-500/10 blur-[120px] rounded-full pointer-events-none select-none" />
+      <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-purple-500/10 blur-[120px] rounded-full pointer-events-none select-none" />
 
       {/* Fixed Professional Header */}
       <header className="fixed top-0 left-0 w-full h-16 bg-black/80 backdrop-blur-md border-b border-white/10 z-50 flex items-center justify-between px-4 md:px-8 shadow-2xl">
         <div className="flex items-center gap-4">
-          {/* Small Logo for Header */}
           <div className="w-10 h-10 relative group cursor-pointer">
-            <div className="absolute inset-0 bg-blue-500/20 blur-md rounded-full group-hover:bg-blue-500/30 transition-all"></div>
+            <div className="absolute inset-0 bg-white/10 blur-md rounded-full group-hover:bg-blue-500/30 transition-all"></div>
             <div className="relative w-full h-full bg-gradient-to-br from-[#1e293b] to-[#0f172a] border border-white/10 rounded-xl flex items-center justify-center overflow-hidden">
               <div className="w-6 h-6 border-2 border-blue-500/30 rounded-full flex items-center justify-center relative">
                 <div className="absolute w-0.5 h-2 bg-orange-500 top-0.5 rounded-full origin-bottom animate-pulse"></div>
@@ -136,19 +151,10 @@ function App() {
         </div>
       </header>
 
-      {/* Main Container - Added pt-24 for header spacing */}
       <div className="w-full max-w-5xl z-10 flex flex-col gap-6 md:gap-8 px-4 pt-24 pb-10">
 
-        {/* Hero / Welcome Section (Mobile Only or Compact) */}
-        <div className="text-center md:hidden space-y-2">
-          <h2 className="text-2xl font-bold text-white">Sistema de Pesaje Certificado</h2>
-          <p className="text-white/40 text-sm">Empresarial (SISDEPE)</p>
-        </div>
-
-        {/* User Notifications Auto-Modal */}
         <UserNotificationsModal isAdmin={isAdmin} />
 
-        {/* Scoreboard - ONLY VISIBLE TO ADMINS */}
         {isAdmin && (
           <Scoreboard
             weight={weight}
@@ -161,10 +167,8 @@ function App() {
           />
         )}
 
-        {/* Controls */}
         {isAdmin ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-5xl mx-auto mt-4 px-2">
-            {/* Hardware Controls */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 w-full max-w-5xl mx-auto mt-4 px-2 text-center">
             {!isConnected && !isSimulating ? (
               <button
                 onClick={() => connect()}
@@ -219,7 +223,6 @@ function App() {
               <span>PROCESO MANUAL</span>
             </button>
 
-            {/* Common Tools for Admin */}
             <button
               onClick={() => setIsIssueOpen(true)}
               className="group relative px-6 py-6 bg-gradient-to-br from-red-600/20 to-red-900/20 hover:from-red-500/30 hover:to-red-800/30 border border-red-500/30 text-red-400 rounded-2xl transition-all duration-300 shadow-[0_0_30px_-10px_rgba(239,68,68,0.15)] flex flex-col items-center justify-center gap-3 font-bold text-lg"
@@ -272,10 +275,24 @@ function App() {
               </div>
               <span>USUARIOS</span>
             </button>
+
+            <button
+              onClick={() => setIsSupportChatOpen(true)}
+              className="group relative px-6 py-6 bg-gradient-to-br from-blue-500/20 to-indigo-900/20 hover:from-blue-500/30 hover:to-indigo-800/30 border border-blue-500/30 text-blue-300 rounded-2xl transition-all duration-300 shadow-[0_0_40px_-5px_rgba(59,130,246,0.3)] flex flex-col items-center justify-center gap-3 font-extrabold text-lg overflow-hidden"
+            >
+              {unseenSupportMessages > 0 && (
+                <div className="absolute top-4 right-4 w-6 h-6 bg-blue-500 text-white text-[10px] flex items-center justify-center rounded-full animate-pulse border-2 border-[#0a0a0c]">
+                  {unseenSupportMessages}
+                </div>
+              )}
+              <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center group-hover:scale-110 transition-transform">
+                <MessageCircle className="w-7 h-7 text-blue-400" />
+              </div>
+              <span className="tracking-tight">SOPORTE TALLER</span>
+            </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 w-full max-w-4xl mx-auto mt-8 px-4">
-            {/* Standard User Dashboard (Clean & Minimal) */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl mx-auto mt-8 px-4">
             <button
               onClick={() => setIsIssueOpen(true)}
               className="group flex flex-col items-center justify-center p-8 bg-red-950/20 hover:bg-red-900/30 border-2 border-red-500/30 hover:border-red-500/60 rounded-[2rem] transition-all shadow-[0_0_50px_-12px_rgba(239,68,68,0.2)]"
@@ -283,8 +300,8 @@ function App() {
               <div className="w-20 h-20 rounded-full bg-red-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
                 <AlertTriangle className="w-10 h-10 text-red-500" />
               </div>
-              <h3 className="text-2xl font-black text-white mb-2">Reportar Equipo</h3>
-              <p className="text-white/50 text-center text-sm">Notificar una avería y generar pase para Taller.</p>
+              <h3 className="text-2xl font-black text-white mb-2 uppercase tracking-tighter">Reportar Equipo</h3>
+              <p className="text-white/40 text-center text-sm">Notificar una avería al taller técnico.</p>
             </button>
 
             <button
@@ -294,8 +311,8 @@ function App() {
               <div className="w-20 h-20 rounded-full bg-blue-500/10 flex items-center justify-center mb-6 group-hover:-translate-y-2 transition-transform">
                 <Box className="w-10 h-10 text-blue-400" />
               </div>
-              <h3 className="text-2xl font-black text-white mb-2">Inventario</h3>
-              <p className="text-white/50 text-center text-sm">Consultar o registrar equipos en su sucursal.</p>
+              <h3 className="text-2xl font-black text-white mb-2 uppercase tracking-tighter">Inventario</h3>
+              <p className="text-white/40 text-center text-sm">Ver equipos registrados en sucursal.</p>
             </button>
 
             <button
@@ -305,14 +322,27 @@ function App() {
               <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-6 group-hover:rotate-12 transition-transform">
                 <History className="w-10 h-10 text-white/80" />
               </div>
-              <h3 className="text-2xl font-black text-white mb-2">Historial Central</h3>
-              <p className="text-white/50 text-center text-sm">Validar el estatus de sus equipos.</p>
+              <h3 className="text-2xl font-black text-white mb-2 uppercase tracking-tighter">Historial</h3>
+              <p className="text-white/40 text-center text-sm">Estatus y seguimiento de equipos.</p>
+            </button>
+
+            <button
+              onClick={() => setIsSupportChatOpen(true)}
+              className="group relative flex flex-col items-center justify-center p-8 bg-blue-600/10 hover:bg-blue-600/20 border-2 border-blue-500/30 hover:border-blue-500/60 rounded-[2rem] transition-all shadow-[0_0_50px_-12px_rgba(37,99,235,0.2)]"
+            >
+              {unseenSupportMessages > 0 && (
+                <div className="absolute top-6 right-8 px-4 py-1 bg-blue-600 text-white text-[10px] font-black rounded-full animate-bounce shadow-xl">
+                  {unseenSupportMessages > 1 ? `${unseenSupportMessages} MENSAJES` : 'NUEVO MENSAJE'}
+                </div>
+              )}
+              <div className="w-20 h-20 rounded-full bg-blue-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
+                <MessageCircle className="w-10 h-10 text-blue-400" />
+              </div>
+              <h3 className="text-2xl font-black text-white mb-2 uppercase tracking-tighter">Soporte Técnico</h3>
+              <p className="text-white/40 text-center text-sm">Chatea con el taller en tiempo real.</p>
             </button>
           </div>
         )}
-
-
-
       </div>
 
       <TestWeightWindow
@@ -354,11 +384,16 @@ function App() {
         onClose={() => setIsHistoryOpen(false)}
       />
 
+      <SupportChatCenter
+        isOpen={isSupportChatOpen}
+        onClose={() => setIsSupportChatOpen(false)}
+      />
+
       {/* Footer */}
       <div className="absolute bottom-4 text-center text-white/20 text-xs">
         System Status: {isConnected || isSimulating ? "Active" : "Idle"} • Web Serial API • v1.0.0
       </div>
-    </div>
+    </div >
   );
 }
 
