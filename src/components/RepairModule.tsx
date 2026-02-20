@@ -260,27 +260,27 @@ export const RepairModule: React.FC<RepairModuleProps> = ({ isOpen, onClose }) =
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
-            <div className="bg-[#18181b] w-full max-w-3xl rounded-3xl border border-white/10 shadow-2xl overflow-hidden flex flex-col max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/80 backdrop-blur-md animate-in fade-in duration-200">
+            <div className="bg-[#18181b] w-full max-w-[95vw] sm:max-w-3xl rounded-2xl sm:rounded-3xl border border-white/10 shadow-2xl overflow-hidden flex flex-col max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
 
                 {/* Header */}
-                <div className="p-6 border-b border-white/10 flex justify-between items-center bg-gradient-to-r from-orange-900/20 to-transparent">
+                <div className="p-4 sm:p-6 border-b border-white/10 flex justify-between items-center bg-gradient-to-r from-orange-900/20 to-transparent shrink-0">
                     <div>
-                        <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-                            <Wrench className="w-6 h-6 text-orange-400" />
-                            Registro de Reparación Manual
+                        <h2 className="text-xl sm:text-2xl font-bold text-white flex items-center gap-2 sm:gap-3">
+                            <Wrench className="w-5 h-5 sm:w-6 sm:h-6 text-orange-400 shrink-0" />
+                            <span className="leading-tight">Registro de Reparación Manual</span>
                         </h2>
-                        <p className="text-white/40 text-sm mt-1">
+                        <p className="text-white/40 text-xs sm:text-sm mt-1">
                             Generar informe técnico y guardar en historial
                         </p>
                     </div>
-                    <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors text-white/50 hover:text-white">
-                        <X className="w-6 h-6" />
+                    <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors text-white/50 hover:text-white shrink-0">
+                        <X className="w-5 h-5 sm:w-6 sm:h-6" />
                     </button>
                 </div>
 
                 {/* Content */}
-                <div className="p-8 space-y-6">
+                <div className="p-4 sm:p-8 space-y-4 sm:space-y-6 flex-1 overflow-y-auto">
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                         <div>
@@ -348,26 +348,26 @@ export const RepairModule: React.FC<RepairModuleProps> = ({ isOpen, onClose }) =
                     </div>
 
                     {/* Status Toggle */}
-                    <div className="bg-white/5 p-4 rounded-xl border border-white/10 flex items-center justify-between">
-                        <span className="text-white font-bold">Estado Final del Equipo</span>
-                        <div className="flex bg-black/40 rounded-lg p-1">
+                    <div className="bg-white/5 p-3 sm:p-4 rounded-xl border border-white/10 flex flex-col sm:flex-row items-start sm:items-center justify-between gap-3 sm:gap-0">
+                        <span className="text-white font-bold text-sm sm:text-base">Estado Final del Equipo</span>
+                        <div className="flex bg-black/40 rounded-lg p-1 w-full sm:w-auto">
                             <button
                                 onClick={() => setRepaired(true)}
                                 className={clsx(
-                                    "px-4 py-2 rounded-md text-sm font-bold flex items-center gap-2 transition-all",
+                                    "flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all",
                                     repaired ? "bg-green-600 text-white shadow-lg" : "text-white/30 hover:text-white"
                                 )}
                             >
-                                <Check className="w-4 h-4" /> Reparado
+                                <Check className="w-4 h-4 shrink-0" /> Reparado
                             </button>
                             <button
                                 onClick={() => setRepaired(false)}
                                 className={clsx(
-                                    "px-4 py-2 rounded-md text-sm font-bold flex items-center gap-2 transition-all",
+                                    "flex-1 sm:flex-none px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-bold flex items-center justify-center gap-2 transition-all",
                                     !repaired ? "bg-red-600 text-white shadow-lg" : "text-white/30 hover:text-white"
                                 )}
                             >
-                                <AlertTriangle className="w-4 h-4" /> Pendiente
+                                <AlertTriangle className="w-4 h-4 shrink-0" /> Pendiente
                             </button>
                         </div>
                     </div>
@@ -375,18 +375,18 @@ export const RepairModule: React.FC<RepairModuleProps> = ({ isOpen, onClose }) =
                 </div>
 
                 {/* Footer */}
-                <div className="p-6 border-t border-white/10 bg-white/5 flex justify-end gap-4">
+                <div className="p-4 sm:p-6 border-t border-white/10 bg-white/5 flex flex-col sm:flex-row justify-end gap-3 sm:gap-4 shrink-0">
                     <button
                         onClick={onClose}
-                        className="px-6 py-3 text-white/50 hover:text-white transition-colors font-bold"
+                        className="px-6 py-3 text-white/50 hover:text-white transition-colors font-bold w-full sm:w-auto text-sm sm:text-base border border-white/10 sm:border-none rounded-xl sm:rounded-none"
                     >
                         Cancelar
                     </button>
                     <button
                         onClick={handleSaveAndGenerate}
-                        className="px-8 py-3 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 text-white rounded-xl font-bold shadow-lg shadow-orange-900/20 flex items-center gap-2 transition-all transform hover:scale-105"
+                        className="w-full sm:w-auto px-6 sm:px-8 py-3 bg-gradient-to-r from-orange-600 to-red-600 hover:from-orange-500 hover:to-red-500 text-white rounded-xl font-bold shadow-lg shadow-orange-900/20 flex items-center justify-center gap-2 transition-all transform hover:scale-105 text-sm sm:text-base shrink-0"
                     >
-                        <FileDown className="w-5 h-5" />
+                        <FileDown className="w-5 h-5 shrink-0" />
                         Guardar y Generar PDF
                     </button>
                 </div>

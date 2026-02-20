@@ -121,24 +121,24 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({ isOpen
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-4 animate-in fade-in duration-200">
-            <div className="w-full max-w-4xl bg-[#18181b] border border-white/10 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-sm p-2 sm:p-4 animate-in fade-in duration-200">
+            <div className="w-full max-w-[95vw] sm:max-w-4xl bg-[#18181b] border border-white/10 rounded-xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh] sm:max-h-[90vh]">
 
                 {/* Header */}
-                <div className="p-6 border-b border-white/10 bg-blue-900/10 flex justify-between items-center">
-                    <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                        <Shield className="w-5 h-5 text-blue-500" />
+                <div className="p-4 sm:p-6 border-b border-white/10 bg-blue-900/10 flex justify-between items-center shrink-0">
+                    <h2 className="text-lg sm:text-xl font-bold text-white flex items-center gap-2">
+                        <Shield className="w-4 h-4 sm:w-5 sm:h-5 text-blue-500 shrink-0" />
                         Gestión de Usuarios (Admin)
                     </h2>
-                    <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors text-white/50 hover:text-white">
+                    <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors text-white/50 hover:text-white shrink-0">
                         <X className="w-5 h-5" />
                     </button>
                 </div>
 
-                <div className="flex flex-col md:flex-row h-full overflow-hidden">
+                <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
 
                     {/* LEFT: Create User */}
-                    <div className="w-full md:w-1/3 p-6 border-r border-white/10 bg-white/5 overflow-y-auto">
+                    <div className="w-full md:w-1/3 p-4 sm:p-6 border-b md:border-b-0 md:border-r border-white/10 bg-white/5 overflow-y-auto shrink-0 md:shrink">
                         <h3 className="text-sm font-bold text-white/70 uppercase tracking-wider mb-4 flex items-center gap-2">
                             <UserPlus className="w-4 h-4" />
                             Nuevo Usuario
@@ -201,30 +201,30 @@ export const UserManagementModal: React.FC<UserManagementModalProps> = ({ isOpen
                     </div>
 
                     {/* RIGHT: User List */}
-                    <div className="flex-1 p-6 overflow-y-auto">
-                        <h3 className="text-sm font-bold text-white/70 uppercase tracking-wider mb-4">Usuarios Registrados</h3>
+                    <div className="flex-1 p-4 sm:p-6 overflow-y-auto">
+                        <h3 className="text-xs sm:text-sm font-bold text-white/70 uppercase tracking-wider mb-4">Usuarios Registrados</h3>
 
                         {loading ? (
                             <div className="flex justify-center p-8"><Loader2 className="w-6 h-6 animate-spin text-white/30" /></div>
                         ) : (
                             <div className="space-y-2">
                                 {users.map(user => (
-                                    <div key={user.uid} className="flex items-center justify-between p-3 bg-white/5 border border-white/5 rounded-xl hover:border-white/10 transition-colors">
+                                    <div key={user.uid} className="flex flex-col sm:flex-row sm:items-center justify-between p-3 sm:p-4 bg-white/5 border border-white/5 rounded-xl hover:border-white/10 transition-colors gap-3 sm:gap-0">
                                         <div className="flex items-center gap-3">
-                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center ${user.role === 'admin' ? 'bg-blue-500/20 text-blue-400' : 'bg-white/10 text-white/50'}`}>
+                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center shrink-0 ${user.role === 'admin' ? 'bg-blue-500/20 text-blue-400' : 'bg-white/10 text-white/50'}`}>
                                                 {user.role === 'admin' ? <Shield className="w-4 h-4" /> : <User className="w-4 h-4" />}
                                             </div>
-                                            <div>
-                                                <div className="text-white text-sm font-medium">{user.email}</div>
-                                                <div className="text-white/30 text-xs font-mono">{user.role.toUpperCase()}</div>
+                                            <div className="min-w-0 flex-1">
+                                                <div className="text-white text-sm font-medium truncate">{user.email}</div>
+                                                <div className="text-white/30 text-[10px] sm:text-xs font-mono mt-0.5">{user.role.toUpperCase()}</div>
                                             </div>
                                         </div>
 
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex items-center gap-2 sm:ml-4 w-full sm:w-auto">
                                             <button
                                                 onClick={() => handleToggleRole(user)}
                                                 disabled={!!actionLoading}
-                                                className="px-3 py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/50 text-xs font-bold border border-white/5 transition-colors"
+                                                className="w-full sm:w-auto px-4 sm:px-3 py-2 sm:py-1.5 rounded-lg bg-white/5 hover:bg-white/10 text-white/50 text-xs font-bold border border-white/5 transition-colors text-center"
                                             >
                                                 {actionLoading === user.uid ? "..." : user.role === 'admin' ? "Bajar a Estándar" : "Hacer Admin"}
                                             </button>

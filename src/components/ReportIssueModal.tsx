@@ -163,14 +163,14 @@ export const ReportIssueModal: React.FC<ReportIssueModalProps> = ({ isOpen, onCl
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4">
             <div className="absolute inset-0 bg-[#050505]/95 backdrop-blur-2xl" />
 
-            <div className="relative w-full max-w-3xl bg-[#0a0a0c] border border-white/10 rounded-[32px] shadow-[0_0_80px_rgba(239,68,68,0.1)] overflow-hidden flex flex-col max-h-[90vh]">
+            <div className="relative w-full max-w-[95vw] sm:max-w-3xl bg-[#0a0a0c] border border-white/10 rounded-2xl sm:rounded-[32px] shadow-[0_0_80px_rgba(239,68,68,0.1)] overflow-hidden flex flex-col max-h-[95vh] sm:max-h-[90vh]">
                 {/* Background Ambient Glow */}
                 <div className="absolute top-0 right-0 w-[500px] h-[500px] bg-red-500/10 blur-[120px] rounded-full pointer-events-none" />
 
-                <div className="p-8 relative border-b border-white/5 flex justify-between items-center shrink-0">
+                <div className="p-4 sm:p-8 relative border-b border-white/5 flex justify-between items-center shrink-0">
                     <div>
                         <div className="flex items-center gap-3 mb-1">
                             <div className="w-10 h-10 rounded-xl bg-red-500/10 flex items-center justify-center border border-red-500/20">
@@ -182,13 +182,13 @@ export const ReportIssueModal: React.FC<ReportIssueModalProps> = ({ isOpen, onCl
                     </div>
                     <button
                         onClick={onClose}
-                        className="w-12 h-12 rounded-full hover:bg-white/5 flex items-center justify-center transition-colors text-white/40 hover:text-white"
+                        className="w-10 h-10 sm:w-12 sm:h-12 rounded-full hover:bg-white/5 flex items-center justify-center transition-colors text-white/40 hover:text-white shrink-0"
                     >
-                        <X className="w-6 h-6" />
+                        <X className="w-5 h-5 sm:w-6 sm:h-6" />
                     </button>
                 </div>
 
-                <div className="p-8 overflow-y-auto custom-scrollbar relative z-10 flex-1">
+                <div className="p-4 sm:p-8 overflow-y-auto custom-scrollbar relative z-10 flex-1">
                     {success ? (
                         <div className="flex flex-col items-center justify-center py-16 space-y-6">
                             <div className="w-24 h-24 bg-green-500/10 rounded-full flex items-center justify-center animate-bounce shadow-[0_0_50px_rgba(34,197,94,0.2)]">
@@ -345,18 +345,18 @@ export const ReportIssueModal: React.FC<ReportIssueModalProps> = ({ isOpen, onCl
                                 </div>
                             </div>
 
-                            <div className="pt-4 border-t border-white/5 flex justify-end gap-3">
+                            <div className="pt-4 border-t border-white/5 flex flex-col sm:flex-row justify-end gap-3">
                                 <button
                                     type="button"
                                     onClick={onClose}
-                                    className="px-6 py-4 rounded-xl text-white/50 font-bold hover:bg-white/5 hover:text-white transition-all"
+                                    className="w-full sm:w-auto px-6 py-3 sm:py-4 rounded-xl text-white/50 font-bold hover:bg-white/5 hover:text-white transition-all text-sm sm:text-base"
                                 >
                                     Cancelar
                                 </button>
                                 <button
                                     type="submit"
                                     disabled={loading}
-                                    className="px-8 py-4 bg-gradient-to-r from-red-600 to-red-800 hover:from-red-500 hover:to-red-700 text-white rounded-xl font-bold transition-all shadow-[0_0_30px_-10px_rgba(239,68,68,0.5)] flex items-center gap-2"
+                                    className="w-full sm:w-auto px-6 sm:px-8 py-3 sm:py-4 bg-gradient-to-r from-red-600 to-red-800 hover:from-red-500 hover:to-red-700 text-white rounded-xl font-bold transition-all shadow-[0_0_30px_-10px_rgba(239,68,68,0.5)] flex items-center justify-center gap-2 text-sm sm:text-base"
                                 >
                                     {loading ? "PROCESANDO..." : (
                                         <>ENVIAR INFORME TÉCNICO <Send className="w-4 h-4 ml-2" /></>

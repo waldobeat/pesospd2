@@ -115,43 +115,44 @@ function App() {
       <div className="absolute bottom-[-20%] right-[-10%] w-[50%] h-[50%] bg-purple-500/10 blur-[120px] rounded-full pointer-events-none select-none" />
 
       {/* Fixed Professional Header */}
-      <header className="fixed top-0 left-0 w-full h-16 bg-black/80 backdrop-blur-md border-b border-white/10 z-50 flex items-center justify-between px-4 md:px-8 shadow-2xl">
-        <div className="flex items-center gap-4">
-          <div className="w-10 h-10 relative group cursor-pointer">
+      <header className="fixed top-0 left-0 w-full min-h-[4rem] sm:h-16 py-2 sm:py-0 bg-black/80 backdrop-blur-md border-b border-white/10 z-50 flex flex-wrap sm:flex-nowrap items-center justify-between px-3 md:px-8 shadow-2xl gap-y-2">
+        <div className="flex items-center gap-3 sm:gap-4 shrink-0">
+          <div className="w-8 h-8 sm:w-10 sm:h-10 relative group cursor-pointer">
             <div className="absolute inset-0 bg-white/10 blur-md rounded-full group-hover:bg-blue-500/30 transition-all"></div>
             <div className="relative w-full h-full bg-gradient-to-br from-[#1e293b] to-[#0f172a] border border-white/10 rounded-xl flex items-center justify-center overflow-hidden">
-              <div className="w-6 h-6 border-2 border-blue-500/30 rounded-full flex items-center justify-center relative">
-                <div className="absolute w-0.5 h-2 bg-orange-500 top-0.5 rounded-full origin-bottom animate-pulse"></div>
+              <div className="w-4 h-4 sm:w-6 sm:h-6 border-[1.5px] sm:border-2 border-blue-500/30 rounded-full flex items-center justify-center relative">
+                <div className="absolute w-0.5 h-1.5 sm:h-2 bg-orange-500 top-0.5 rounded-full origin-bottom animate-pulse"></div>
               </div>
             </div>
           </div>
-          <div>
-            <h1 className="text-lg md:text-xl font-black tracking-tight text-white leading-none">
+          <div className="flex flex-col">
+            <h1 className="text-base sm:text-lg md:text-xl font-black tracking-tight text-white leading-none">
               SISDEPE
             </h1>
-            <p className="text-[10px] md:text-xs text-blue-200/60 font-medium tracking-wide uppercase hidden md:block">
-              Sistema de Pesaje Certificado Empresarial
+            <p className="text-[8px] sm:text-[10px] md:text-xs text-blue-200/60 font-medium tracking-wide uppercase hidden sm:block">
+              Sistema de Pesaje Certificado
             </p>
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
-          <div className="hidden md:flex items-center gap-2 px-3 py-1 bg-white/5 rounded-full border border-white/5">
-            <div className={`w-2 h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'} animate-pulse`}></div>
-            <span className="text-xs font-bold text-white/50">{isConnected ? 'ONLINE' : 'OFFLINE'}</span>
+        <div className="flex items-center gap-2 sm:gap-4 ml-auto sm:ml-0">
+          <div className="flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-3 py-1 sm:py-1.5 bg-white/5 rounded-full border border-white/5">
+            <div className={`w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full ${isConnected ? 'bg-green-500' : 'bg-red-500'} animate-pulse`}></div>
+            <span className="text-[9px] sm:text-xs font-bold text-white/50">{isConnected ? 'ONLINE' : 'OFFLINE'}</span>
           </div>
           <button
             onClick={() => signOut(auth)}
-            className="p-2 hover:bg-white/10 rounded-lg text-white/50 hover:text-red-400 transition-colors flex items-center gap-2"
+            className="p-1.5 sm:p-2 hover:bg-white/10 rounded-lg text-white/50 hover:text-red-400 transition-colors flex items-center gap-2"
             title="Cerrar Sesión"
           >
             <span className="text-xs font-bold hidden md:block">SALIR</span>
-            <LogOut className="w-5 h-5" />
+            <LogOut className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </div>
       </header>
 
-      <div className="w-full max-w-5xl z-10 flex flex-col gap-6 md:gap-8 px-4 pt-24 pb-10">
+      {/* Main Container padding adjustment for mobile - push content down to avoid covering with header */}
+      <div className="w-full max-w-5xl z-10 flex flex-col gap-4 sm:gap-6 md:gap-8 px-2 sm:px-4 pt-[5.5rem] sm:pt-24 pb-16 sm:pb-10">
 
         <UserNotificationsModal isAdmin={isAdmin} />
 
@@ -292,54 +293,58 @@ function App() {
             </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8 w-full max-w-4xl mx-auto mt-8 px-4">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-8 w-full max-w-4xl mx-auto mt-4 sm:mt-8 px-0 sm:px-4">
             <button
               onClick={() => setIsIssueOpen(true)}
-              className="group flex flex-col items-center justify-center p-8 bg-red-950/20 hover:bg-red-900/30 border-2 border-red-500/30 hover:border-red-500/60 rounded-[2rem] transition-all shadow-[0_0_50px_-12px_rgba(239,68,68,0.2)]"
+              className="group flex flex-col items-center justify-center p-6 sm:p-8 bg-gradient-to-br from-red-950/20 to-red-900/10 hover:from-red-900/30 hover:to-red-800/20 border-2 border-red-500/30 hover:border-red-500/60 rounded-[1.5rem] sm:rounded-[2rem] transition-all duration-300 shadow-[0_0_40px_-10px_rgba(239,68,68,0.15)] relative overflow-hidden"
             >
-              <div className="w-20 h-20 rounded-full bg-red-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <AlertTriangle className="w-10 h-10 text-red-500" />
+              <div className="absolute inset-0 bg-red-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="w-16 h-16 sm:w-24 sm:h-24 rounded-full bg-red-500/10 flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-500 relative z-10">
+                <AlertTriangle className="w-8 h-8 sm:w-12 sm:h-12 text-red-500" />
               </div>
-              <h3 className="text-2xl font-black text-white mb-2 uppercase tracking-tighter">Reportar Equipo</h3>
-              <p className="text-white/40 text-center text-sm">Notificar una avería al taller técnico.</p>
+              <h3 className="text-xl sm:text-2xl font-black text-red-400 mb-2 uppercase tracking-tighter relative z-10 text-center">Reportar Equipo</h3>
+              <p className="text-xs sm:text-sm text-red-300/60 text-center relative z-10 px-2 sm:px-4">Notificar una avería al taller técnico.</p>
             </button>
 
             <button
               onClick={() => setIsInventoryOpen(true)}
-              className="group flex flex-col items-center justify-center p-8 bg-blue-950/20 hover:bg-blue-900/30 border-2 border-blue-500/30 hover:border-blue-500/60 rounded-[2rem] transition-all shadow-[0_0_50px_-12px_rgba(59,130,246,0.2)]"
+              className="group flex flex-col items-center justify-center p-6 sm:p-8 bg-gradient-to-br from-blue-950/20 to-blue-900/10 hover:from-blue-900/30 hover:to-blue-800/20 border-2 border-blue-500/30 hover:border-blue-500/60 rounded-[1.5rem] sm:rounded-[2rem] transition-all duration-300 shadow-[0_0_40px_-10px_rgba(59,130,246,0.15)] relative overflow-hidden"
             >
-              <div className="w-20 h-20 rounded-full bg-blue-500/10 flex items-center justify-center mb-6 group-hover:-translate-y-2 transition-transform">
-                <Box className="w-10 h-10 text-blue-400" />
+              <div className="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-blue-500/10 flex items-center justify-center mb-4 sm:mb-6 group-hover:-translate-y-2 transition-transform duration-500 relative z-10">
+                <Box className="w-8 h-8 sm:w-10 sm:h-10 text-blue-400" />
               </div>
-              <h3 className="text-2xl font-black text-white mb-2 uppercase tracking-tighter">Inventario</h3>
-              <p className="text-white/40 text-center text-sm">Ver equipos registrados en sucursal.</p>
+              <h3 className="text-xl sm:text-2xl font-black text-white mb-2 uppercase tracking-tighter relative z-10 text-center">Inventario</h3>
+              <p className="text-xs sm:text-sm text-white/40 text-center relative z-10 px-2">Ver equipos registrados en sucursal.</p>
             </button>
 
             <button
               onClick={() => setIsHistoryOpen(true)}
-              className="group flex flex-col items-center justify-center p-8 bg-white/5 hover:bg-white/10 border-2 border-white/10 hover:border-white/20 rounded-[2rem] transition-all"
+              className="group flex flex-col items-center justify-center p-6 sm:p-8 bg-gradient-to-br from-white/5 to-white/10 hover:from-white/10 hover:to-white/15 border-2 border-white/10 hover:border-white/20 rounded-[1.5rem] sm:rounded-[2rem] transition-all duration-300 relative overflow-hidden"
             >
-              <div className="w-20 h-20 rounded-full bg-white/5 flex items-center justify-center mb-6 group-hover:rotate-12 transition-transform">
-                <History className="w-10 h-10 text-white/80" />
+              <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-white/5 flex items-center justify-center mb-4 sm:mb-6 group-hover:rotate-12 transition-transform duration-500 relative z-10">
+                <History className="w-8 h-8 sm:w-10 sm:h-10 text-white/80" />
               </div>
-              <h3 className="text-2xl font-black text-white mb-2 uppercase tracking-tighter">Historial</h3>
-              <p className="text-white/40 text-center text-sm">Estatus y seguimiento de equipos.</p>
+              <h3 className="text-xl sm:text-2xl font-black text-white mb-2 uppercase tracking-tighter relative z-10 text-center">Historial</h3>
+              <p className="text-xs sm:text-sm text-white/40 text-center relative z-10 px-2">Estatus y seguimiento de equipos.</p>
             </button>
 
             <button
               onClick={() => setIsSupportChatOpen(true)}
-              className="group relative flex flex-col items-center justify-center p-8 bg-blue-600/10 hover:bg-blue-600/20 border-2 border-blue-500/30 hover:border-blue-500/60 rounded-[2rem] transition-all shadow-[0_0_50px_-12px_rgba(37,99,235,0.2)]"
+              className="group relative flex flex-col items-center justify-center p-6 sm:p-8 bg-gradient-to-br from-blue-600/10 to-indigo-600/10 hover:from-blue-600/20 hover:to-indigo-600/20 border-2 border-blue-500/30 hover:border-blue-500/60 rounded-[1.5rem] sm:rounded-[2rem] transition-all duration-300 shadow-[0_0_40px_-10px_rgba(37,99,235,0.15)] overflow-hidden"
             >
+              <div className="absolute inset-0 bg-blue-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500"></div>
               {unseenSupportMessages > 0 && (
-                <div className="absolute top-6 right-8 px-4 py-1 bg-blue-600 text-white text-[10px] font-black rounded-full animate-bounce shadow-xl">
+                <div className="absolute top-4 sm:top-6 right-4 sm:right-8 px-3 sm:px-4 py-1 bg-blue-600 text-white text-[9px] sm:text-[10px] font-black rounded-full animate-bounce shadow-xl z-20">
                   {unseenSupportMessages > 1 ? `${unseenSupportMessages} MENSAJES` : 'NUEVO MENSAJE'}
                 </div>
               )}
-              <div className="w-20 h-20 rounded-full bg-blue-500/10 flex items-center justify-center mb-6 group-hover:scale-110 transition-transform">
-                <MessageCircle className="w-10 h-10 text-blue-400" />
+              <div className="w-16 h-16 sm:w-20 sm:h-20 rounded-full bg-blue-500/10 flex items-center justify-center mb-4 sm:mb-6 group-hover:scale-110 transition-transform duration-500 relative z-10">
+                <MessageCircle className="w-8 h-8 sm:w-10 sm:h-10 text-blue-400" />
               </div>
-              <h3 className="text-2xl font-black text-white mb-2 uppercase tracking-tighter">Soporte Técnico</h3>
-              <p className="text-white/40 text-center text-sm">Chatea con el taller en tiempo real.</p>
+              <h3 className="text-xl sm:text-2xl font-black text-white mb-2 uppercase tracking-tighter relative z-10 text-center">Soporte Técnico</h3>
+              <p className="text-xs sm:text-sm text-white/40 text-center relative z-10 px-2">Chatea con el taller en tiempo real.</p>
             </button>
           </div>
         )}

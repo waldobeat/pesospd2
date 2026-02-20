@@ -315,70 +315,70 @@ export const CalibrationTest: React.FC<CalibrationTestProps> = ({ isOpen, onClos
     const currentStepMeasured = steps[currentStepIndex]?.measured !== null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/90 backdrop-blur-md p-4 animate-in fade-in duration-200">
-            <div className="w-full max-w-2xl bg-[#0f172a] border border-blue-500/30 rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh] overflow-y-auto custom-scrollbar">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-2 sm:p-4 bg-black/90 backdrop-blur-md animate-in fade-in duration-200">
+            <div className="w-full max-w-[95vw] sm:max-w-2xl bg-[#0f172a] border border-blue-500/30 rounded-2xl sm:rounded-3xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh] sm:max-h-[90vh] overflow-y-auto custom-scrollbar">
 
                 {/* Header */}
-                <div className="p-8 border-b border-white/10 bg-gradient-to-r from-blue-900/20 to-transparent flex-shrink-0">
-                    <h2 className="text-2xl font-bold text-white mb-2">Prueba de 3 Puntos</h2>
-                    <p className="text-white/50">Secuencia de carga acumulativa: 5kg → 10kg → 15kg</p>
+                <div className="p-4 sm:p-8 border-b border-white/10 bg-gradient-to-r from-blue-900/20 to-transparent flex-shrink-0">
+                    <h2 className="text-xl sm:text-2xl font-bold text-white mb-1 sm:mb-2">Prueba de 3 Puntos</h2>
+                    <p className="text-white/50 text-xs sm:text-base">Secuencia de carga acumulativa: 5kg → 10kg → 15kg</p>
                 </div>
 
                 {/* Main Content */}
-                <div className="p-8 space-y-8 flex-grow">
+                <div className="p-4 sm:p-8 space-y-6 sm:space-y-8 flex-grow">
 
                     {/* Progress Steps */}
-                    <div className="flex justify-between items-center relative">
+                    <div className="flex justify-between items-center relative px-2 sm:px-0">
                         {/* Connecting Line */}
                         <div className="absolute top-1/2 left-0 w-full h-1 bg-white/10 -z-10" />
 
                         {steps.map((step, idx) => (
-                            <div key={idx} className="flex flex-col items-center gap-4 bg-[#0f172a] px-4 z-10">
+                            <div key={idx} className="flex flex-col items-center gap-2 sm:gap-4 bg-[#0f172a] px-2 sm:px-4 z-10">
                                 <div className={clsx(
-                                    "w-12 h-12 rounded-full flex items-center justify-center border-2 transition-all duration-500",
+                                    "w-10 h-10 sm:w-12 sm:h-12 rounded-full flex items-center justify-center border-2 transition-all duration-500",
                                     step.status === 'success' ? "bg-green-500 border-green-500 text-black shadow-[0_0_20px_rgba(34,197,94,0.5)]" :
                                         step.status === 'fail' ? "bg-red-500 border-red-500 text-white" :
                                             idx === currentStepIndex ? "bg-blue-600 border-blue-400 text-white animate-pulse" :
                                                 "bg-white/5 border-white/10 text-white/30"
                                 )}>
-                                    {step.status === 'success' ? <CheckCircle className="w-6 h-6" /> :
-                                        <span className="font-bold">{idx + 1}</span>}
+                                    {step.status === 'success' ? <CheckCircle className="w-5 h-5 sm:w-6 sm:h-6" /> :
+                                        <span className="font-bold text-sm sm:text-base">{idx + 1}</span>}
                                 </div>
                                 <div className="text-center">
-                                    <div className="text-sm font-bold text-white/80">{step.target} kg</div>
-                                    <div className="text-xs text-white/40">Objetivo</div>
+                                    <div className="text-xs sm:text-sm font-bold text-white/80">{step.target} kg</div>
+                                    <div className="text-[10px] sm:text-xs text-white/40">Objetivo</div>
                                 </div>
                             </div>
                         ))}
                     </div>
 
                     {/* Current Action */}
-                    <div className="bg-white/5 rounded-2xl p-6 text-center border border-white/10">
+                    <div className="bg-white/5 rounded-2xl p-4 sm:p-6 text-center border border-white/10">
                         {currentStepIndex < steps.length ? (
                             <>
-                                <p className="text-white/60 mb-2 text-lg">Por favor, coloque carga hasta llegar a:</p>
-                                <div className="text-6xl font-mono font-bold text-blue-400 tracking-tighter mb-6">
-                                    {steps[currentStepIndex].target.toFixed(2)} <span className="text-2xl text-white/30">kg</span>
+                                <p className="text-white/60 mb-2 text-sm sm:text-lg">Por favor, coloque carga hasta llegar a:</p>
+                                <div className="text-5xl sm:text-6xl font-mono font-bold text-blue-400 tracking-tighter mb-4 sm:mb-6">
+                                    {steps[currentStepIndex].target.toFixed(2)} <span className="text-xl sm:text-2xl text-white/30">kg</span>
                                 </div>
 
-                                <div className="flex flex-col items-center gap-4 bg-white/5 p-6 rounded-2xl border border-white/10 w-full mb-4">
-                                    <p className="text-white/60 text-lg font-medium">Lectura Actual Instrumento</p>
+                                <div className="flex flex-col items-center gap-2 sm:gap-4 bg-white/5 p-4 sm:p-6 rounded-2xl border border-white/10 w-full mb-4">
+                                    <p className="text-white/60 text-sm sm:text-lg font-medium">Lectura Actual Instrumento</p>
 
                                     <div className="flex flex-col items-center">
-                                        <span className="text-6xl font-mono font-bold text-white tracking-tighter drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">
-                                            {normalizedWeight.toFixed(2)} <span className="text-2xl text-white/40">kg</span>
+                                        <span className="text-4xl sm:text-6xl font-mono font-bold text-white tracking-tighter drop-shadow-[0_0_10px_rgba(255,255,255,0.2)]">
+                                            {normalizedWeight.toFixed(2)} <span className="text-lg sm:text-2xl text-white/40">kg</span>
                                         </span>
 
                                         {isLikelyGrams && (
-                                            <span className="text-yellow-400/80 text-sm mt-1 font-mono">
+                                            <span className="text-yellow-400/80 text-xs sm:text-sm mt-1 font-mono">
                                                 (Detectado: {currentWeight} g → {normalizedWeight.toFixed(2)} kg)
                                             </span>
                                         )}
                                     </div>
 
-                                    <div className="flex items-center gap-2 px-3 py-1 bg-black/20 rounded-full border border-white/5">
-                                        <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                                        <span className="text-xs text-white/30 font-mono">
+                                    <div className="flex items-center gap-2 px-2 sm:px-3 py-1 bg-black/20 rounded-full border border-white/5 mt-2">
+                                        <div className="w-1.5 h-1.5 sm:w-2 sm:h-2 rounded-full bg-green-500 animate-pulse" />
+                                        <span className="text-[10px] sm:text-xs text-white/30 font-mono">
                                             Act: {new Date().toLocaleTimeString()} • Raw: {currentWeight}
                                         </span>
                                     </div>
@@ -387,23 +387,23 @@ export const CalibrationTest: React.FC<CalibrationTestProps> = ({ isOpen, onClos
                                 <div className="flex flex-col items-center gap-2 w-full">
                                     {currentStepMeasured ? (
                                         <div className="w-full animate-in fade-in slide-in-from-bottom-2">
-                                            <div className="bg-green-500/10 border border-green-500/20 p-4 rounded-xl mb-4">
-                                                <p className="text-green-400 text-sm font-bold mb-1">Peso Capturado</p>
-                                                <p className="text-3xl font-mono text-white">{steps[currentStepIndex].measured?.toFixed(2)} kg</p>
+                                            <div className="bg-green-500/10 border border-green-500/20 p-3 sm:p-4 rounded-xl mb-3 sm:mb-4">
+                                                <p className="text-green-400 text-xs sm:text-sm font-bold mb-1">Peso Capturado</p>
+                                                <p className="text-2xl sm:text-3xl font-mono text-white">{steps[currentStepIndex].measured?.toFixed(2)} kg</p>
                                             </div>
                                             <button
                                                 onClick={nextStep}
-                                                className="w-full px-8 py-3 bg-green-600 hover:bg-green-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-green-900/40 flex items-center justify-center gap-2"
+                                                className="w-full px-6 sm:px-8 py-3 bg-green-600 hover:bg-green-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-green-900/40 flex items-center justify-center gap-2 text-sm sm:text-base"
                                             >
-                                                Siguiente Fase <ArrowRight className="w-5 h-5" />
+                                                Siguiente Fase <ArrowRight className="w-4 h-4 sm:w-5 sm:h-5" />
                                             </button>
                                         </div>
                                     ) : (
                                         <button
                                             onClick={captureCurrent}
-                                            className="mt-4 px-8 py-3 bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-blue-900/40 flex items-center gap-2"
+                                            className="mt-2 sm:mt-4 px-6 sm:px-8 py-3 w-full sm:w-auto bg-blue-600 hover:bg-blue-500 text-white rounded-xl font-bold transition-all shadow-lg shadow-blue-900/40 flex items-center justify-center gap-2 text-sm sm:text-base"
                                         >
-                                            <ArrowRight className="w-5 h-5" />
+                                            <ArrowRight className="w-4 h-4 sm:w-5 h-5" />
                                             Validar Peso
                                         </button>
                                     )}
@@ -437,41 +437,41 @@ export const CalibrationTest: React.FC<CalibrationTestProps> = ({ isOpen, onClos
 
                                     return (
                                         <>
-                                            <div className={clsx("text-3xl font-bold mb-2 flex items-center justify-center gap-3", passed ? "text-green-400" : "text-red-400")}>
-                                                {passed ? <CheckCircle className="w-8 h-8" /> : <AlertTriangle className="w-8 h-8" />}
-                                                {passed ? "¡Prueba Exitosa!" : "Fallo de Calibración"}
+                                            <div className={clsx("text-2xl sm:text-3xl font-bold mb-2 flex flex-col sm:flex-row items-center justify-center gap-2 sm:gap-3", passed ? "text-green-400" : "text-red-400")}>
+                                                {passed ? <CheckCircle className="w-8 h-8 shrink-0" /> : <AlertTriangle className="w-8 h-8 shrink-0" />}
+                                                <span className="text-center">{passed ? "¡Prueba Exitosa!" : "Fallo de Calibración"}</span>
                                             </div>
 
-                                            <div className="bg-white/5 p-4 rounded-xl inline-block text-left mb-6 min-w-[300px]">
+                                            <div className="bg-white/5 p-4 rounded-xl inline-block text-left mb-6 w-full sm:min-w-[300px]">
                                                 <div className="flex justify-between mb-2">
-                                                    <span className="text-white/50">Objetivo Final:</span>
-                                                    <span className="text-white font-mono">{totalTarget.toFixed(2)} kg</span>
+                                                    <span className="text-white/50 text-sm sm:text-base">Objetivo Final:</span>
+                                                    <span className="text-white font-mono text-sm sm:text-base">{totalTarget.toFixed(2)} kg</span>
                                                 </div>
                                                 <div className="flex justify-between mb-2">
-                                                    <span className="text-white/50">Lectura Final:</span>
-                                                    <span className="text-white font-mono">
+                                                    <span className="text-white/50 text-sm sm:text-base">Lectura Final:</span>
+                                                    <span className="text-white font-mono text-sm sm:text-base text-right">
                                                         {totalMeasuredCombined.toFixed(2)} kg
-                                                        {isGrams && <span className="text-white/50 text-sm ml-2">({rawFinalMeasured.toFixed(0)} g)</span>}
+                                                        {isGrams && <span className="text-white/50 text-[10px] sm:text-sm block sm:inline sm:ml-2">({rawFinalMeasured.toFixed(0)} g)</span>}
                                                     </span>
                                                 </div>
                                                 <div className="h-px bg-white/10 my-2" />
                                                 <div className="flex justify-between items-center">
-                                                    <span className="text-white/50">Diferencia:</span>
-                                                    <span className={clsx("font-mono font-bold text-lg", passed ? "text-green-400" : "text-red-400")}>
+                                                    <span className="text-white/50 text-sm sm:text-base">Diferencia:</span>
+                                                    <span className={clsx("font-mono font-bold text-base sm:text-lg", passed ? "text-green-400" : "text-red-400")}>
                                                         {diff > 0 ? "+" : ""}{diff.toFixed(2)} kg
                                                     </span>
                                                 </div>
                                                 {!passed && (
-                                                    <div className="mt-4 text-red-300 text-sm bg-red-500/10 p-2 rounded border border-red-500/20 text-center">
+                                                    <div className="mt-4 text-red-300 text-xs sm:text-sm bg-red-500/10 p-2 rounded border border-red-500/20 text-center">
                                                         ⚠️ Error de rango {diff > 0 ? "por encima" : "por debajo"} (+/- {THRESHOLD.toFixed(2)}kg)
                                                     </div>
                                                 )}
                                             </div>
 
                                             {/* Report Generation Section (ALWAYS VISIBLE) */}
-                                            <div className={clsx("mt-6 p-4 rounded-xl border", passed ? "bg-blue-500/10 border-blue-500/20" : "bg-red-500/10 border-red-500/20")}>
-                                                <h3 className={clsx("font-bold mb-4 flex items-center gap-2 justify-center", passed ? "text-blue-400" : "text-red-400")}>
-                                                    <FileDown className="w-5 h-5" />
+                                            <div className={clsx("mt-4 sm:mt-6 p-4 rounded-xl border w-full", passed ? "bg-blue-500/10 border-blue-500/20" : "bg-red-500/10 border-red-500/20")}>
+                                                <h3 className={clsx("font-bold mb-4 flex flex-col sm:flex-row items-center gap-2 justify-center text-center", passed ? "text-blue-400" : "text-red-400")}>
+                                                    <FileDown className="w-5 h-5 shrink-0" />
                                                     {passed ? "Generar Certificado" : "Generar Reporte de Fallo"}
                                                 </h3>
                                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4 text-left">
@@ -495,13 +495,13 @@ export const CalibrationTest: React.FC<CalibrationTestProps> = ({ isOpen, onClos
                                                         />
                                                     </div>
                                                     <div className="md:col-span-2">
-                                                        <label className="block text-white/50 text-sm mb-1">Nota (Opcional)</label>
+                                                        <label className="block text-white/50 text-xs sm:text-sm mb-1">Nota (Opcional)</label>
                                                         <textarea
                                                             value={note}
                                                             onChange={(e) => setNote(e.target.value)}
                                                             placeholder="Observaciones adicionales..."
                                                             rows={2}
-                                                            className="w-full bg-black/50 border border-white/10 rounded px-3 py-2 text-white outline-none focus:border-blue-500 resize-none"
+                                                            className="w-full bg-black/50 border border-white/10 rounded px-3 py-2 text-white text-xs sm:text-sm outline-none focus:border-blue-500 resize-none"
                                                         />
                                                     </div>
                                                 </div>
@@ -539,10 +539,10 @@ export const CalibrationTest: React.FC<CalibrationTestProps> = ({ isOpen, onClos
                 </div>
 
                 {/* Footer */}
-                <div className="p-6 border-t border-white/10 bg-white/5 flex justify-end flex-shrink-0">
+                <div className="p-4 sm:p-6 border-t border-white/10 bg-white/5 flex flex-col sm:flex-row justify-end flex-shrink-0 gap-3">
                     <button
                         onClick={onClose}
-                        className="px-6 py-2 text-white/50 hover:text-white transition-colors"
+                        className="w-full sm:w-auto px-6 py-2 sm:py-3 text-white/50 hover:text-white hover:bg-white/10 transition-colors rounded-xl border border-white/10 sm:border-transparent text-sm sm:text-base font-bold"
                     >
                         Cerrar
                     </button>

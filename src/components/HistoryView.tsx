@@ -195,14 +195,14 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                 </div>
 
                 {/* Table */}
-                <div className="overflow-x-auto overflow-y-auto bg-black/40 flex-1 relative">
+                <div className="overflow-x-hidden md:overflow-x-auto overflow-y-auto bg-black/40 flex-1 relative p-2 sm:p-0 custom-scrollbar">
                     {loading && (
                         <div className="absolute inset-0 bg-black/50 backdrop-blur-sm z-20 flex items-center justify-center text-white">
                             Cargando historial...
                         </div>
                     )}
-                    <table className="w-full text-left border-collapse min-w-[800px]">
-                        <thead className="bg-white/5 sticky top-0 backdrop-blur-md z-10">
+                    <table className="w-full text-left border-collapse block md:table md:min-w-[800px]">
+                        <thead className="bg-white/5 sticky top-0 backdrop-blur-md z-10 hidden md:table-header-group">
                             <tr>
                                 <th className="p-4 text-xs font-bold text-white/40 uppercase tracking-wider w-[120px]">Tipo</th>
                                 <th className="p-4 text-xs font-bold text-white/40 uppercase tracking-wider w-[150px]">Fecha</th>
@@ -210,102 +210,127 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                 <th className="p-4 text-xs font-bold text-white/40 uppercase tracking-wider">Modelo / Serial</th>
                                 <th className="p-4 text-xs font-bold text-white/40 uppercase tracking-wider text-right">Resultado / Estado</th>
                                 <th className="p-4 text-xs font-bold text-white/40 uppercase tracking-wider">Detalles</th>
-                                <th className="p-4 text-xs font-bold text-white/40 uppercase tracking-wider text-center w-[80px]">Acciones</th>
+                                <th className="p-4 text-xs font-bold text-white/40 uppercase tracking-wider text-center w-[120px]">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-white/5">
+                        <tbody className="divide-y-0 md:divide-y divide-white/5 block md:table-row-group space-y-4 md:space-y-0">
                             {filteredRecords.length === 0 ? (
-                                <tr>
-                                    <td colSpan={7} className="p-12 text-center text-white/20">
+                                <tr className="block md:table-row">
+                                    <td colSpan={7} className="p-12 text-center text-white/20 block md:table-cell">
                                         {loading ? "..." : "No hay registros encontrados."}
                                     </td>
                                 </tr>
                             ) : (
                                 filteredRecords.map((record) => (
-                                    <tr key={record.id} className="hover:bg-white/5 transition-colors group">
-                                        <td className="p-4 px-6">
+                                    <tr key={record.id} className="hover:bg-white/5 transition-colors group flex flex-col md:table-row bg-[#1e1e24] md:bg-transparent rounded-2xl md:rounded-none border border-white/10 md:border-none p-4 md:p-0 relative shadow-lg md:shadow-none">
+                                        <td className="p-0 md:p-4 md:px-6 flex items-center gap-3 md:table-cell mb-4 md:mb-0 border-b border-white/5 md:border-none pb-3 md:pb-0">
                                             {record.type === 'repair' ? (
-                                                <div className="w-8 h-8 rounded-full bg-orange-500/20 flex items-center justify-center text-orange-400" title="Reparación Manual">
+                                                <div className="w-8 h-8 rounded-full bg-orange-500/20 flex items-center justify-center text-orange-400 shrink-0" title="Reparación Manual">
                                                     <Wrench className="w-4 h-4" />
                                                 </div>
                                             ) : record.type === 'issue' ? (
-                                                <div className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center text-red-400" title="Avería Reportada">
+                                                <div className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center text-red-400 shrink-0" title="Avería Reportada">
                                                     <AlertTriangle className="w-4 h-4" />
                                                 </div>
                                             ) : record.type === 'inventory' ? (
-                                                <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400" title="Registro de Inventario">
+                                                <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400 shrink-0" title="Registro de Inventario">
                                                     <PackagePlus className="w-4 h-4" />
                                                 </div>
                                             ) : (
-                                                <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400" title="Calibración">
+                                                <div className="w-8 h-8 rounded-full bg-emerald-500/20 flex items-center justify-center text-emerald-400 shrink-0" title="Calibración">
                                                     <Calendar className="w-4 h-4" />
                                                 </div>
                                             )}
-                                        </td>
-                                        <td className="p-4 text-white/60 font-mono text-sm whitespace-nowrap">
-                                            {new Date(record.date).toLocaleDateString()}
-                                            <span className="block text-xs text-white/30">
-                                                {new Date(record.date).toLocaleTimeString()}
+                                            <span className="md:hidden font-bold text-white/80 text-sm tracking-wide">
+                                                {record.type === 'repair' ? 'Reparación Manual' : record.type === 'issue' ? 'Avería Reportada' : record.type === 'inventory' ? 'Inventario' : 'Prueba de Calibración'}
                                             </span>
+
+                                            {/* Delete Button Mobile */}
+                                            <button
+                                                onClick={() => handleDelete(record.id)}
+                                                className="absolute top-4 right-4 md:hidden p-2 bg-red-500/10 hover:bg-red-500/30 text-red-400 rounded-lg transition-all"
+                                                title="Eliminar Registro"
+                                            >
+                                                <Trash2 className="w-4 h-4" />
+                                            </button>
                                         </td>
-                                        <td className="p-4">
-                                            <div className="text-sm font-medium text-white/80">
-                                                {record.user && record.user !== 'Desconocido' ? record.user.split('@')[0] : "Desconocido"}
-                                            </div>
-                                            <div className="text-xs text-white/30 truncate max-w-[150px]">
-                                                {record.user === 'admin@sisdepe.com' ? 'Administrador' : 'Usuario'}
-                                            </div>
-                                        </td>
-                                        <td className="p-4">
-                                            <div className="font-bold text-white">{record.model}</div>
-                                            <div className="text-sm text-white/50 font-mono">{record.serial}</div>
-                                        </td>
-                                        <td className="p-4 text-right">
-                                            {record.type === 'repair' ? (
-                                                <span className={clsx("inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium",
-                                                    record.repaired ? "bg-green-500/10 text-green-400" : "bg-red-500/10 text-red-400"
-                                                )}>
-                                                    {record.repaired ? "Reparado" : "Pendiente"}
+                                        <td className="p-0 md:p-4 text-white/60 font-mono text-sm whitespace-nowrap flex justify-between items-center md:table-cell mb-2 md:mb-0">
+                                            <span className="md:hidden text-xs text-white/40 uppercase font-bold tracking-wider">Fecha</span>
+                                            <div className="text-right md:text-left">
+                                                {new Date(record.date).toLocaleDateString()}
+                                                <span className="block text-xs text-white/30 md:inline md:ml-2">
+                                                    {new Date(record.date).toLocaleTimeString()}
                                                 </span>
-                                            ) : record.type === 'issue' ? (
-                                                isAdmin ? (
-                                                    <span className={clsx("inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider",
-                                                        record.status === 'recibido_en_sucursal' ? "bg-green-500/20 text-green-400 border border-green-500/30" :
-                                                            record.status === 'enviado_a_sucursal' ? "bg-blue-500/20 text-blue-400 border border-blue-500/30" :
-                                                                record.status === 'reparado' ? "bg-teal-500/20 text-teal-400 border border-teal-500/30" :
-                                                                    record.status === 'en_taller' ? "bg-orange-500/20 text-orange-400 border border-orange-500/30" :
-                                                                        record.status === 'enviado_a_taller' ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30" :
-                                                                            record.status === 'dado_de_baja' ? "bg-red-500/20 text-red-400 border border-red-500/30" :
-                                                                                "bg-gray-500/20 text-gray-400 border border-gray-500/30"
+                                            </div>
+                                        </td>
+                                        <td className="p-0 md:p-4 flex justify-between items-center md:table-cell mb-2 md:mb-0">
+                                            <span className="md:hidden text-xs text-white/40 uppercase font-bold tracking-wider">Usuario</span>
+                                            <div className="text-right md:text-left">
+                                                <div className="text-sm font-medium text-white/80">
+                                                    {record.user && record.user !== 'Desconocido' ? record.user.split('@')[0] : "Desconocido"}
+                                                </div>
+                                                <div className="text-xs text-white/30 truncate max-w-[150px]">
+                                                    {record.user === 'admin@sisdepe.com' ? 'Administrador' : 'Usuario'}
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td className="p-0 md:p-4 flex justify-between items-center md:table-cell mb-3 md:mb-0">
+                                            <span className="md:hidden text-xs text-white/40 uppercase font-bold tracking-wider">Equipo</span>
+                                            <div className="text-right md:text-left">
+                                                <div className="font-bold text-white">{record.model}</div>
+                                                <div className="text-sm text-white/50 font-mono">{record.serial}</div>
+                                            </div>
+                                        </td>
+                                        <td className="p-2 md:p-4 text-right flex justify-between items-center md:table-cell mb-3 md:mb-0 bg-black/20 md:bg-transparent rounded-lg md:rounded-none">
+                                            <span className="md:hidden text-xs text-white/40 uppercase font-bold tracking-wider">Estado</span>
+                                            <div className="flex justify-end">
+                                                {record.type === 'repair' ? (
+                                                    <span className={clsx("inline-flex items-center gap-1.5 px-2.5 py-1 md:py-0.5 rounded-full text-xs font-medium",
+                                                        record.repaired ? "bg-green-500/10 text-green-400" : "bg-red-500/10 text-red-400"
                                                     )}>
-                                                        {record.status.replace(/_/g, ' ')}
+                                                        {record.repaired ? "Reparado" : "Pendiente"}
+                                                    </span>
+                                                ) : record.type === 'issue' ? (
+                                                    isAdmin ? (
+                                                        <span className={clsx("inline-flex items-center gap-1.5 px-2.5 py-1 md:py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider text-center",
+                                                            record.status === 'recibido_en_sucursal' ? "bg-green-500/20 text-green-400 border border-green-500/30" :
+                                                                record.status === 'enviado_a_sucursal' ? "bg-blue-500/20 text-blue-400 border border-blue-500/30" :
+                                                                    record.status === 'reparado' ? "bg-teal-500/20 text-teal-400 border border-teal-500/30" :
+                                                                        record.status === 'en_taller' ? "bg-orange-500/20 text-orange-400 border border-orange-500/30" :
+                                                                            record.status === 'enviado_a_taller' ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30" :
+                                                                                record.status === 'dado_de_baja' ? "bg-red-500/20 text-red-400 border border-red-500/30" :
+                                                                                    "bg-gray-500/20 text-gray-400 border border-gray-500/30"
+                                                        )}>
+                                                            {record.status.replace(/_/g, ' ')}
+                                                        </span>
+                                                    ) : (
+                                                        <span className={clsx("inline-flex items-center gap-1.5 px-2.5 py-1 md:py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider text-center",
+                                                            record.status === 'recibido_en_sucursal' ? "bg-green-500/20 text-green-400" :
+                                                                record.status === 'enviado_a_sucursal' ? "bg-blue-500/20 text-blue-400" :
+                                                                    record.status === 'reparado' ? "bg-teal-500/20 text-teal-400" :
+                                                                        record.status === 'en_taller' ? "bg-orange-500/20 text-orange-400" :
+                                                                            record.status === 'enviado_a_taller' ? "bg-yellow-500/20 text-yellow-400" :
+                                                                                record.status === 'dado_de_baja' ? "bg-red-500/20 text-red-400" :
+                                                                                    "bg-gray-500/20 text-gray-400"
+                                                        )}>
+                                                            {record.status.replace(/_/g, ' ')}
+                                                        </span>
+                                                    )
+                                                ) : record.type === 'inventory' ? (
+                                                    <span className="inline-flex items-center gap-1.5 px-2.5 py-1 md:py-0.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20">
+                                                        Alta de Inventario
                                                     </span>
                                                 ) : (
-                                                    <span className={clsx("inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider",
-                                                        record.status === 'recibido_en_sucursal' ? "bg-green-500/20 text-green-400" :
-                                                            record.status === 'enviado_a_sucursal' ? "bg-blue-500/20 text-blue-400" :
-                                                                record.status === 'reparado' ? "bg-teal-500/20 text-teal-400" :
-                                                                    record.status === 'en_taller' ? "bg-orange-500/20 text-orange-400" :
-                                                                        record.status === 'enviado_a_taller' ? "bg-yellow-500/20 text-yellow-400" :
-                                                                            record.status === 'dado_de_baja' ? "bg-red-500/20 text-red-400" :
-                                                                                "bg-gray-500/20 text-gray-400"
-                                                    )}>
-                                                        {record.status.replace(/_/g, ' ')}
-                                                    </span>
-                                                )
-                                            ) : record.type === 'inventory' ? (
-                                                <span className="inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-500/10 text-blue-400 border border-blue-500/20">
-                                                    Alta de Inventario
-                                                </span>
-                                            ) : (
-                                                <div className="font-mono text-emerald-300">
-                                                    {record.finalWeight?.toFixed(2)} / {record.targetWeight?.toFixed(2)} kg
-                                                </div>
-                                            )}
+                                                    <div className="font-mono text-emerald-300">
+                                                        {record.finalWeight?.toFixed(2)} / {record.targetWeight?.toFixed(2)} kg
+                                                    </div>
+                                                )}
+                                            </div>
                                         </td>
-                                        <td className="p-4 text-white/70 text-sm max-w-xs">
+                                        <td className="p-3 md:p-4 text-white/70 text-sm max-w-none md:max-w-xs flex flex-col md:table-cell mb-4 md:mb-0 bg-black/20 md:bg-transparent rounded-lg md:rounded-none">
+                                            <span className="md:hidden text-[10px] text-white/40 uppercase font-bold tracking-wider mb-2">Detalles</span>
                                             {record.type === 'repair' ? (
-                                                <div className="truncate text-white/50" title={record.diagnosis}>
+                                                <div className="text-white/50" title={record.diagnosis}>
                                                     <span className="text-orange-300/50">Diag:</span> {record.diagnosis}
                                                 </div>
                                             ) : record.type === 'issue' ? (
@@ -321,29 +346,27 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
 
                                                     {record.diagnostic && (
                                                         <div className="mt-3 p-3 bg-white/5 rounded-lg border border-white/5">
-                                                            <span className="text-[10px] uppercase tracking-wider text-white/50 font-bold block mb-1">Diagnóstico Técnico</span>
+                                                            <span className="text-[10px] uppercase tracking-wider text-white/50 font-bold block mb-1">Diagnóstico Téc.</span>
                                                             <p className="text-white/80 text-sm whitespace-pre-wrap">{record.diagnostic}</p>
                                                         </div>
                                                     )}
                                                     {record.solution && (
                                                         <div className="mt-2 p-3 bg-white/5 rounded-lg border border-white/5">
-                                                            <span className="text-[10px] uppercase tracking-wider text-white/50 font-bold block mb-1">Acción y Solución</span>
+                                                            <span className="text-[10px] uppercase tracking-wider text-white/50 font-bold block mb-1">Solución</span>
                                                             <p className="text-white/80 text-sm whitespace-pre-wrap">{record.solution}</p>
                                                         </div>
                                                     )}
-
-
                                                 </div>
                                             ) : (
-                                                <div className="truncate text-white/50">
+                                                <div className="text-white/50 break-words">
                                                     {record.note || <span className="text-white/20 italic">Sin nota</span>}
                                                 </div>
                                             )}
                                         </td>
-                                        <td className="p-4 text-center">
-                                            <div className="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                                        <td className="p-0 md:p-4 text-center block md:table-cell mt-2 md:mt-0 border-t border-white/5 md:border-none pt-4 md:pt-0">
+                                            <div className="flex flex-col md:items-center justify-center gap-2 opacity-100 md:opacity-0 group-hover:opacity-100 transition-opacity w-full">
                                                 {record.type === 'issue' && (
-                                                    <div className="flex flex-col gap-2 w-full max-w-[200px] mx-auto text-sm">
+                                                    <div className="flex flex-col gap-2 w-full mx-auto text-sm">
 
                                                         {!isAdmin && record.status === 'pendiente_envio' && (
                                                             <button
@@ -356,7 +379,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                                                         loadRecords();
                                                                     }
                                                                 }}
-                                                                className="w-full py-2 bg-yellow-600 hover:bg-yellow-500 text-white text-xs font-bold rounded-lg shadow-[0_0_15px_rgba(202,138,4,0.3)] transition-all"
+                                                                className="w-full py-2.5 md:py-2 bg-yellow-600 hover:bg-yellow-500 text-white text-xs font-bold rounded-lg shadow-[0_0_15px_rgba(202,138,4,0.3)] transition-all"
                                                             >
                                                                 MARCAR ENVIADO A TALLER
                                                             </button>
@@ -372,7 +395,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                                                                 loadRecords();
                                                                             }
                                                                         }}
-                                                                        className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-lg shadow-lg"
+                                                                        className="w-full py-2.5 md:py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-lg shadow-lg"
                                                                     >
                                                                         RECIBIR EN TALLER
                                                                     </button>
@@ -396,7 +419,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                                                                 loadRecords();
                                                                             }
                                                                         }}
-                                                                        className="w-full py-2 bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold rounded-lg shadow-lg"
+                                                                        className="w-full py-2.5 md:py-2 bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold rounded-lg shadow-lg"
                                                                     >
                                                                         MARCAR REPARADO
                                                                     </button>
@@ -411,7 +434,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                                                                 return;
                                                                             }
                                                                             const msg = prompt("Mensaje de cierre para el usuario (opcional):", "Equipo reparado. Por favor confirme recepción al llegar.");
-                                                                            if (confirm(`¿Proceder con el envío(Guía: ${tracking}) ? `)) {
+                                                                            if (confirm(`¿Proceder con el envío (Guía: ${tracking}) ? `)) {
                                                                                 await historyService.update(record.id!, {
                                                                                     status: 'enviado_a_sucursal',
                                                                                     trackingNumber: tracking,
@@ -421,7 +444,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                                                                 loadRecords();
                                                                             }
                                                                         }}
-                                                                        className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg shadow-lg"
+                                                                        className="w-full py-2.5 md:py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg shadow-lg"
                                                                     >
                                                                         ENVIAR A SUCURSAL
                                                                     </button>
@@ -441,13 +464,11 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                                                                 loadRecords();
                                                                             }
                                                                         }}
-                                                                        className="w-full py-1.5 mt-2 bg-red-950/40 border border-red-500/20 text-red-500/70 hover:bg-red-900 border hover:border-red-500 hover:text-white text-[10px] font-bold rounded-lg transition-all"
+                                                                        className="w-full py-2 md:py-1.5 mt-2 bg-red-950/40 border border-red-500/20 text-red-500/70 hover:bg-red-900 border hover:border-red-500 hover:text-white text-[10px] font-bold rounded-lg transition-all"
                                                                     >
                                                                         DAR DE BAJA
                                                                     </button>
                                                                 )}
-
-
 
                                                                 <button
                                                                     onClick={async () => {
@@ -465,7 +486,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                                                             }
                                                                         }
                                                                     }}
-                                                                    className="w-full py-1.5 mt-2 bg-white/5 border border-white/10 text-white/50 hover:bg-white/10 hover:text-white text-[10px] font-bold rounded-lg transition-all"
+                                                                    className="w-full py-2 md:py-1.5 mt-2 bg-white/5 border border-white/10 text-white/50 hover:bg-white/10 hover:text-white text-[10px] font-bold rounded-lg transition-all"
                                                                 >
                                                                     EDITAR REPORTE
                                                                 </button>
@@ -476,18 +497,20 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                                         {record.status !== 'pendiente_envio' && (
                                                             <button
                                                                 onClick={() => setChatTicket(record as IssueRecord)}
-                                                                className="w-full py-1.5 mt-2 bg-[#18181b] border border-[#27272a] hover:border-blue-500/50 hover:bg-black/50 text-white/70 hover:text-white text-[10px] font-bold rounded-lg transition-all flex items-center justify-center gap-2"
+                                                                className="w-full py-2 md:py-1.5 mt-2 bg-[#18181b] border border-[#27272a] hover:border-blue-500/50 hover:bg-black/50 text-white/70 hover:text-white text-[10px] font-bold rounded-lg transition-all flex items-center justify-center gap-2"
                                                             >
-                                                                <MessageSquare className="w-3 h-3" />
+                                                                <MessageSquare className="w-4 h-4 md:w-3 md:h-3" />
                                                                 CHAT DE TICKET
                                                             </button>
                                                         )}
 
                                                     </div>
                                                 )}
+
+                                                {/* Desktop Delete Btn */}
                                                 <button
                                                     onClick={() => handleDelete(record.id)}
-                                                    className="p-2 bg-red-500/10 hover:bg-red-500/30 text-red-400 rounded-lg transition-all"
+                                                    className="hidden md:block p-2 bg-red-500/10 hover:bg-red-500/30 text-red-400 rounded-lg transition-all"
                                                     title="Eliminar Registro"
                                                 >
                                                     <Trash2 className="w-4 h-4" />

@@ -31,12 +31,12 @@ export const Scoreboard: React.FC<ScoreboardProps> = ({
                 <div className="absolute top-0 left-1/4 w-1/2 h-40 bg-blue-500/10 blur-[80px] rounded-full -z-10 pointer-events-none" />
 
                 {/* Header */}
-                <div className="flex justify-between items-center mb-8">
+                <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6 sm:mb-8 gap-4 sm:gap-0">
                     <div className="flex flex-col">
                         <span className="text-[10px] font-bold tracking-widest text-blue-400/80 uppercase mb-1">Dato de Precisión</span>
                         <div className="flex items-center gap-2">
-                            <Scale className="w-5 h-5 text-white/80" />
-                            <span className="text-sm font-semibold text-white/90 tracking-wide">Módulo de Pesaje</span>
+                            <Scale className="w-5 h-5 text-white/80 shrink-0" />
+                            <span className="text-sm sm:text-base font-semibold text-white/90 tracking-wide">Módulo de Pesaje</span>
                         </div>
                     </div>
                     <div className={clsx(
@@ -51,15 +51,15 @@ export const Scoreboard: React.FC<ScoreboardProps> = ({
                 </div>
 
                 {/* Main Display */}
-                <div className="relative bg-gradient-to-b from-[#050505] to-[#0a0a0c] rounded-2xl p-8 border border-white/[0.03] shadow-inner mb-8 flex flex-col items-center justify-center min-h-[220px]">
+                <div className="relative bg-gradient-to-b from-[#050505] to-[#0a0a0c] rounded-2xl p-6 sm:p-8 border border-white/[0.03] shadow-inner mb-6 sm:mb-8 flex flex-col items-center justify-center min-h-[160px] sm:min-h-[220px]">
                     <div className={clsx(
-                        "font-mono font-bold text-center tabular-nums tracking-tighter transition-all leading-none",
-                        error ? "text-red-500 text-6xl" : "text-transparent bg-clip-text bg-gradient-to-b from-white to-white/70 text-7xl md:text-9xl [text-shadow:_0_4px_40px_rgba(255,255,255,0.1)]"
+                        "font-mono font-bold text-center tabular-nums tracking-tighter transition-all leading-none w-full",
+                        error ? "text-red-500 text-4xl sm:text-6xl break-words" : "text-transparent bg-clip-text bg-gradient-to-b from-white to-white/70 text-6xl sm:text-7xl md:text-9xl [text-shadow:_0_4px_40px_rgba(255,255,255,0.1)]"
                     )}>
                         {error ? "ERROR" : weight.toFixed(2)}
                     </div>
                     {!error && (
-                        <div className="absolute bottom-6 right-8 text-2xl font-black text-white/10 tracking-widest">
+                        <div className="absolute bottom-4 sm:bottom-6 right-4 sm:right-8 text-xl sm:text-2xl font-black text-white/10 tracking-widest">
                             {unit.toUpperCase()}
                         </div>
                     )}
@@ -74,11 +74,11 @@ export const Scoreboard: React.FC<ScoreboardProps> = ({
 
                 {/* Error Message */}
                 {error && (
-                    <div className="mt-8 p-5 bg-red-500/5 border border-red-500/20 rounded-2xl flex items-center gap-4 text-red-400 backdrop-blur-sm">
+                    <div className="mt-6 sm:mt-8 p-4 sm:p-5 bg-red-500/5 border border-red-500/20 rounded-2xl flex flex-col sm:flex-row items-center sm:items-start gap-4 text-red-400 backdrop-blur-sm">
                         <div className="w-10 h-10 rounded-full bg-red-500/10 flex items-center justify-center shrink-0">
                             <ArrowRightLeft className="w-5 h-5" />
                         </div>
-                        <span className="font-semibold text-sm tracking-wide">{error}</span>
+                        <span className="font-semibold text-xs sm:text-sm tracking-wide text-center sm:text-left mt-1 overflow-hidden break-words w-full">{error}</span>
                     </div>
                 )}
             </div>

@@ -21,27 +21,27 @@ export const TestWeightWindow: React.FC<TestWeightWindowProps> = ({
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
-            <div className="w-full max-w-3xl bg-[#0f172a] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/80 backdrop-blur-sm p-2 sm:p-4">
+            <div className="w-full max-w-[95vw] sm:max-w-3xl bg-[#0f172a] border border-white/10 rounded-xl sm:rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[95vh] sm:max-h-[90vh]">
                 {/* Header */}
-                <div className="flex justify-between items-center p-6 border-b border-white/5 bg-white/5">
-                    <div className="flex items-center gap-3">
-                        <MonitorCheck className="w-6 h-6 text-blue-400" />
-                        <h2 className="text-xl font-bold text-white">Probar Peso (Test Weight)</h2>
+                <div className="flex justify-between items-center p-4 sm:p-6 border-b border-white/5 bg-white/5 shrink-0">
+                    <div className="flex items-center gap-2 sm:gap-3">
+                        <MonitorCheck className="w-5 h-5 sm:w-6 sm:h-6 text-blue-400 shrink-0" />
+                        <h2 className="text-lg sm:text-xl font-bold text-white leading-tight">Probar Peso (Test Weight)</h2>
                     </div>
                     <button
                         onClick={onClose}
-                        className="p-2 hover:bg-white/10 rounded-full text-white/50 hover:text-white transition-colors"
+                        className="p-2 hover:bg-white/10 rounded-full text-white/50 hover:text-white transition-colors shrink-0"
                     >
                         <X className="w-5 h-5" />
                     </button>
                 </div>
 
                 {/* Content */}
-                <div className="p-6 overflow-y-auto flex-1 space-y-6">
+                <div className="p-4 sm:p-6 overflow-y-auto flex-1 space-y-4 sm:space-y-6 custom-scrollbar">
 
                     {/* Status Overview */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4">
                         <div className="bg-black/30 p-4 rounded-xl border border-white/5">
                             <span className="text-sm text-white/40 block mb-1">Último Peso Recibido</span>
                             <span className="text-3xl font-mono font-bold text-white">{weight.toFixed(2)}</span>
@@ -62,22 +62,22 @@ export const TestWeightWindow: React.FC<TestWeightWindowProps> = ({
 
                     {/* Raw Data Terminal */}
                     <div className="flex flex-col gap-2">
-                        <div className="flex justify-between items-end">
-                            <span className="text-sm font-bold text-white/60 flex items-center gap-2">
-                                <Terminal className="w-4 h-4" />
-                                Raw Data Stream (Last 20 frames)
+                        <div className="flex flex-col sm:flex-row sm:justify-between items-start sm:items-end gap-2 sm:gap-0">
+                            <span className="text-xs sm:text-sm font-bold text-white/60 flex items-center gap-2">
+                                <Terminal className="w-4 h-4 shrink-0" />
+                                Raw Data (Last 20)
                             </span>
-                            <div className="flex gap-2">
-                                <button onClick={() => serialService.send('W')} className="text-xs bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 px-2 py-1 rounded transition-colors">
+                            <div className="flex gap-2 w-full sm:w-auto">
+                                <button onClick={() => serialService.send('W')} className="flex-1 sm:flex-none text-xs bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 px-3 py-2 sm:py-1 rounded transition-colors text-center font-bold">
                                     Send 'W' (Init)
                                 </button>
-                                <button onClick={() => serialService.send('\r')} className="text-xs bg-red-500/20 hover:bg-red-500/30 text-red-400 px-2 py-1 rounded transition-colors">
+                                <button onClick={() => serialService.send('\r')} className="flex-1 sm:flex-none text-xs bg-red-500/20 hover:bg-red-500/30 text-red-400 px-3 py-2 sm:py-1 rounded transition-colors text-center font-bold">
                                     Send 'CR' (Stop)
                                 </button>
                             </div>
                         </div>
 
-                        <div className="bg-black/80 rounded-xl p-4 font-mono text-xs md:text-sm text-green-500/80 h-64 overflow-y-auto border border-white/10 shadow-inner">
+                        <div className="bg-black/80 rounded-xl p-3 sm:p-4 font-mono text-[10px] sm:text-xs md:text-sm text-green-500/80 h-48 sm:h-64 overflow-y-auto border border-white/10 shadow-inner custom-scrollbar">
                             {rawBuffer.length === 0 ? (
                                 <span className="text-white/20 italic">No data received yet...</span>
                             ) : (
@@ -97,9 +97,9 @@ export const TestWeightWindow: React.FC<TestWeightWindowProps> = ({
                         </div>
                     </div>
 
-                    <div className="text-white/40 text-sm bg-blue-500/10 p-4 rounded-xl border border-blue-500/20">
+                    <div className="text-white/40 text-xs sm:text-sm bg-blue-500/10 p-3 sm:p-4 rounded-xl border border-blue-500/20">
                         <p><strong>Nota Técnica:</strong></p>
-                        <p>El formato esperado de error de hardware es <code>\x02?\x15\x0D</code> (o similar). La ventana muestra los caracteres de control escapados (ej. <code>\x02</code> para STX).</p>
+                        <p className="mt-1">El formato esperado de error de hardware es <code className="bg-black/30 px-1 rounded text-white/60">{'\\x02?\\x15\\x0D'}</code>. La ventana escapa caracteres ocultos.</p>
                     </div>
 
                 </div>

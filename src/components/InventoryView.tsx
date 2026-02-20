@@ -118,7 +118,7 @@ export const InventoryView: React.FC<InventoryViewProps> = ({ isOpen, onClose })
                     </div>
                 </div>
 
-                <div className="overflow-x-auto overflow-y-auto bg-black/40 flex-1 relative custom-scrollbar">
+                <div className="overflow-x-hidden md:overflow-x-auto overflow-y-auto bg-black/40 flex-1 relative p-2 sm:p-0 custom-scrollbar">
                     {loading && (
                         <div className="absolute inset-0 bg-black/50 backdrop-blur-sm z-20 flex items-center justify-center text-white">
                             <div className="flex items-center gap-3 bg-[#18181b] px-6 py-4 rounded-2xl border border-white/10 shadow-2xl">
@@ -127,8 +127,8 @@ export const InventoryView: React.FC<InventoryViewProps> = ({ isOpen, onClose })
                             </div>
                         </div>
                     )}
-                    <table className="w-full text-left border-collapse min-w-[800px]">
-                        <thead className="bg-[#18181b] sticky top-0 z-10 shadow-md">
+                    <table className="w-full text-left border-collapse block md:table md:min-w-[800px]">
+                        <thead className="bg-[#18181b] sticky top-0 z-10 shadow-md hidden md:table-header-group">
                             <tr>
                                 <th className="p-4 text-xs font-bold text-blue-400/60 uppercase tracking-widest w-[150px]">Fecha Registro</th>
                                 <th className="p-4 text-xs font-bold text-blue-400/60 uppercase tracking-widest">Equipo</th>
@@ -137,37 +137,66 @@ export const InventoryView: React.FC<InventoryViewProps> = ({ isOpen, onClose })
                                 <th className="p-4 text-xs font-bold text-blue-400/60 uppercase tracking-widest text-right w-[120px]">Acciones</th>
                             </tr>
                         </thead>
-                        <tbody className="divide-y divide-white/5">
+                        <tbody className="divide-y-0 md:divide-y divide-white/5 block md:table-row-group space-y-4 md:space-y-0">
                             {filteredRecords.length === 0 ? (
-                                <tr>
-                                    <td colSpan={5} className="p-16 text-center text-white/20">
+                                <tr className="block md:table-row">
+                                    <td colSpan={5} className="p-16 text-center text-white/20 block md:table-cell">
                                         {loading ? "..." : "No hay equipos registrados en el inventario."}
                                     </td>
                                 </tr>
                             ) : (
                                 filteredRecords.map((record) => (
-                                    <tr key={record.id} className="hover:bg-blue-500/5 transition-colors group">
-                                        <td className="p-4 text-white/60 font-mono text-sm whitespace-nowrap pl-6">
-                                            {new Date(record.date).toLocaleDateString()}
-                                            <span className="block text-xs text-white/30">
-                                                {new Date(record.date).toLocaleTimeString()}
+                                    <tr key={record.id} className="hover:bg-blue-500/5 transition-colors group flex flex-col md:table-row bg-[#1e1e24] md:bg-transparent rounded-2xl md:rounded-none border border-white/10 md:border-none p-4 md:p-0 relative shadow-lg md:shadow-none">
+                                        <td className="p-0 md:p-4 md:pl-6 text-white/60 font-mono text-sm whitespace-nowrap flex justify-between items-center md:table-cell mb-2 md:mb-0 border-b border-white/5 md:border-none pb-3 md:pb-0 relative">
+                                            <span className="md:hidden text-xs text-blue-400/60 uppercase font-bold tracking-widest flex items-center gap-2">
+                                                <PackagePlus className="w-4 h-4 text-blue-400" />
+                                                Registro
                                             </span>
+                                            <div className="text-right md:text-left">
+                                                {new Date(record.date).toLocaleDateString()}
+                                                <span className="block text-xs text-white/30 md:inline md:ml-2">
+                                                    {new Date(record.date).toLocaleTimeString()}
+                                                </span>
+                                            </div>
+
+                                            {/* Action Buttons purely for mobile header row */}
+                                            <div className="absolute top-0 right-0 md:hidden flex items-center gap-1 -mt-1 -mr-1">
+                                                <button
+                                                    onClick={() => handleEdit(record)}
+                                                    className="p-1.5 bg-blue-500/10 hover:bg-blue-500/30 text-blue-400 rounded-lg transition-all"
+                                                >
+                                                    <Edit3 className="w-3.5 h-3.5" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDelete(record.id!)}
+                                                    className="p-1.5 bg-red-500/10 hover:bg-red-500/30 text-red-400 rounded-lg transition-all"
+                                                >
+                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                </button>
+                                            </div>
                                         </td>
-                                        <td className="p-4">
-                                            <div className="font-bold text-white text-lg">{record.model}</div>
-                                            <div className="text-sm text-blue-300 font-mono tracking-wider">{record.serial}</div>
+                                        <td className="p-0 md:p-4 flex justify-between items-center md:table-cell mb-3 md:mb-0 mt-3 md:mt-0">
+                                            <span className="md:hidden text-xs text-white/40 uppercase font-bold tracking-wider">Equipo</span>
+                                            <div className="text-right md:text-left">
+                                                <div className="font-bold text-white text-lg md:text-lg text-base">{record.model}</div>
+                                                <div className="text-sm text-blue-300 font-mono tracking-wider">{record.serial}</div>
+                                            </div>
                                         </td>
-                                        <td className="p-4">
-                                            <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white/5 text-white/80 border border-white/10">
-                                                {record.branch || "N/A"}
-                                            </span>
+                                        <td className="p-0 md:p-4 flex justify-between items-center md:table-cell mb-3 md:mb-0">
+                                            <span className="md:hidden text-xs text-white/40 uppercase font-bold tracking-wider">Sucursal</span>
+                                            <div className="text-right md:text-left">
+                                                <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-white/5 text-white/80 border border-white/10">
+                                                    {record.branch || "N/A"}
+                                                </span>
+                                            </div>
                                         </td>
-                                        <td className="p-4 text-white/60 text-sm max-w-[200px]">
-                                            <div className="truncate" title={record.note}>
+                                        <td className="p-3 md:p-4 text-white/60 text-sm max-w-none md:max-w-[200px] bg-black/20 md:bg-transparent rounded-lg md:rounded-none">
+                                            <span className="md:hidden text-[10px] text-white/40 uppercase font-bold tracking-wider mb-1 block">Observaciones</span>
+                                            <div className="truncate md:line-clamp-none whitespace-normal" title={record.note}>
                                                 {record.note || <span className="text-white/20 italic">Sin observaciones</span>}
                                             </div>
                                         </td>
-                                        <td className="p-4 text-right pr-6">
+                                        <td className="p-0 md:p-4 text-right md:pr-6 hidden md:table-cell">
                                             <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                 <button
                                                     onClick={() => handleEdit(record)}
