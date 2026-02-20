@@ -7,8 +7,8 @@ import { HistoryView } from './components/HistoryView';
 import { ReportIssueModal } from './components/ReportIssueModal';
 import { RepairModule } from './components/RepairModule';
 import { UserNotificationsModal } from './components/UserNotificationsModal';
-import { InventoryModal } from './components/InventoryModal';
-import { AlertTriangle, Shield, Zap, LayoutDashboard, ClipboardCheck, History, Wrench, LogOut, PackagePlus } from 'lucide-react';
+import { InventoryView } from './components/InventoryView';
+import { AlertTriangle, Shield, Zap, LayoutDashboard, ClipboardCheck, History, Wrench, LogOut, Box } from 'lucide-react';
 import clsx from 'clsx';
 import { serialService } from './services/SerialService';
 import { auth } from './firebase'; // Import auth
@@ -237,9 +237,9 @@ function App() {
             className="group relative px-6 py-6 bg-gradient-to-br from-blue-600/20 to-blue-900/20 hover:from-blue-500/30 hover:to-blue-800/30 border border-blue-500/30 text-blue-400 rounded-2xl transition-all duration-300 shadow-[0_0_30px_-10px_rgba(59,130,246,0.15)] flex flex-col items-center justify-center gap-3 font-bold text-lg"
           >
             <div className="w-12 h-12 rounded-full bg-blue-500/10 flex items-center justify-center group-hover:-translate-y-1 transition-transform">
-              <PackagePlus className="w-6 h-6 text-blue-400" />
+              <Box className="w-6 h-6 text-blue-400" />
             </div>
-            <span>REGISTRO INVENTARIO</span>
+            <span>VER INVENTARIO</span>
           </button>
 
           <button
@@ -313,7 +313,7 @@ function App() {
         onClose={() => setIsUserMgmtOpen(false)}
       />
 
-      <InventoryModal
+      <InventoryView
         isOpen={isInventoryOpen}
         onClose={() => setIsInventoryOpen(false)}
       />

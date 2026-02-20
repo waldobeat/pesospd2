@@ -356,7 +356,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                                                 <button
                                                                     onClick={async () => {
                                                                         if (confirm("¿Confirmar recepción de equipo en taller?")) {
-                                                                            await historyService.update(record.id!, { status: 'en_taller' });
+                                                                            await historyService.update(record.id!, { status: 'en_taller', statusSeen: false });
                                                                             loadRecords();
                                                                         }
                                                                     }}
@@ -378,7 +378,8 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                                                             await historyService.update(record.id!, {
                                                                                 status: 'reparado',
                                                                                 diagnostic: diag,
-                                                                                solution: sol
+                                                                                solution: sol,
+                                                                                statusSeen: false
                                                                             });
                                                                             loadRecords();
                                                                         }
@@ -402,7 +403,8 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                                                             await historyService.update(record.id!, {
                                                                                 status: 'enviado_a_sucursal',
                                                                                 trackingNumber: tracking,
-                                                                                adminMessage: msg || undefined
+                                                                                adminMessage: msg || undefined,
+                                                                                statusSeen: false
                                                                             });
                                                                             loadRecords();
                                                                         }
@@ -421,7 +423,8 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                                                             const motive = prompt("Motivo de la baja definitiva:");
                                                                             await historyService.update(record.id!, {
                                                                                 status: 'dado_de_baja',
-                                                                                adminMessage: motive ? `BAJA DEFINITIVA: ${motive}` : 'Equipo desincorporado.'
+                                                                                adminMessage: motive ? `BAJA DEFINITIVA: ${motive}` : 'Equipo desincorporado.',
+                                                                                statusSeen: false
                                                                             });
                                                                             loadRecords();
                                                                         }

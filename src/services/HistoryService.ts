@@ -31,6 +31,7 @@ export interface IssueRecord extends BaseRecord {
     description: string;
     // Strict Tracking Engine States
     status: 'pendiente_envio' | 'enviado_a_taller' | 'en_taller' | 'reparado' | 'enviado_a_sucursal' | 'recibido_en_sucursal' | 'dado_de_baja';
+    statusSeen?: boolean; // Flag to show modal to standard users on every state change
     reportedBy?: string;
     diagnostic?: string;
     solution?: string;

@@ -16,13 +16,21 @@ export const UserNotificationsModal: React.FC<UserNotificationsModalProps> = ({ 
             if (!auth.currentUser) return;
 
             const records = await historyService.getAll(auth.currentUser.email || "", isAdmin);
-            const pending = records.filter(r => r.type === 'issue' && r.status === 'enviado_a_sucursal') as IssueRecord[];
 
+            // For standard users: show anything where statusSeen is false AND status isn't 'pendiente_envio'
+            // For admins: show anything 'enviado_a_sucursal' that hasn't been confirmed
             if (!isAdmin) {
-                const userPending = pending.filter(p => p.user === auth.currentUser?.email);
-                setPendingReceipts(userPending);
-                if (userPending.length > 0) setIsOpen(true);
+                const pending = records.filter(r =>
+                    r.type === 'issue' &&
+                    r.user === auth.currentUser?.email &&
+                    r.status !== 'pendiente_envio' &&
+                    r.statusSeen === false
+                ) as IssueRecord[];
+
+                setPendingReceipts(pending);
+                if (pending.length > 0) setIsOpen(true);
             } else {
+                const pending = records.filter(r => r.type === 'issue' && r.status === 'enviado_a_sucursal') as IssueRecord[];
                 setPendingReceipts(pending);
                 if (pending.length > 0) setIsOpen(true);
             }
@@ -33,9 +41,16 @@ export const UserNotificationsModal: React.FC<UserNotificationsModalProps> = ({ 
         return () => clearInterval(interval);
     }, [isAdmin]);
 
-    const handleConfirmReceipt = async (id: string) => {
-        if (confirm("Al confirmar, está declarando que ha recibido el equipo físicamente en su sucursal. ¿Proceder?")) {
-            await historyService.update(id, { status: 'recibido_en_sucursal' });
+    const handleConfirmReceipt = async (id: string, currentStatus: string) => {
+        if (currentStatus === 'enviado_a_sucursal') {
+            if (confirm("Al confirmar, está declarando que ha recibido el equipo físicamente en su sucursal. ¿Proceder?")) {
+                await historyService.update(id, { status: 'recibido_en_sucursal', statusSeen: true });
+                setPendingReceipts(prev => prev.filter(p => p.id !== id));
+                if (pendingReceipts.length <= 1) setIsOpen(false);
+            }
+        } else {
+            // Just marking as seen
+            await historyService.update(id, { statusSeen: true });
             setPendingReceipts(prev => prev.filter(p => p.id !== id));
             if (pendingReceipts.length <= 1) setIsOpen(false);
         }
@@ -60,7 +75,7 @@ export const UserNotificationsModal: React.FC<UserNotificationsModalProps> = ({ 
                             <h2 className="text-3xl font-black text-white tracking-tight">Centro de Avisos</h2>
                         </div>
                         <p className="text-indigo-200/60 text-sm ml-15">
-                            {isAdmin ? "Hay equipos enviados a sucursales pendientes de confirmación." : "Tiene equipos reparados en tránsito. Por favor confirme su recepción."}
+                            {isAdmin ? "Hay equipos enviados a sucursales pendientes de confirmación." : "El Taller ha realizado actualizaciones en sus equipos. Por favor revise."}
                         </p>
                     </div>
                     <button
@@ -86,8 +101,10 @@ export const UserNotificationsModal: React.FC<UserNotificationsModalProps> = ({ 
                                     </div>
                                 </div>
                                 <div className="text-right">
-                                    <div className="text-[10px] text-white/30 uppercase font-bold tracking-widest mb-1">Guía / Envío</div>
-                                    <div className="text-cyan-300 font-mono font-bold bg-cyan-500/10 px-3 py-1 rounded-lg border border-cyan-500/20">{receipt.trackingNumber || 'PENDIENTE'}</div>
+                                    <div className="text-[10px] text-white/30 uppercase font-bold tracking-widest mb-1">Estado / Guía</div>
+                                    <div className="text-cyan-300 font-mono font-bold bg-cyan-500/10 px-3 py-1 rounded-lg border border-cyan-500/20 truncate max-w-[150px]">
+                                        {receipt.status === 'enviado_a_sucursal' ? (receipt.trackingNumber || 'PENDIENTE') : receipt.status.replace(/_/g, ' ').toUpperCase()}
+                                    </div>
                                 </div>
                             </div>
 
@@ -98,14 +115,23 @@ export const UserNotificationsModal: React.FC<UserNotificationsModalProps> = ({ 
                                 </div>
                             )}
 
-                            {!isAdmin && (
+                            {!isAdmin && receipt.status === 'enviado_a_sucursal' && (
                                 <button
-                                    onClick={() => receipt.id && handleConfirmReceipt(receipt.id)}
+                                    onClick={() => receipt.id && handleConfirmReceipt(receipt.id, receipt.status)}
                                     className="mt-2 w-full py-4 bg-gradient-to-r from-green-600/20 to-emerald-600/20 hover:from-green-600/40 hover:to-emerald-600/40 text-green-400 border border-green-500/30 rounded-xl text-sm font-black tracking-wider flex items-center justify-center gap-2 transition-all shadow-[0_0_20px_rgba(34,197,94,0.1)] group relative overflow-hidden"
                                 >
                                     <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
                                     <CheckCircle2 className="w-5 h-5 group-hover:scale-110 transition-transform" />
                                     CONFIRMAR RECEPCIÓN FÍSICA
+                                </button>
+                            )}
+
+                            {!isAdmin && receipt.status !== 'enviado_a_sucursal' && (
+                                <button
+                                    onClick={() => receipt.id && handleConfirmReceipt(receipt.id, receipt.status)}
+                                    className="mt-2 w-full py-3 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-xl text-sm font-bold tracking-wider flex items-center justify-center transition-all"
+                                >
+                                    ENTENDIDO
                                 </button>
                             )}
                         </div>
