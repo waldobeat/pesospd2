@@ -72,10 +72,12 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                 status = r.repaired ? "Reparado" : "Pendiente";
                 detail = `Diag: ${r.diagnosis} | Sol: ${r.solution} `;
             } else if (r.type === 'issue') {
-                status = r.status === 'resuelto' ? "Resuelto" :
-                    r.status === 'en_taller' ? "En Taller" :
-                        r.status === 'recibido' ? "Recibido" :
-                            r.status === 'dado_de_baja' ? "Dado de Baja" : "En Proceso";
+                status = r.status === 'recibido_en_sucursal' ? "Recibido (Sucursal)" :
+                    r.status === 'enviado_a_sucursal' ? "Enviado a Sucursal" :
+                        r.status === 'reparado' ? "Reparado" :
+                            r.status === 'en_taller' ? "En Taller" :
+                                r.status === 'enviado_a_taller' ? "Enviado a Taller" :
+                                    r.status === 'dado_de_baja' ? "Dado de Baja" : "Pendiente Envío";
                 detail = `${r.description} | Diag: ${r.diagnostic || 'N/A'} | Sol: ${r.solution || 'N/A'} `;
                 adminMessage = (r as IssueRecord).adminMessage || 'N/A';
             } else {
@@ -127,7 +129,12 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
         r.note.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (r.user && r.user.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (r.type === 'repair' && (r.diagnosis.toLowerCase().includes(searchTerm.toLowerCase()) || r.solution.toLowerCase().includes(searchTerm.toLowerCase()))) ||
-        (r.type === 'issue' && ((r.diagnostic && r.diagnostic.toLowerCase().includes(searchTerm.toLowerCase())) || (r.solution && r.solution.toLowerCase().includes(searchTerm.toLowerCase())) || ((r as IssueRecord).adminMessage && (r as IssueRecord).adminMessage!.toLowerCase().includes(searchTerm.toLowerCase()))))
+        (r.type === 'issue' && (
+            (r.diagnostic && r.diagnostic.toLowerCase().includes(searchTerm.toLowerCase())) ||
+            (r.solution && r.solution.toLowerCase().includes(searchTerm.toLowerCase())) ||
+            ((r as IssueRecord).adminMessage && (r as IssueRecord).adminMessage!.toLowerCase().includes(searchTerm.toLowerCase())) ||
+            ((r as IssueRecord).trackingNumber && (r as IssueRecord).trackingNumber!.toLowerCase().includes(searchTerm.toLowerCase()))
+        ))
     );
 
     if (!isOpen) return null;
@@ -251,39 +258,28 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                                 </span>
                                             ) : record.type === 'issue' ? (
                                                 isAdmin ? (
-                                                    <select
-                                                        value={record.status}
-                                                        onChange={async (e) => {
-                                                            const newStatus = e.target.value as any;
-                                                            if (confirm(`¿Cambiar estado a ${newStatus}?`)) {
-                                                                await historyService.update(record.id, { status: newStatus });
-                                                                loadRecords();
-                                                            }
-                                                        }}
-                                                        className={clsx("inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium cursor-pointer bg-black/50 border border-white/10 outline-none",
-                                                            record.status === 'resuelto' ? "text-green-400" :
-                                                                record.status === 'en_taller' ? "text-orange-400" :
-                                                                    record.status === 'recibido' ? "text-blue-400" :
-                                                                        record.status === 'dado_de_baja' ? "text-gray-400" : "text-yellow-400"
-                                                        )}
-                                                    >
-                                                        <option value="en_proceso">En Proceso</option>
-                                                        <option value="recibido">Recibido</option>
-                                                        <option value="en_taller">En Taller</option>
-                                                        <option value="resuelto">Resuelto</option>
-                                                        <option value="dado_de_baja">Dado de Baja</option>
-                                                    </select>
-                                                ) : (
-                                                    <span className={clsx("inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium",
-                                                        record.status === 'resuelto' ? "bg-green-500/10 text-green-400" :
-                                                            record.status === 'en_taller' ? "bg-orange-500/10 text-orange-400" :
-                                                                record.status === 'recibido' ? "bg-blue-500/10 text-blue-400" :
-                                                                    record.status === 'dado_de_baja' ? "bg-gray-500/10 text-gray-400" : "bg-yellow-500/10 text-yellow-400"
+                                                    <span className={clsx("inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider",
+                                                        record.status === 'recibido_en_sucursal' ? "bg-green-500/20 text-green-400 border border-green-500/30" :
+                                                            record.status === 'enviado_a_sucursal' ? "bg-blue-500/20 text-blue-400 border border-blue-500/30" :
+                                                                record.status === 'reparado' ? "bg-teal-500/20 text-teal-400 border border-teal-500/30" :
+                                                                    record.status === 'en_taller' ? "bg-orange-500/20 text-orange-400 border border-orange-500/30" :
+                                                                        record.status === 'enviado_a_taller' ? "bg-yellow-500/20 text-yellow-400 border border-yellow-500/30" :
+                                                                            record.status === 'dado_de_baja' ? "bg-red-500/20 text-red-400 border border-red-500/30" :
+                                                                                "bg-gray-500/20 text-gray-400 border border-gray-500/30"
                                                     )}>
-                                                        {record.status === 'resuelto' ? "Resuelto" :
-                                                            record.status === 'en_taller' ? "En Taller" :
-                                                                record.status === 'recibido' ? "Recibido" :
-                                                                    record.status === 'dado_de_baja' ? "Dado de Baja" : "En Proceso"}
+                                                        {record.status.replace(/_/g, ' ')}
+                                                    </span>
+                                                ) : (
+                                                    <span className={clsx("inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-[10px] font-black uppercase tracking-wider",
+                                                        record.status === 'recibido_en_sucursal' ? "bg-green-500/20 text-green-400" :
+                                                            record.status === 'enviado_a_sucursal' ? "bg-blue-500/20 text-blue-400" :
+                                                                record.status === 'reparado' ? "bg-teal-500/20 text-teal-400" :
+                                                                    record.status === 'en_taller' ? "bg-orange-500/20 text-orange-400" :
+                                                                        record.status === 'enviado_a_taller' ? "bg-yellow-500/20 text-yellow-400" :
+                                                                            record.status === 'dado_de_baja' ? "bg-red-500/20 text-red-400" :
+                                                                                "bg-gray-500/20 text-gray-400"
+                                                    )}>
+                                                        {record.status.replace(/_/g, ' ')}
                                                     </span>
                                                 )
                                             ) : (
@@ -300,6 +296,14 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                             ) : record.type === 'issue' ? (
                                                 <div className="text-white/80" title={record.description}>
                                                     <div><span className="text-red-400 font-medium">Fallo:</span> {record.description}</div>
+
+                                                    {/* Tracking Info */}
+                                                    {(record as IssueRecord).trackingNumber && (
+                                                        <div className="mt-2 text-xs font-mono text-blue-300">
+                                                            Guía / Transferencia: <span className="text-white font-bold bg-blue-500/20 px-2 py-0.5 rounded">{(record as IssueRecord).trackingNumber}</span>
+                                                        </div>
+                                                    )}
+
                                                     {record.diagnostic && (
                                                         <div className="mt-3 p-3 bg-white/5 rounded-lg border border-white/5">
                                                             <span className="text-[10px] uppercase tracking-wider text-white/50 font-bold block mb-1">Diagnóstico Técnico</span>
@@ -335,38 +339,88 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                             <div className="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                 {isAdmin && record.type === 'issue' && (
                                                     <div className="mt-4 pt-4 border-t border-white/10 flex justify-end gap-2 text-sm">
-                                                        <div className="flex items-center gap-2">
-                                                            <span className="text-white/50 font-bold text-xs uppercase mr-2">Estado:</span>
-                                                            <select
-                                                                value={record.status}
-                                                                onChange={async (e) => {
-                                                                    const newStatus = e.target.value as IssueRecord['status'];
-                                                                    if (confirm(`¿Cambiar estado a ${newStatus}?`)) {
-                                                                        let adminMsg: string | undefined = (record as IssueRecord).adminMessage;
-                                                                        if (newStatus === 'resuelto') {
-                                                                            adminMsg = prompt("Mensaje de cierre para el usuario (Ej: Equipo listo para retiro):", (record as IssueRecord).adminMessage || "") || undefined;
-                                                                        } else if (newStatus === 'dado_de_baja') {
-                                                                            adminMsg = prompt("Mensaje para el usuario (Ej: Equipo dado de baja):", (record as IssueRecord).adminMessage || "") || undefined;
-                                                                        } else {
-                                                                            adminMsg = undefined; // Clear message if not resolved/baja
+                                                        <div className="flex flex-col gap-2 w-full max-w-[200px] ml-auto">
+
+                                                            {record.status === 'enviado_a_taller' && (
+                                                                <button
+                                                                    onClick={async () => {
+                                                                        if (confirm("¿Confirmar recepción de equipo en taller?")) {
+                                                                            await historyService.update(record.id!, { status: 'en_taller' });
+                                                                            loadRecords();
                                                                         }
-                                                                        await historyService.update(record.id!, { status: newStatus, adminMessage: adminMsg });
-                                                                        loadRecords();
-                                                                    }
-                                                                }}
-                                                                className={clsx("bg-[#050505] border border-white/10 rounded-lg px-2 py-1 outline-none font-bold",
-                                                                    record.status === 'resuelto' ? "text-green-400" :
-                                                                        record.status === 'en_taller' ? "text-orange-400" :
-                                                                            record.status === 'recibido' ? "text-blue-400" :
-                                                                                record.status === 'dado_de_baja' ? "text-gray-400" : "text-yellow-400"
-                                                                )}
-                                                            >
-                                                                <option value="en_proceso">En Proceso</option>
-                                                                <option value="recibido">Recibido (Taller)</option>
-                                                                <option value="en_taller">En Reparación</option>
-                                                                <option value="resuelto">Resuelto / Listo</option>
-                                                                <option value="dado_de_baja">Dado de Baja</option>
-                                                            </select>
+                                                                    }}
+                                                                    className="w-full py-2 bg-blue-600 hover:bg-blue-500 text-white text-xs font-bold rounded-lg shadow-lg"
+                                                                >
+                                                                    RECIBIR EN TALLER
+                                                                </button>
+                                                            )}
+
+                                                            {record.status === 'en_taller' && (
+                                                                <button
+                                                                    onClick={async () => {
+                                                                        const diag = prompt("Escriba el diagnóstico de la reparación:", record.diagnostic || "");
+                                                                        if (diag === null) return;
+                                                                        const sol = prompt("Escriba la solución aplicada:", record.solution || "");
+                                                                        if (sol === null) return;
+
+                                                                        if (confirm("¿Marcar equipo como REPARADO?")) {
+                                                                            await historyService.update(record.id!, {
+                                                                                status: 'reparado',
+                                                                                diagnostic: diag,
+                                                                                solution: sol
+                                                                            });
+                                                                            loadRecords();
+                                                                        }
+                                                                    }}
+                                                                    className="w-full py-2 bg-teal-600 hover:bg-teal-500 text-white text-xs font-bold rounded-lg shadow-lg"
+                                                                >
+                                                                    MARCAR REPARADO
+                                                                </button>
+                                                            )}
+
+                                                            {record.status === 'reparado' && (
+                                                                <button
+                                                                    onClick={async () => {
+                                                                        const tracking = prompt("Ingrese el Número de Guía o Transferencia para el envío a la sucursal:");
+                                                                        if (!tracking) {
+                                                                            alert("Debe ingresar un número de guía para proceder con el envío.");
+                                                                            return;
+                                                                        }
+                                                                        const msg = prompt("Mensaje de cierre para el usuario (opcional):", "Equipo reparado. Por favor confirme recepción al llegar.");
+                                                                        if (confirm(`¿Proceder con el envío (Guía: ${tracking})?`)) {
+                                                                            await historyService.update(record.id!, {
+                                                                                status: 'enviado_a_sucursal',
+                                                                                trackingNumber: tracking,
+                                                                                adminMessage: msg || undefined
+                                                                            });
+                                                                            loadRecords();
+                                                                        }
+                                                                    }}
+                                                                    className="w-full py-2 bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold rounded-lg shadow-lg"
+                                                                >
+                                                                    ENVIAR A SUCURSAL
+                                                                </button>
+                                                            )}
+
+                                                            {record.status !== 'dado_de_baja' && (
+                                                                <button
+                                                                    onClick={async () => {
+                                                                        const confirmacion = prompt("ATENCIÓN: Para dar de baja, escriba 'BAJA':");
+                                                                        if (confirmacion === 'BAJA') {
+                                                                            const motive = prompt("Motivo de la baja definitiva:");
+                                                                            await historyService.update(record.id!, {
+                                                                                status: 'dado_de_baja',
+                                                                                adminMessage: motive ? `BAJA DEFINITIVA: ${motive}` : 'Equipo desincorporado.'
+                                                                            });
+                                                                            loadRecords();
+                                                                        }
+                                                                    }}
+                                                                    className="w-full py-1.5 mt-2 bg-red-950/40 border border-red-500/20 text-red-500/70 hover:bg-red-900 border hover:border-red-500 hover:text-white text-[10px] font-bold rounded-lg transition-all"
+                                                                >
+                                                                    DAR DE BAJA
+                                                                </button>
+                                                            )}
+
                                                         </div>
 
                                                         <button
@@ -376,7 +430,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                                                     const newSol = prompt("Ingrese Solución:", record.solution || "");
                                                                     if (newSol !== null) {
                                                                         let adminMsg = (record as IssueRecord).adminMessage;
-                                                                        if (record.status === 'resuelto' || record.status === 'dado_de_baja') {
+                                                                        if (record.status === 'dado_de_baja') {
                                                                             adminMsg = prompt("Editar mensaje de Resolución (Admin):", (record as IssueRecord).adminMessage || "") || undefined;
                                                                         }
 
@@ -387,8 +441,8 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                                             }}
                                                             className="px-3 py-1.5 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg font-bold transition-colors flex items-center gap-2 ml-4"
                                                         >
-                                                            <Edit3 className="w-4 h-4" />
-                                                            Editar
+                                                            <Edit3 className="w-4 h-4 mr-1" />
+                                                            Editar Info
                                                         </button>
                                                     </div>
                                                 )}

@@ -29,11 +29,14 @@ export interface IssueRecord extends BaseRecord {
     type: 'issue';
     issueType: 'damaged_scale' | 'weight_error' | 'component_failure' | 'other';
     description: string;
-    status: 'en_proceso' | 'recibido' | 'en_taller' | 'resuelto' | 'dado_de_baja';
+    // Strict Tracking Engine States
+    status: 'pendiente_envio' | 'enviado_a_taller' | 'en_taller' | 'reparado' | 'enviado_a_sucursal' | 'recibido_en_sucursal' | 'dado_de_baja';
     reportedBy?: string;
     diagnostic?: string;
     solution?: string;
     adminMessage?: string;
+    trackingNumber?: string; // Guía de retorno
+    needsReturn?: boolean; // If it needs tracking upon completing repair
 }
 
 export type HistoryItem = CalibrationRecord | RepairRecord | IssueRecord;
