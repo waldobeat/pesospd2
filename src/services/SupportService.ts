@@ -79,9 +79,11 @@ export const supportService = {
                 const data = doc.data() as ChatMessage;
                 // In this model, chatId is always {userEmail}-workshop
                 // The 'otherParty' from the admin perspective is the one who isn't 'workshop'
-                const otherParty = data.sender === 'workshop' ? data.recipient : data.sender;
+                const otherParty = (data.sender === 'workshop' ? data.recipient : data.sender).toLowerCase();
 
-                if (otherParty && otherParty !== 'workshop' && !latestMsgs[otherParty]) {
+                const isAdminEmail = otherParty === 'workshop' || otherParty === 'admin@sisdepe.com';
+
+                if (otherParty && !isAdminEmail && !latestMsgs[otherParty]) {
                     latestMsgs[otherParty] = { id: doc.id, ...data };
                 }
             });
