@@ -118,6 +118,7 @@ export const ReportIssueModal: React.FC<ReportIssueModalProps> = ({ isOpen, onCl
                 description,
                 status: initialStatus,
                 reportedBy: auth.currentUser?.email || 'Unknown',
+                adminStatusSeen: false,
             } as IssueRecord, 'issue');
 
             generatePDF(initialStatus);

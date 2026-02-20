@@ -30,7 +30,8 @@ export const UserNotificationsModal: React.FC<UserNotificationsModalProps> = ({ 
                 setPendingReceipts(pending);
                 if (pending.length > 0) setIsOpen(true);
             } else {
-                const pending = records.filter(r => r.type === 'issue' && r.status === 'enviado_a_sucursal') as IssueRecord[];
+                // Admins see new incoming issues
+                const pending = records.filter(r => r.type === 'issue' && r.adminStatusSeen === false) as IssueRecord[];
                 setPendingReceipts(pending);
                 if (pending.length > 0) setIsOpen(true);
             }
@@ -41,18 +42,24 @@ export const UserNotificationsModal: React.FC<UserNotificationsModalProps> = ({ 
         return () => clearInterval(interval);
     }, [isAdmin]);
 
-    const handleConfirmReceipt = async (id: string, currentStatus: string) => {
-        if (currentStatus === 'enviado_a_sucursal') {
-            if (confirm("Al confirmar, está declarando que ha recibido el equipo físicamente en su sucursal. ¿Proceder?")) {
-                await historyService.update(id, { status: 'recibido_en_sucursal', statusSeen: true });
+    const handleConfirmReceipt = async (id: string, currentStatus: string, isAdminAction: boolean = false) => {
+        if (isAdminAction) {
+            await historyService.update(id, { adminStatusSeen: true });
+            setPendingReceipts(prev => prev.filter(p => p.id !== id));
+            if (pendingReceipts.length <= 1) setIsOpen(false);
+        } else {
+            if (currentStatus === 'enviado_a_sucursal') {
+                if (confirm("Al confirmar, está declarando que ha recibido el equipo físicamente en su sucursal. ¿Proceder?")) {
+                    await historyService.update(id, { status: 'recibido_en_sucursal', statusSeen: true });
+                    setPendingReceipts(prev => prev.filter(p => p.id !== id));
+                    if (pendingReceipts.length <= 1) setIsOpen(false);
+                }
+            } else {
+                // Just marking as seen
+                await historyService.update(id, { statusSeen: true });
                 setPendingReceipts(prev => prev.filter(p => p.id !== id));
                 if (pendingReceipts.length <= 1) setIsOpen(false);
             }
-        } else {
-            // Just marking as seen
-            await historyService.update(id, { statusSeen: true });
-            setPendingReceipts(prev => prev.filter(p => p.id !== id));
-            if (pendingReceipts.length <= 1) setIsOpen(false);
         }
     };
 
@@ -75,7 +82,7 @@ export const UserNotificationsModal: React.FC<UserNotificationsModalProps> = ({ 
                             <h2 className="text-3xl font-black text-white tracking-tight">Centro de Avisos</h2>
                         </div>
                         <p className="text-indigo-200/60 text-sm ml-15">
-                            {isAdmin ? "Hay equipos enviados a sucursales pendientes de confirmación." : "El Taller ha realizado actualizaciones en sus equipos. Por favor revise."}
+                            {isAdmin ? "Se ha registrado un nuevo equipo enviado al Taller desde una sucursal." : "El Taller ha realizado actualizaciones en sus equipos. Por favor revise."}
                         </p>
                     </div>
                     <button
@@ -117,7 +124,7 @@ export const UserNotificationsModal: React.FC<UserNotificationsModalProps> = ({ 
 
                             {!isAdmin && receipt.status === 'enviado_a_sucursal' && (
                                 <button
-                                    onClick={() => receipt.id && handleConfirmReceipt(receipt.id, receipt.status)}
+                                    onClick={() => receipt.id && handleConfirmReceipt(receipt.id, receipt.status, false)}
                                     className="mt-2 w-full py-4 bg-gradient-to-r from-green-600/20 to-emerald-600/20 hover:from-green-600/40 hover:to-emerald-600/40 text-green-400 border border-green-500/30 rounded-xl text-sm font-black tracking-wider flex items-center justify-center gap-2 transition-all shadow-[0_0_20px_rgba(34,197,94,0.1)] group relative overflow-hidden"
                                 >
                                     <div className="absolute inset-0 bg-white/5 opacity-0 group-hover:opacity-100 transition-opacity" />
@@ -128,8 +135,17 @@ export const UserNotificationsModal: React.FC<UserNotificationsModalProps> = ({ 
 
                             {!isAdmin && receipt.status !== 'enviado_a_sucursal' && (
                                 <button
-                                    onClick={() => receipt.id && handleConfirmReceipt(receipt.id, receipt.status)}
+                                    onClick={() => receipt.id && handleConfirmReceipt(receipt.id, receipt.status, false)}
                                     className="mt-2 w-full py-3 bg-white/5 hover:bg-white/10 text-white border border-white/10 rounded-xl text-sm font-bold tracking-wider flex items-center justify-center transition-all"
+                                >
+                                    ENTENDIDO
+                                </button>
+                            )}
+
+                            {isAdmin && (
+                                <button
+                                    onClick={() => receipt.id && handleConfirmReceipt(receipt.id, receipt.status, true)}
+                                    className="mt-2 w-full py-3 bg-indigo-500/20 hover:bg-indigo-500/30 text-indigo-300 border border-indigo-500/30 rounded-xl text-sm font-bold tracking-wider flex items-center justify-center transition-all"
                                 >
                                     ENTENDIDO
                                 </button>
