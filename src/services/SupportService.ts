@@ -105,5 +105,26 @@ export const supportService = {
 
         const snapshot = await getDocs(q);
         return snapshot.size;
+    },
+
+    // DANGEROUS: Clear all messages for maintenance
+    clearAllMessages: async () => {
+        try {
+            const q = query(collection(db, COLLECTION_NAME));
+            const snapshot = await getDocs(q);
+
+            // Dynamic import to avoid circular or early execution issues, though already imported at top is fine
+            const { deleteDoc, doc: firestoreDoc } = await import('firebase/firestore');
+
+            const promises = snapshot.docs.map(docSnapshot =>
+                deleteDoc(firestoreDoc(db, COLLECTION_NAME, docSnapshot.id))
+            );
+
+            await Promise.all(promises);
+            console.log("Database cleared successfully");
+        } catch (e) {
+            console.error("Error clearing database:", e);
+            throw e;
+        }
     }
 };

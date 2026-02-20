@@ -3,7 +3,7 @@ import { auth } from '../firebase';
 import type { ChatMessage } from '../services/SupportService';
 import { supportService } from '../services/SupportService';
 import { useAuthRole } from '../hooks/useAuthRole';
-import { X, Send, User, MessageSquare, Search, ChevronLeft, Minus } from 'lucide-react';
+import { X, Send, User, MessageSquare, Search, ChevronLeft, Minus, Trash2 } from 'lucide-react';
 import clsx from 'clsx';
 
 interface SupportChatCenterProps {
@@ -79,6 +79,20 @@ export const SupportChatCenter: React.FC<SupportChatCenterProps> = ({ isOpen, on
     }, [isOpen, isAdmin]);
 
 
+
+    const handleClearAll = async () => {
+        if (!window.confirm("¿Estás seguro de que deseas borrar TODO el historial de mensajes? Esta acción no se puede deshacer.")) return;
+
+        try {
+            await supportService.clearAllMessages();
+            alert("Historial borrado con éxito.");
+            setMessages([]);
+            setConversations({});
+        } catch (error) {
+            console.error("Error clearing history:", error);
+            alert("Error al borrar el historial.");
+        }
+    };
 
     const handleSend = async () => {
         if (!newMessage.trim()) return;
@@ -156,6 +170,13 @@ export const SupportChatCenter: React.FC<SupportChatCenterProps> = ({ isOpen, on
                                         onChange={(e) => setSearchQuery(e.target.value)}
                                     />
                                 </div>
+                                <button
+                                    onClick={handleClearAll}
+                                    className="mt-3 w-full py-2 flex items-center justify-center gap-2 bg-red-500/10 hover:bg-red-500/20 text-red-500 text-[10px] font-black uppercase tracking-widest rounded-xl border border-red-500/20 transition-all group"
+                                >
+                                    <Trash2 className="w-3.5 h-3.5 group-hover:scale-110 transition-transform" />
+                                    Borrar Historial Completo
+                                </button>
                             </div>
                             <div className="flex-1 overflow-y-auto custom-scrollbar p-2 space-y-1">
                                 {filteredConversations.length === 0 ? (
