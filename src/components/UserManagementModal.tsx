@@ -1,10 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import { db, firebaseConfig } from '../firebase';
-import { collection, getDocs, updateDoc, doc, deleteDoc, setDoc } from 'firebase/firestore';
+import { collection, getDocs, doc, updateDoc, setDoc } from 'firebase/firestore';
 import { initializeApp, deleteApp } from 'firebase/app';
 import { getAuth, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
-import { X, UserPlus, Shield, User, Trash2, CheckCircle, Loader2 } from 'lucide-react';
-import { UserProfile } from '../hooks/useAuthRole';
+import { Shield, User, X, CheckCircle, Loader2, UserPlus } from 'lucide-react';
+import type { UserProfile } from '../hooks/useAuthRole';
 
 interface UserManagementModalProps {
     isOpen: boolean;

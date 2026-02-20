@@ -30,7 +30,6 @@ export function useScale() {
     });
 
     const parser = useRef(new ProtocolParser());
-    const watchdogTimer = useRef<number | null>(null);
 
     const handleData = useCallback((chunk: Uint8Array) => {
         // Watchdog removed for Send-on-Change protocol support

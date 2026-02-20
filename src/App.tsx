@@ -27,7 +27,7 @@ function App() {
 
   const {
     weight, unit, isStable, isZero, isNet, isConnected, isConnecting, error,
-    lastReceived, rawBuffer, connect, disconnect
+    rawBuffer, connect, disconnect
   } = useScale();
 
   useEffect(() => {
@@ -273,7 +273,6 @@ function App() {
         isOpen={isTestWindowOpen}
         onClose={() => setIsTestWindowOpen(false)}
         rawBuffer={rawBuffer}
-        lastReceived={lastReceived}
         error={error}
         weight={weight}
       />

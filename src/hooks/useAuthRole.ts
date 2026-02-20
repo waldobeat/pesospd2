@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import { db } from '../firebase';
 import { doc, getDoc, setDoc } from 'firebase/firestore';
-import { User } from 'firebase/auth';
+import { type User } from 'firebase/auth';
 
 export type UserRole = 'admin' | 'standard';
 

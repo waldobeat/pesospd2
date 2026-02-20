@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { auth } from '../firebase';
 import { useAuthRole } from '../hooks/useAuthRole';
-import { historyService, type HistoryItem } from '../services/HistoryService';
-import { X, Trash2, FileText, Search, FileDown, Wrench, CheckCircle, AlertTriangle, Edit } from 'lucide-react';
+import { historyService, type HistoryItem, type IssueRecord } from '../services/HistoryService';
+import { X, Calendar, ClipboardCheck, Wrench, AlertTriangle, Trash2, Download, Search, Edit3, MessageSquare } from 'lucide-react';
 import clsx from 'clsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -59,48 +59,54 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
 
         doc.setFontSize(9);
         doc.setTextColor(60);
-        doc.text(`Generado el: ${new Date().toLocaleString()}`, 195, 15, { align: 'right' });
-        doc.text(`Total Registros: ${filteredRecords.length}`, 195, 20, { align: 'right' });
+        doc.text(`Generado el: ${new Date().toLocaleString()} `, 195, 15, { align: 'right' });
+        doc.text(`Total Registros: ${filteredRecords.length} `, 195, 20, { align: 'right' });
 
         // Table
         const tableBody = filteredRecords.map(r => {
             let status = "";
             let detail = "";
+            let adminMessage = "";
 
             if (r.type === 'repair') {
                 status = r.repaired ? "Reparado" : "Pendiente";
-                detail = r.diagnosis;
+                detail = `Diag: ${r.diagnosis} | Sol: ${r.solution} `;
             } else if (r.type === 'issue') {
                 status = r.status === 'resuelto' ? "Resuelto" :
                     r.status === 'en_taller' ? "En Taller" :
                         r.status === 'recibido' ? "Recibido" :
                             r.status === 'dado_de_baja' ? "Dado de Baja" : "En Proceso";
-                detail = `${r.description} | Diag: ${r.diagnostic || 'N/A'} | Sol: ${r.solution || 'N/A'}`;
+                detail = `${r.description} | Diag: ${r.diagnostic || 'N/A'} | Sol: ${r.solution || 'N/A'} `;
+                adminMessage = (r as IssueRecord).adminMessage || 'N/A';
             } else {
                 // Calibration
                 status = r.passed ? "Aprobado" : "Fallido";
-                detail = `${r.finalWeight} / ${r.targetWeight} kg`;
+                detail = r.note || "Sin nota";
             }
 
             return [
                 new Date(r.date).toLocaleDateString(),
-                r.type === 'repair' ? 'Reparación' : 'Calibración',
+                r.type === 'repair' ? 'Reparación' : r.type === 'issue' ? 'Avería' : 'Calibración',
                 r.user || "N/A", // User Column
                 r.model,
                 r.serial,
                 r.branch || "N/A",
                 status,
-                detail
+                detail,
+                adminMessage
             ];
         });
 
         autoTable(doc, {
             startY: 35,
-            head: [['Fecha', 'Tipo', 'Usuario', 'Modelo', 'Serial', 'Sucursal', 'Estado', 'Detalle']],
+            head: [['Fecha', 'Tipo', 'Usuario', 'Modelo', 'Serial', 'Sucursal', 'Estado', 'Detalle', 'Mensaje Admin']],
             body: tableBody,
             theme: 'grid',
             headStyles: { fillColor: [41, 128, 185] },
-            styles: { fontSize: 7 }, // Reduced font size to fit extra column
+            styles: { fontSize: 8 },
+            columnStyles: {
+                8: { cellWidth: 30 }
+            }
         });
 
         // Footer
@@ -121,7 +127,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
         r.note.toLowerCase().includes(searchTerm.toLowerCase()) ||
         (r.user && r.user.toLowerCase().includes(searchTerm.toLowerCase())) ||
         (r.type === 'repair' && (r.diagnosis.toLowerCase().includes(searchTerm.toLowerCase()) || r.solution.toLowerCase().includes(searchTerm.toLowerCase()))) ||
-        (r.type === 'issue' && ((r.diagnostic && r.diagnostic.toLowerCase().includes(searchTerm.toLowerCase())) || (r.solution && r.solution.toLowerCase().includes(searchTerm.toLowerCase()))))
+        (r.type === 'issue' && ((r.diagnostic && r.diagnostic.toLowerCase().includes(searchTerm.toLowerCase())) || (r.solution && r.solution.toLowerCase().includes(searchTerm.toLowerCase())) || ((r as IssueRecord).adminMessage && (r as IssueRecord).adminMessage!.toLowerCase().includes(searchTerm.toLowerCase()))))
     );
 
     if (!isOpen) return null;
@@ -134,7 +140,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                 <div className="p-6 border-b border-white/10 flex justify-between items-center bg-white/5">
                     <div>
                         <h2 className="text-2xl font-bold text-white flex items-center gap-3">
-                            <FileText className="w-6 h-6 text-blue-400" />
+                            <ClipboardCheck className="w-6 h-6 text-blue-400" />
                             Historial de Operaciones
                         </h2>
                         <p className="text-white/40 text-sm mt-1">
@@ -147,7 +153,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                             className="px-4 py-2 bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 rounded-lg transition-colors text-sm font-bold flex items-center gap-2"
                             title="Generar reporte en PDF"
                         >
-                            <FileDown className="w-4 h-4" />
+                            <Download className="w-4 h-4" />
                             Generar Reporte PDF
                         </button>
                         <button
@@ -216,7 +222,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                                 </div>
                                             ) : (
                                                 <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400" title="Calibración">
-                                                    <CheckCircle className="w-4 h-4" />
+                                                    <Calendar className="w-4 h-4" />
                                                 </div>
                                             )}
                                         </td>
@@ -294,8 +300,30 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                             ) : record.type === 'issue' ? (
                                                 <div className="text-white/80" title={record.description}>
                                                     <div><span className="text-red-400 font-medium">Fallo:</span> {record.description}</div>
-                                                    {record.diagnostic && <div className="mt-1"><span className="text-orange-400 font-medium">Diag:</span> <span className="text-white/60">{record.diagnostic}</span></div>}
-                                                    {record.solution && <div className="mt-1"><span className="text-green-400 font-medium">Solución:</span> <span className="text-white/60">{record.solution}</span></div>}
+                                                    {record.diagnostic && (
+                                                        <div className="mt-3 p-3 bg-white/5 rounded-lg border border-white/5">
+                                                            <span className="text-[10px] uppercase tracking-wider text-white/50 font-bold block mb-1">Diagnóstico Técnico</span>
+                                                            <p className="text-white/80 text-sm whitespace-pre-wrap">{record.diagnostic}</p>
+                                                        </div>
+                                                    )}
+                                                    {record.solution && (
+                                                        <div className="mt-2 p-3 bg-white/5 rounded-lg border border-white/5">
+                                                            <span className="text-[10px] uppercase tracking-wider text-white/50 font-bold block mb-1">Acción y Solución</span>
+                                                            <p className="text-white/80 text-sm whitespace-pre-wrap">{record.solution}</p>
+                                                        </div>
+                                                    )}
+
+                                                    {/* Admin Message Highlight */}
+                                                    {(record as IssueRecord).adminMessage && (
+                                                        <div className="mt-4 p-4 bg-green-500/10 rounded-xl border border-green-500/30 flex gap-3 relative overflow-hidden group">
+                                                            <div className="absolute inset-0 bg-gradient-to-r from-green-500/5 to-transparent"></div>
+                                                            <MessageSquare className="w-5 h-5 text-green-400 shrink-0 relative z-10" />
+                                                            <div className="relative z-10">
+                                                                <span className="text-[10px] uppercase tracking-wider text-green-400/80 font-black block mb-1">Mensaje de Resolución (Admin)</span>
+                                                                <p className="text-green-50/90 text-sm font-medium whitespace-pre-wrap">{(record as IssueRecord).adminMessage}</p>
+                                                            </div>
+                                                        </div>
+                                                    )}
                                                 </div>
                                             ) : (
                                                 <div className="truncate text-white/50">
@@ -306,22 +334,63 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                         <td className="p-4 text-center">
                                             <div className="flex items-center justify-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
                                                 {isAdmin && record.type === 'issue' && (
-                                                    <button
-                                                        onClick={async () => {
-                                                            const newDiag = prompt("Ingrese Diagnóstico:", record.diagnostic || "");
-                                                            if (newDiag !== null) {
-                                                                const newSol = prompt("Ingrese Solución:", record.solution || "");
-                                                                if (newSol !== null) {
-                                                                    await historyService.update(record.id, { diagnostic: newDiag, solution: newSol });
-                                                                    loadRecords();
+                                                    <div className="mt-4 pt-4 border-t border-white/10 flex justify-end gap-2 text-sm">
+                                                        <div className="flex items-center gap-2">
+                                                            <span className="text-white/50 font-bold text-xs uppercase mr-2">Estado:</span>
+                                                            <select
+                                                                value={record.status}
+                                                                onChange={async (e) => {
+                                                                    const newStatus = e.target.value as IssueRecord['status'];
+                                                                    if (confirm(`¿Cambiar estado a ${newStatus}?`)) {
+                                                                        let adminMsg: string | undefined = (record as IssueRecord).adminMessage;
+                                                                        if (newStatus === 'resuelto') {
+                                                                            adminMsg = prompt("Mensaje de cierre para el usuario (Ej: Equipo listo para retiro):", (record as IssueRecord).adminMessage || "") || undefined;
+                                                                        } else if (newStatus === 'dado_de_baja') {
+                                                                            adminMsg = prompt("Mensaje para el usuario (Ej: Equipo dado de baja):", (record as IssueRecord).adminMessage || "") || undefined;
+                                                                        } else {
+                                                                            adminMsg = undefined; // Clear message if not resolved/baja
+                                                                        }
+                                                                        await historyService.update(record.id!, { status: newStatus, adminMessage: adminMsg });
+                                                                        loadRecords();
+                                                                    }
+                                                                }}
+                                                                className={clsx("bg-[#050505] border border-white/10 rounded-lg px-2 py-1 outline-none font-bold",
+                                                                    record.status === 'resuelto' ? "text-green-400" :
+                                                                        record.status === 'en_taller' ? "text-orange-400" :
+                                                                            record.status === 'recibido' ? "text-blue-400" :
+                                                                                record.status === 'dado_de_baja' ? "text-gray-400" : "text-yellow-400"
+                                                                )}
+                                                            >
+                                                                <option value="en_proceso">En Proceso</option>
+                                                                <option value="recibido">Recibido (Taller)</option>
+                                                                <option value="en_taller">En Reparación</option>
+                                                                <option value="resuelto">Resuelto / Listo</option>
+                                                                <option value="dado_de_baja">Dado de Baja</option>
+                                                            </select>
+                                                        </div>
+
+                                                        <button
+                                                            onClick={async () => {
+                                                                const newDiag = prompt("Ingrese Diagnóstico:", record.diagnostic || "");
+                                                                if (newDiag !== null) {
+                                                                    const newSol = prompt("Ingrese Solución:", record.solution || "");
+                                                                    if (newSol !== null) {
+                                                                        let adminMsg = (record as IssueRecord).adminMessage;
+                                                                        if (record.status === 'resuelto' || record.status === 'dado_de_baja') {
+                                                                            adminMsg = prompt("Editar mensaje de Resolución (Admin):", (record as IssueRecord).adminMessage || "") || undefined;
+                                                                        }
+
+                                                                        await historyService.update(record.id!, { diagnostic: newDiag, solution: newSol, adminMessage: adminMsg });
+                                                                        loadRecords();
+                                                                    }
                                                                 }
-                                                            }
-                                                        }}
-                                                        className="p-2 bg-blue-500/10 hover:bg-blue-500/30 text-blue-400 rounded-lg transition-all"
-                                                        title="Editar Diagnóstico y Solución"
-                                                    >
-                                                        <Edit className="w-4 h-4" />
-                                                    </button>
+                                                            }}
+                                                            className="px-3 py-1.5 bg-blue-500/20 hover:bg-blue-500/30 text-blue-400 rounded-lg font-bold transition-colors flex items-center gap-2 ml-4"
+                                                        >
+                                                            <Edit3 className="w-4 h-4" />
+                                                            Editar
+                                                        </button>
+                                                    </div>
                                                 )}
                                                 <button
                                                     onClick={() => handleDelete(record.id)}

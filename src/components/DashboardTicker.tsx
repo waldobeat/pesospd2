@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { historyService, HistoryItem } from '../services/HistoryService';
-import { Clock, AlertTriangle, Wrench, CheckCircle } from 'lucide-react';
+import { historyService, type HistoryItem } from '../services/HistoryService';
+import { Wrench, AlertTriangle, CheckCircle } from 'lucide-react';
 import clsx from 'clsx';
 
 interface DashboardTickerProps {

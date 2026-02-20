@@ -14,7 +14,6 @@ export class ProtocolParser {
     // Protocol constants
     private static readonly STX = '\x02';
     private static readonly CR = '\r'; // 0x0D
-    private static readonly LF = '\n'; // 0x0A
 
     parse(chunk: Uint8Array): ScaleData[] {
         // Strip Parity Bit (High Bit) from 7-bit ASCII

@@ -1,5 +1,5 @@
 import { db } from '../firebase';
-import { collection, getDocs, addDoc, deleteDoc, doc, query, orderBy, where, Timestamp } from 'firebase/firestore';
+import { collection, getDocs, addDoc, deleteDoc, doc, query, orderBy, where } from 'firebase/firestore';
 
 export interface BaseRecord {
     id: string;
@@ -33,6 +33,7 @@ export interface IssueRecord extends BaseRecord {
     reportedBy?: string;
     diagnostic?: string;
     solution?: string;
+    adminMessage?: string;
 }
 
 export type HistoryItem = CalibrationRecord | RepairRecord | IssueRecord;
@@ -43,12 +44,10 @@ export const historyService = {
     getAll: async (userEmail?: string, isAdmin: boolean = false): Promise<HistoryItem[]> => {
         try {
             const historyRef = collection(db, COLLECTION_NAME);
-            let q;
 
             if (isAdmin) {
                 // Admin sees ALL records
-                const q = query(historyRef, orderBy("date", "desc"));
-                const snapshot = await getDocs(q);
+                const snapshot = await getDocs(query(historyRef, orderBy("date", "desc")));
                 return snapshot.docs.map(doc => ({ id: doc.id, ...doc.data() } as HistoryItem));
             } else if (userEmail) {
                 // Standard user: Query by 'user' OR 'reportedBy'

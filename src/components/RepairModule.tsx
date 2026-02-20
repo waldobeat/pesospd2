@@ -30,33 +30,7 @@ export const RepairModule: React.FC<RepairModuleProps> = ({ isOpen, onClose }) =
         setRepaired(true);
     };
 
-    const handleManualRepair = async () => {
-        if (!branch || !diagnosis || !solution) {
-            alert("Por favor complete todos los campos");
-            return;
-        }
 
-        try {
-            // 1. Save to History
-            await historyService.save({
-                model,
-                serial,
-                branch,
-                diagnosis,
-                solution,
-                note,
-                repaired,
-                user: auth.currentUser?.email || "Desconocido"
-            }, 'repair');
-
-            alert("Registro de reparación manual guardado con éxito.");
-            onClose();
-            resetForm();
-        } catch (error) {
-            console.error(error);
-            alert("Error al guardar el registro de reparación manual.");
-        }
-    };
 
     const handleSaveAndGenerate = async () => {
         if (!serial || !diagnosis || !solution) {
@@ -144,9 +118,7 @@ export const RepairModule: React.FC<RepairModuleProps> = ({ isOpen, onClose }) =
             doc.setFontSize(9);
             doc.setTextColor(100);
             doc.setFont("helvetica", "bold");
-            doc.setFillColor(240);
             doc.rect(pageWidth - 45, startY + 5, 40, 6, 'F');
-            doc.setTextColor(80);
             doc.text(typeLabel, pageWidth - 25, startY + 9, { align: 'center' });
 
 

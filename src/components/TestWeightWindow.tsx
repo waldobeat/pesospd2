@@ -7,7 +7,6 @@ interface TestWeightWindowProps {
     isOpen: boolean;
     onClose: () => void;
     rawBuffer: string[];
-    lastReceived: Date | null;
     error?: string | null;
     weight: number;
 }
@@ -16,7 +15,6 @@ export const TestWeightWindow: React.FC<TestWeightWindowProps> = ({
     isOpen,
     onClose,
     rawBuffer,
-    lastReceived,
     error,
     weight
 }) => {
