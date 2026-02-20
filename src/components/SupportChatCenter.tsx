@@ -228,6 +228,16 @@ export const SupportChatCenter: React.FC<SupportChatCenterProps> = ({ isOpen, on
                                 return (
                                     <div key={msg.id} className={clsx("flex flex-col group", isMe ? "items-end" : "items-start")}>
                                         <div className={clsx(
+                                            "flex items-center gap-1.5 mb-1 px-1",
+                                            isMe ? "flex-row-reverse" : "flex-row"
+                                        )}>
+                                            <span className="text-[10px] font-black uppercase tracking-widest text-white/30">
+                                                {isMe
+                                                    ? "Tú dices"
+                                                    : (isAdmin ? (msg.senderName || msg.sender.split('@')[0]) : "Taller responde")}
+                                            </span>
+                                        </div>
+                                        <div className={clsx(
                                             "max-w-[85%] md:max-w-[70%] px-5 py-3 rounded-[1.5rem] shadow-lg transition-all",
                                             isMe
                                                 ? "bg-blue-600 text-white rounded-tr-none"
@@ -235,9 +245,17 @@ export const SupportChatCenter: React.FC<SupportChatCenterProps> = ({ isOpen, on
                                         )}>
                                             <p className="text-sm md:text-base leading-relaxed whitespace-pre-wrap">{msg.text}</p>
                                         </div>
-                                        <span className="text-[10px] text-white/20 mt-1.5 px-2 font-bold uppercase tracking-wider">
-                                            {msg.timestamp ? new Date(msg.timestamp.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Enviando...'}
-                                        </span>
+                                        <div className={clsx(
+                                            "flex items-center gap-2 mt-1.5 px-2",
+                                            isMe ? "flex-row-reverse" : "flex-row"
+                                        )}>
+                                            <span className="text-[10px] text-white/20 font-bold uppercase tracking-wider">
+                                                {msg.timestamp ? new Date(msg.timestamp.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Enviando...'}
+                                            </span>
+                                            {msg.seen && isMe && (
+                                                <span className="text-[9px] text-blue-400/50 font-black uppercase tracking-tighter">Visto</span>
+                                            )}
+                                        </div>
                                     </div>
                                 );
                             })
