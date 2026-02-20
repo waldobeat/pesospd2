@@ -221,21 +221,19 @@ export const SupportChatCenter: React.FC<SupportChatCenterProps> = ({ isOpen, on
                                         return (
                                             <div key={msg.id} className={clsx("flex flex-col group", isMe ? "items-end" : "items-start")}>
                                                 <div className={clsx(
-                                                    "flex items-center gap-1.5 mb-1 px-1",
-                                                    isMe ? "flex-row-reverse" : "flex-row"
-                                                )}>
-                                                    <span className="text-[9px] font-black uppercase tracking-widest text-white/30">
-                                                        {isMe
-                                                            ? "Tú dices"
-                                                            : (isAdmin ? (msg.senderName || msg.sender.split('@')[0]) : "Taller responde")}
-                                                    </span>
-                                                </div>
-                                                <div className={clsx(
                                                     "max-w-[85%] px-4 py-2.5 rounded-[1.2rem] shadow-sm transition-all",
                                                     isMe
                                                         ? "bg-blue-600 text-white rounded-tr-none"
-                                                        : "bg-white/10 text-white rounded-tl-none border border-white/5"
+                                                        : "bg-[#1c1c1e] text-white rounded-tl-none border border-white/5"
                                                 )}>
+                                                    <span className={clsx(
+                                                        "text-[9px] font-black uppercase tracking-widest block mb-1 opacity-60",
+                                                        isMe ? "text-blue-100" : "text-white/40"
+                                                    )}>
+                                                        {isMe
+                                                            ? "Yo digo:"
+                                                            : (isAdmin ? `${msg.senderName || msg.sender.split('@')[0]} dice:` : "Taller dice:")}
+                                                    </span>
                                                     <p className="text-xs md:text-sm leading-relaxed whitespace-pre-wrap">{msg.text}</p>
                                                 </div>
                                                 <div className={clsx(

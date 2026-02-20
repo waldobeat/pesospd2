@@ -74,7 +74,9 @@ export const supportService = {
             snapshot.docs.forEach(doc => {
                 const data = doc.data() as ChatMessage;
                 const otherParty = data.sender === 'admin@sisdepe.com' ? data.recipient : data.sender;
-                if (otherParty && !latestMsgs[otherParty]) {
+
+                // Exclude self-conversations for admin
+                if (otherParty && otherParty !== 'admin@sisdepe.com' && !latestMsgs[otherParty]) {
                     latestMsgs[otherParty] = { id: doc.id, ...data };
                 }
             });
