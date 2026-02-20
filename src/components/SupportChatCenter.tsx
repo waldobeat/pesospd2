@@ -18,6 +18,7 @@ export const SupportChatCenter: React.FC<SupportChatCenterProps> = ({ isOpen, on
     const [conversations, setConversations] = useState<{ [email: string]: ChatMessage }>({});
     const [selectedUser, setSelectedUser] = useState<string | null>(null);
     const [searchQuery, setSearchQuery] = useState('');
+    const [isLoading, setIsLoading] = useState(true);
     const messagesEndRef = useRef<HTMLDivElement>(null);
     const [isMobileListOpen, setIsMobileListOpen] = useState(true);
 
@@ -28,22 +29,34 @@ export const SupportChatCenter: React.FC<SupportChatCenterProps> = ({ isOpen, on
         if (isOpen && isAdmin) {
             const unsubscribe = supportService.subscribeToAllConversations((data) => {
                 setConversations(data);
-                // Auto-select first if none selected
-                if (!selectedUser && Object.keys(data).length > 0) {
-                    // setSelectedUser(Object.keys(data)[0]);
+
+                // If admin opens and no one is selected, 
+                // auto-select the first user that has an UNSEEN message
+                if (!selectedUser) {
+                    const emailsWithUnseen = Object.keys(data).filter(email =>
+                        !data[email].seen && data[email].recipient === 'admin@sisdepe.com'
+                    );
+                    if (emailsWithUnseen.length > 0) {
+                        setSelectedUser(emailsWithUnseen[0]);
+                    } else if (Object.keys(data).length > 0) {
+                        // Fallback to latest conversation
+                        setSelectedUser(Object.keys(data)[0]);
+                    }
                 }
             });
             return () => unsubscribe();
         }
-    }, [isOpen, isAdmin]);
+    }, [isOpen, isAdmin]); // Remove selectedUser from here to avoid cycles
 
     // Load actual messages for selected chat
     useEffect(() => {
         if (isOpen) {
             const targetUser = isAdmin ? selectedUser : currentUserEmail;
             if (targetUser) {
+                setIsLoading(true);
                 const unsubscribe = supportService.subscribeToUserMessages(targetUser, (data) => {
                     setMessages(data);
+                    setIsLoading(false);
                     scrollToBottom();
 
                     // Mark as seen
@@ -54,7 +67,9 @@ export const SupportChatCenter: React.FC<SupportChatCenterProps> = ({ isOpen, on
                         supportService.markAsSeen(unseenIds);
                     }
                 });
-                return () => unsubscribe();
+                return () => {
+                    unsubscribe();
+                };
             } else {
                 setMessages([]);
             }
@@ -194,7 +209,12 @@ export const SupportChatCenter: React.FC<SupportChatCenterProps> = ({ isOpen, on
 
                     {/* Chat Messages */}
                     <div className="flex-1 overflow-y-auto p-4 md:p-8 space-y-6 custom-scrollbar bg-black/20">
-                        {messages.length === 0 ? (
+                        {isLoading ? (
+                            <div className="h-full flex flex-col items-center justify-center space-y-4">
+                                <div className="w-10 h-10 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin" />
+                                <p className="text-white/20 text-xs font-bold uppercase tracking-widest">Sincronizando Chat...</p>
+                            </div>
+                        ) : messages.length === 0 ? (
                             <div className="h-full flex flex-col items-center justify-center text-center p-10 space-y-4">
                                 <div className="w-20 h-20 rounded-3xl bg-blue-500/5 flex items-center justify-center border border-blue-500/10">
                                     <MessageSquare className="w-10 h-10 text-blue-500/20" />
@@ -213,10 +233,10 @@ export const SupportChatCenter: React.FC<SupportChatCenterProps> = ({ isOpen, on
                                                 ? "bg-blue-600 text-white rounded-tr-none"
                                                 : "bg-white/10 text-white rounded-tl-none border border-white/5"
                                         )}>
-                                            <p className="text-sm md:text-base leading-relaxed">{msg.text}</p>
+                                            <p className="text-sm md:text-base leading-relaxed whitespace-pre-wrap">{msg.text}</p>
                                         </div>
                                         <span className="text-[10px] text-white/20 mt-1.5 px-2 font-bold uppercase tracking-wider">
-                                            {msg.timestamp ? new Date(msg.timestamp.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : '...'}
+                                            {msg.timestamp ? new Date(msg.timestamp.toDate()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : 'Enviando...'}
                                         </span>
                                     </div>
                                 );

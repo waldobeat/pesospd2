@@ -9,6 +9,7 @@ export interface ChatMessage {
     timestamp: any;
     seen: boolean;
     senderName?: string;
+    chatId: string; // userEmail-admin (always alphabetical or fixed format)
 }
 
 const COLLECTION_NAME = 'messages';
@@ -16,13 +17,18 @@ const COLLECTION_NAME = 'messages';
 export const supportService = {
     sendMessage: async (sender: string, recipient: string, text: string, senderName?: string) => {
         try {
+            // Consistent chatId: always "email-admin" for simplicity
+            const userEmail = sender === 'admin@sisdepe.com' ? recipient : sender;
+            const chatId = `${userEmail}-admin`;
+
             await addDoc(collection(db, COLLECTION_NAME), {
                 sender,
                 recipient,
                 text,
                 timestamp: serverTimestamp(),
                 seen: false,
-                senderName: senderName || sender.split('@')[0]
+                senderName: senderName || sender.split('@')[0],
+                chatId
             });
         } catch (error) {
             console.error("Error sending message:", error);
@@ -32,11 +38,11 @@ export const supportService = {
 
     // Subscribe to all messages for a specific user (between them and admin)
     subscribeToUserMessages: (userEmail: string, callback: (messages: ChatMessage[]) => void) => {
+        const chatId = `${userEmail}-admin`;
         const q = query(
             collection(db, COLLECTION_NAME),
-            where('sender', 'in', [userEmail, 'admin@sisdepe.com']),
-            where('recipient', 'in', [userEmail, 'admin@sisdepe.com']),
-            orderBy('timestamp', 'asc')
+            where('chatId', '==', chatId)
+            // Removed orderBy to avoid requiring composite index, sorting locally instead
         );
 
         return onSnapshot(q, (snapshot) => {
@@ -44,12 +50,23 @@ export const supportService = {
                 id: doc.id,
                 ...doc.data()
             })) as ChatMessage[];
+
+            // Local sort by timestamp
+            messages.sort((a, b) => {
+                const tA = a.timestamp?.toMillis?.() || 0;
+                const tB = b.timestamp?.toMillis?.() || 0;
+                return tA - tB;
+            });
+
             callback(messages);
+        }, (error) => {
+            console.error("Error subscribing to messages:", error);
         });
     },
 
     // Admin: Subscribe to all latest messages to show in sidebar
     subscribeToAllConversations: (callback: (conversations: { [email: string]: ChatMessage }) => void) => {
+        // We still need to order by timestamp to get latest, but we can limit to 100 to avoid huge loads
         const q = query(collection(db, COLLECTION_NAME), orderBy('timestamp', 'desc'));
 
         return onSnapshot(q, (snapshot) => {
@@ -57,7 +74,7 @@ export const supportService = {
             snapshot.docs.forEach(doc => {
                 const data = doc.data() as ChatMessage;
                 const otherParty = data.sender === 'admin@sisdepe.com' ? data.recipient : data.sender;
-                if (!latestMsgs[otherParty]) {
+                if (otherParty && !latestMsgs[otherParty]) {
                     latestMsgs[otherParty] = { id: doc.id, ...data };
                 }
             });
