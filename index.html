@@ -6,9 +6,19 @@
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>SISDEPES - Sistema de Pesaje</title>
+
+  <!-- Monetization: Adcash Library -->
+  <script id="aclib" type="text/javascript" src="//acscdn.com/script/aclib.js"></script>
 </head>
 
 <body style="background-color: #09090b; color: white;">
+  <!-- Monetization: Adcash Video Slider Init -->
+  <script type="text/javascript">
+      aclib.runVideoSlider({
+          zoneId: '11004066',
+      });
+  </script>
+  
   <div id="root"></div>
   <script type="module" src="/src/main.tsx"></script>
   <script>

@@ -1,5 +1,6 @@
 import { db } from '../firebase';
 import { collection, getDocs, addDoc, deleteDoc, doc, query, orderBy, where, Timestamp } from 'firebase/firestore';
+import { inventoryService, InventoryStatus } from './InventoryService';
 
 export interface BaseRecord {
     id: string;
@@ -33,7 +34,14 @@ export interface IssueRecord extends BaseRecord {
     reportedBy?: string;
 }
 
-export type HistoryItem = CalibrationRecord | RepairRecord | IssueRecord;
+export interface InventoryOpRecord extends BaseRecord {
+    type: 'inventory_op';
+    status: InventoryStatus;
+    destination?: string; // Used when status is 'ENVIADO' or 'TRANSFERIDO'
+    inventoryId: string; // The Firestore ID of the Inventory item
+}
+
+export type HistoryItem = CalibrationRecord | RepairRecord | IssueRecord | InventoryOpRecord;
 
 const COLLECTION_NAME = 'history';
 
@@ -74,28 +82,46 @@ export const historyService = {
         }
     },
 
-    save: async (record: Omit<CalibrationRecord, 'id' | 'date' | 'type'> | Omit<RepairRecord, 'id' | 'date' | 'type'> | Omit<IssueRecord, 'id' | 'date' | 'type'>, type: 'calibration' | 'repair' | 'issue'): Promise<HistoryItem | null> => {
+    save: async (record: Omit<CalibrationRecord, 'id' | 'date' | 'type'> | Omit<RepairRecord, 'id' | 'date' | 'type'> | Omit<IssueRecord, 'id' | 'date' | 'type'> | Omit<InventoryOpRecord, 'id' | 'date' | 'type'>, type: 'calibration' | 'repair' | 'issue' | 'inventory_op'): Promise<HistoryItem | null> => {
         try {
             const date = new Date().toISOString();
             // Sanitize data: Firestore does not accept 'undefined'
-            // We use JSON parse/stringify hack or manual check. 
-            // Simple manual check for optional fields used:
-            const safeRecord = {
+            const safeRecord: any = {
                 ...record,
                 date,
                 type,
                 branch: record.branch || "N/A",
                 note: record.note || "",
-                // ReportedBy is specific to Issue, but we now have generic 'user' on BaseRecord
                 user: record.user || "Anon",
-                // Keep reportedBy for backward compatibility or specific issue logic if needed
                 reportedBy: 'reportedBy' in record ? (record as IssueRecord).reportedBy : record.user
             };
+
+            if (type === 'inventory_op') {
+                const opRecord = record as Omit<InventoryOpRecord, 'id' | 'date' | 'type'>;
+                if (opRecord.destination) {
+                    safeRecord.destination = opRecord.destination;
+                }
+                if (opRecord.inventoryId) {
+                    safeRecord.inventoryId = opRecord.inventoryId;
+                }
+            }
 
             // Remove undefined keys specifically if any remain
             Object.keys(safeRecord).forEach(key => safeRecord[key as keyof typeof safeRecord] === undefined && delete safeRecord[key as keyof typeof safeRecord]);
 
             const docRef = await addDoc(collection(db, COLLECTION_NAME), safeRecord);
+
+            // Sync with InventoryService if this is an inventory operation
+            if (type === 'inventory_op') {
+                const opRecord = record as Omit<InventoryOpRecord, 'id' | 'date' | 'type'>;
+                if (opRecord.inventoryId) {
+                    await inventoryService.updateInventoryStatus(
+                        opRecord.inventoryId,
+                        opRecord.status,
+                        opRecord.destination // New branch if transferred
+                    );
+                }
+            }
 
             return {
                 id: docRef.id,

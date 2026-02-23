@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { X, Save, Box, AlertCircle } from 'lucide-react';
-import { inventoryService } from '../services/InventoryService';
+import { inventoryService, InventoryStatus } from '../services/InventoryService';
 import { User } from 'firebase/auth';
 
 interface InventoryModalProps {
@@ -14,6 +14,7 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
     const [scaleModel, setScaleModel] = useState('');
     const [serialNumber, setSerialNumber] = useState('');
     const [branch, setBranch] = useState('');
+    const [status, setStatus] = useState<InventoryStatus>('OPERATIVO'); // New state for status
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -33,6 +34,7 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
             setWeightType('');
             setScaleModel('');
             setSerialNumber('');
+            setStatus('OPERATIVO'); // Reset status
             setError(null);
             setSuccess(false);
         }
@@ -44,6 +46,10 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
         e.preventDefault();
         if (!weightType || !scaleModel || !serialNumber || !branch) {
             setError("Por favor, complete todos los campos.");
+            return;
+        }
+        if (!status) {
+            setError("Por favor, seleccione el estatus inicial.");
             return;
         }
 
@@ -58,6 +64,7 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
                 scaleModel,
                 serialNumber,
                 branch,
+                status, // Pass status to the API call
                 recordedBy
             });
             setSuccess(true);
@@ -160,6 +167,24 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
                             placeholder="SN-XXXX"
                             disabled={isSubmitting || success}
                         />
+                    </div>
+
+                    <div className="flex flex-col gap-1">
+                        <label className="text-xs font-bold text-white/50 uppercase tracking-wide">Estatus Inicial</label>
+                        <select
+                            value={status}
+                            onChange={(e) => setStatus(e.target.value as InventoryStatus)}
+                            className="w-full bg-[#1e293b] border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors appearance-none"
+                            disabled={isSubmitting || success}
+                        >
+                            <option value="OPERATIVO">OPERATIVO</option>
+                            <option value="DAÑADO">DAÑADO</option>
+                            <option value="EN TALLER">EN TALLER</option>
+                            <option value="EN ESPERA">EN ESPERA</option>
+                            <option value="ENVIADO">ENVIADO A OTRA SUCURSAL</option>
+                            <option value="TRANSFERIDO">TRANSFERIDO</option>
+                        </select>
+                        <p className="text-[10px] text-white/30 mt-1 pl-1">Selecciona el estado físico/lógico actual del equipo.</p>
                     </div>
 
                     <div className="flex flex-col gap-1">

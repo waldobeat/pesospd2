@@ -1,8 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import { auth } from '../firebase';
 import { useAuthRole } from '../hooks/useAuthRole';
-import { historyService, type HistoryItem } from '../services/HistoryService';
-import { X, Trash2, FileText, Search, FileDown, Wrench, CheckCircle, AlertTriangle } from 'lucide-react';
+import { historyService, type HistoryItem, type IssueRecord, type InventoryOpRecord } from '../services/HistoryService';
+import { X, Trash2, FileText, Search, FileDown, Wrench, CheckCircle, AlertTriangle, RefreshCw } from 'lucide-react';
 import clsx from 'clsx';
 import jsPDF from 'jspdf';
 import autoTable from 'jspdf-autotable';
@@ -73,6 +73,10 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
             } else if (r.type === 'issue') {
                 status = r.status === 'resolved' ? "Resuelto" : r.status === 'in_repair' ? "En Taller" : "Abierto";
                 detail = r.description;
+            } else if (r.type === 'inventory_op') {
+                const op = r as InventoryOpRecord;
+                status = op.status;
+                detail = op.destination ? `Destino: ${op.destination} ` : '';
             } else {
                 // Calibration
                 status = r.passed ? "Aprobado" : "Fallido";
@@ -81,7 +85,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
 
             return [
                 new Date(r.date).toLocaleDateString(),
-                r.type === 'repair' ? 'Reparación' : 'Calibración',
+                r.type === 'repair' ? 'Reparación' : r.type === 'issue' ? 'Avería' : r.type === 'inventory_op' ? 'Operación Inv.' : 'Calibración',
                 r.user || "N/A", // User Column
                 r.model,
                 r.serial,
@@ -210,6 +214,10 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                                 <div className="w-8 h-8 rounded-full bg-red-500/20 flex items-center justify-center text-red-400" title="Avería Reportada">
                                                     <AlertTriangle className="w-4 h-4" />
                                                 </div>
+                                            ) : record.type === 'inventory_op' ? (
+                                                <div className="w-8 h-8 rounded-full bg-purple-500/20 flex items-center justify-center text-purple-400" title="Operación de Inventario">
+                                                    <RefreshCw className="w-4 h-4" />
+                                                </div>
                                             ) : (
                                                 <div className="w-8 h-8 rounded-full bg-blue-500/20 flex items-center justify-center text-blue-400" title="Calibración">
                                                     <CheckCircle className="w-4 h-4" />
@@ -264,14 +272,22 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                                         record.status === 'resolved' ? "bg-green-500/10 text-green-400" :
                                                             record.status === 'in_repair' ? "bg-orange-500/10 text-orange-400" : "bg-red-500/10 text-red-400"
                                                     )}>
-                                                        {record.status === 'resolved' ? "Resuelto" :
-                                                            record.status === 'in_repair' ? "En Taller" : "Abierto"}
+                                                        {record.status === 'resolved' ? "Resuelto" : record.status === 'in_repair' ? "En Taller" : "Abierto"}
                                                     </span>
                                                 )
+                                            ) : record.type === 'inventory_op' ? (
+                                                <span className={clsx("inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium",
+                                                    (record as InventoryOpRecord).status === 'OPERATIVO' ? "bg-green-500/10 text-green-400" :
+                                                        (record as InventoryOpRecord).status === 'DAÑADO' ? "bg-red-500/10 text-red-400" : "bg-purple-500/10 text-purple-400"
+                                                )}>
+                                                    {(record as InventoryOpRecord).status}
+                                                </span>
                                             ) : (
-                                                <div className="font-mono text-blue-300">
-                                                    {record.finalWeight.toFixed(2)} / {record.targetWeight.toFixed(2)} kg
-                                                </div>
+                                                <span className={clsx("inline-flex items-center gap-1.5 px-2.5 py-0.5 rounded-full text-xs font-medium",
+                                                    record.passed ? "bg-green-500/10 text-green-400" : "bg-red-500/10 text-red-400"
+                                                )}>
+                                                    {record.passed ? "Aprobado" : "Fallido"}
+                                                </span>
                                             )}
                                         </td>
                                         <td className="p-4 text-white/70 text-sm max-w-xs">
