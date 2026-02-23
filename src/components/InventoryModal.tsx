@@ -108,26 +108,46 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
 
                     <div className="flex flex-col gap-1">
                         <label className="text-xs font-bold text-white/50 uppercase tracking-wide">Tipo de Peso</label>
-                        <input
-                            type="text"
+                        <select
                             value={weightType}
-                            onChange={(e) => setWeightType(e.target.value)}
-                            className="w-full bg-[#1e293b] border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-blue-500 transition-colors"
-                            placeholder="Ej. Comercial, Industrial"
+                            onChange={(e) => {
+                                setWeightType(e.target.value);
+                                setScaleModel(''); // Reset model when type changes
+                            }}
+                            className="w-full bg-[#1e293b] border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors appearance-none"
                             disabled={isSubmitting || success}
-                        />
+                        >
+                            <option value="">-- Seleccionar --</option>
+                            <option value="PESO">PESO</option>
+                            <option value="BALANZA">BALANZA</option>
+                        </select>
                     </div>
 
                     <div className="flex flex-col gap-1">
                         <label className="text-xs font-bold text-white/50 uppercase tracking-wide">Modelo de Balanza</label>
-                        <input
-                            type="text"
+                        <select
                             value={scaleModel}
                             onChange={(e) => setScaleModel(e.target.value)}
-                            className="w-full bg-[#1e293b] border border-white/10 rounded-lg px-4 py-3 text-white placeholder-white/20 focus:outline-none focus:border-blue-500 transition-colors"
-                            placeholder="Ej. PD-2, CAS"
-                            disabled={isSubmitting || success}
-                        />
+                            className="w-full bg-[#1e293b] border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors appearance-none"
+                            disabled={isSubmitting || success || !weightType}
+                        >
+                            <option value="">-- Seleccionar --</option>
+                            {weightType === 'PESO' && (
+                                <>
+                                    <option value="PD 1">PD 1</option>
+                                    <option value="PD 2">PD 2</option>
+                                    <option value="CHINO">CHINO</option>
+                                </>
+                            )}
+                            {weightType === 'BALANZA' && (
+                                <>
+                                    <option value="CL 5000H COLGANTE">CL 5000H COLGANTE</option>
+                                    <option value="CL 5000H MOSTRADOR">CL 5000H MOSTRADOR</option>
+                                    <option value="CL 5200 MOSTRADOR">CL 5200 MOSTRADOR</option>
+                                    <option value="CN 1">CN 1</option>
+                                </>
+                            )}
+                        </select>
                     </div>
 
                     <div className="flex flex-col gap-1">
