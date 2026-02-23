@@ -7,12 +7,13 @@ import { HistoryView } from './components/HistoryView';
 import { ReportIssueModal } from './components/ReportIssueModal';
 import { RepairModule } from './components/RepairModule';
 import { DashboardTicker } from './components/DashboardTicker';
-import { Zap, Beaker, LayoutDashboard, ClipboardCheck, History, Wrench, LogOut, AlertTriangle, Shield, Users } from 'lucide-react';
+import { Zap, Beaker, LayoutDashboard, ClipboardCheck, History, Wrench, LogOut, AlertTriangle, Shield, Users, Box } from 'lucide-react';
 import clsx from 'clsx';
 import { serialService } from './services/SerialService';
 import { auth } from './firebase'; // Import auth
 import { onAuthStateChanged, signOut, type User } from 'firebase/auth';
 import { Login } from './components/Login';
+import { InventoryModal } from './components/InventoryModal';
 
 import { UserManagementModal } from './components/UserManagementModal';
 import { useAuthRole } from './hooks/useAuthRole'; // Hook Integration
@@ -44,6 +45,7 @@ function App() {
   const [isIssueOpen, setIsIssueOpen] = useState(false);
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
   const [isUserMgmtOpen, setIsUserMgmtOpen] = useState(false); // New Modal State
+  const [isInventoryOpen, setIsInventoryOpen] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
   const simInterval = useRef<number | null>(null);
 
@@ -204,6 +206,14 @@ function App() {
 
           {/* Available to All Users (Standard & Admin) */}
           <button
+            onClick={() => setIsInventoryOpen(true)}
+            className="px-6 py-4 bg-white/5 hover:bg-white/10 border border-white/10 text-white rounded-xl transition-all duration-300 font-bold text-lg flex items-center justify-center gap-2"
+          >
+            <Box className="w-5 h-5" />
+            REGISTRO DE INVENTARIO
+          </button>
+
+          <button
             onClick={() => setIsIssueOpen(true)}
             className="px-6 py-4 bg-red-600/10 hover:bg-red-600/20 border border-red-500/30 text-red-400 rounded-xl transition-all duration-300 font-bold text-lg flex items-center justify-center gap-2"
           >
@@ -280,6 +290,12 @@ function App() {
       <HistoryView
         isOpen={isHistoryOpen}
         onClose={() => setIsHistoryOpen(false)}
+      />
+
+      <InventoryModal
+        isOpen={isInventoryOpen}
+        onClose={() => setIsInventoryOpen(false)}
+        user={user}
       />
 
       {/* Footer */}
