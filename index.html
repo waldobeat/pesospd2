@@ -1,29 +1,22 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
 
 <head>
   <meta charset="UTF-8" />
   <link rel="icon" type="image/svg+xml" href="/vite.svg" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>SISDEPES - Sistema de Pesaje</title>
-
-  <!-- Monetization: Adcash Library -->
-  <script id="aclib" type="text/javascript" src="//acscdn.com/script/aclib.js"></script>
+  <title>SISDEPE - Sistema de Pesaje</title>
 </head>
 
-<body style="background-color: #09090b; color: white;">
-  <!-- Monetization: Adcash AutoTag Init -->
-  <script type="text/javascript">
-    aclib.runAutoTag({
-      zoneId: 'aywitd8o8c',
-    });
-  </script>
-
+<body style="background-color: #09090b; color: white; margin: 0;">
   <div id="root"></div>
+
   <script type="module" src="/src/main.tsx"></script>
+
   <script>
+    // Manejo de errores en consola para no ensuciar la UI
     window.onerror = function (msg, url, line, col, error) {
-      document.body.innerHTML += '<div style="color:red; background:black; padding:20px; border:1px solid red; margin:20px;">' + msg + '<br>' + url + ':' + line + ':' + col + '<br>' + (error ? error.stack : '') + '</div>';
+      console.error("Error en sistema: ", msg, " en ", url, ":", line);
     };
   </script>
 </body>
