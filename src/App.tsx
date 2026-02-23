@@ -6,7 +6,6 @@ import { CalibrationTest } from './components/CalibrationTest';
 import { HistoryView } from './components/HistoryView';
 import { ReportIssueModal } from './components/ReportIssueModal';
 import { RepairModule } from './components/RepairModule';
-import { DashboardTicker } from './components/DashboardTicker';
 import { Zap, Beaker, LayoutDashboard, ClipboardCheck, History, Wrench, LogOut, AlertTriangle, Shield, Users, Box } from 'lucide-react';
 import clsx from 'clsx';
 import { serialService } from './services/SerialService';
@@ -26,6 +25,8 @@ function App() {
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
   const { role, isAdmin, loading: roleLoading } = useAuthRole(user); // RBAC
+  const isWorkshop = user?.email?.split('@')[0].toLowerCase() === 'taller';
+  const canAccessTechnicianUI = isAdmin || isWorkshop;
 
   const {
     weight, unit, isStable, isZero, isNet, isConnected, isConnecting, error,
@@ -140,12 +141,8 @@ function App() {
       <div className="w-full max-w-5xl z-10 flex flex-col gap-6 md:gap-8 px-4 pt-24 pb-10">
 
         {/* Hero / Welcome Section (Mobile Only or Compact) */}
-        <div className="text-center md:hidden space-y-2">
-          <h2 className="text-2xl font-bold text-white">Sistema de Pesaje Certificado</h2>
           <p className="text-white/40 text-sm">Empresarial (SISDEPE)</p>
         </div>
-
-        <DashboardTicker userEmail={user?.email || undefined} isAdmin={isAdmin} />
 
         {/* Scoreboard */}
         <Scoreboard
@@ -160,7 +157,7 @@ function App() {
 
         {/* Controls */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-4 w-full max-w-xl mx-auto">
-          {isAdmin && (
+          {canAccessTechnicianUI && (
             <>
               {!isConnected && !isSimulating ? (
                 <button
@@ -239,7 +236,7 @@ function App() {
             HISTORIAL DE OPERACIONES
           </button>
 
-          {isAdmin && (
+          {canAccessTechnicianUI && (
             <>
               <button
                 onClick={() => {
@@ -314,11 +311,11 @@ function App() {
         user={user}
       />
 
-      {/* Footer */}
-      <div className="absolute bottom-4 text-center text-white/20 text-xs">
-        System Status: {isConnected || isSimulating ? "Active" : "Idle"} • Web Serial API • v1.0.0
-      </div>
-    </div>
+      {/* Footer */ }
+  <div className="absolute bottom-4 text-center text-white/20 text-xs">
+    System Status: {isConnected || isSimulating ? "Active" : "Idle"} • Web Serial API • v1.0.0
+  </div>
+    </div >
   );
 }
 

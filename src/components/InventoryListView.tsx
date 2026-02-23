@@ -25,6 +25,7 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
 
     const userPrefix = user?.email?.split('@')[0] || '';
     const isCentral = userPrefix.toLowerCase() === 'central';
+    const isWorkshop = userPrefix.toLowerCase() === 'taller';
 
     useEffect(() => {
         if (!isOpen) return;
@@ -42,8 +43,8 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
 
     // Filter items based on role and search term
     const filteredItems = items.filter(item => {
-        // Enforce branch visibility rules
-        if (!isCentral && item.branch !== userPrefix && item.branch !== `usuario central sucursal ${userPrefix}`) {
+        // Enforce branch visibility rules: Central and Workshop see everything
+        if (!isCentral && !isWorkshop && item.branch !== userPrefix && item.branch !== `usuario central sucursal ${userPrefix}`) {
             return false;
         }
 
@@ -63,6 +64,9 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
             case 'OPERATIVO': return 'bg-green-500/10 text-green-400 border-green-500/20';
             case 'DAÑADO': return 'bg-red-500/10 text-red-400 border-red-500/20';
             case 'EN TALLER': return 'bg-orange-500/10 text-orange-400 border-orange-500/20';
+            case 'EN ESPERA': return 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20';
+            case 'ENVIADO': return 'bg-purple-500/10 text-purple-400 border-purple-500/20';
+            case 'TRANSFERIDO': return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
             case 'DADO DE BAJA': return 'bg-neutral-500/10 text-neutral-400 border-neutral-500/20';
             default: return 'bg-blue-500/10 text-blue-400 border-blue-500/20';
         }
@@ -81,7 +85,7 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
                                 Base de Inventario Físico
                             </h2>
                             <p className="text-white/40 text-sm mt-1">
-                                {isCentral ? 'Mostrando equipos de todas las sucursales' : `Mostrando equipos de la sucursal: ${userPrefix.toUpperCase()}`}
+                                {isCentral || isWorkshop ? 'Modo Maestro: Mostrando todos los equipos' : `Mostrando equipos de la sucursal: ${userPrefix.toUpperCase()}`}
                             </p>
                         </div>
                         <div className="flex items-center gap-2">
@@ -125,6 +129,7 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
                                     <th className="p-4 text-xs font-bold text-white/40 uppercase tracking-wider">Modelo / Tipo</th>
                                     <th className="p-4 text-xs font-bold text-white/40 uppercase tracking-wider">Serial</th>
                                     <th className="p-4 text-xs font-bold text-white/40 uppercase tracking-wider">Sucursal</th>
+                                    <th className="p-4 text-xs font-bold text-white/40 uppercase tracking-wider">Registrado por</th>
                                     <th className="p-4 text-xs font-bold text-white/40 uppercase tracking-wider">Últ. Modificación</th>
                                     <th className="p-4 text-xs font-bold text-white/40 uppercase tracking-wider text-center w-[120px]">Control</th>
                                 </tr>
@@ -154,6 +159,9 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
                                             </td>
                                             <td className="p-4 capitalize text-sm text-white/70">
                                                 {item.branch}
+                                            </td>
+                                            <td className="p-4 text-sm text-white/50">
+                                                {item.recordedBy || 'N/A'}
                                             </td>
                                             <td className="p-4 text-white/50 text-xs">
                                                 {item.timestamp ? new Date(item.timestamp.toDate()).toLocaleDateString() : 'N/A'}

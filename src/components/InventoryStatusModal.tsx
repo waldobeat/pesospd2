@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { X, Save, RefreshCw, AlertCircle } from 'lucide-react';
 import { User } from 'firebase/auth';
 import { historyService } from '../services/HistoryService';
-import { InventoryStatus } from '../services/InventoryService';
+import type { InventoryStatus } from '../services/InventoryService';
 
 interface InventoryStatusModalProps {
     isOpen: boolean;
@@ -28,6 +28,7 @@ export function InventoryStatusModal({ isOpen, onClose, user, inventoryItem }: I
 
     const userPrefix = user?.email?.split('@')[0] || '';
     const isCentral = userPrefix.toLowerCase() === 'central';
+    const isWorkshop = userPrefix.toLowerCase() === 'taller';
 
     useEffect(() => {
         if (isOpen && inventoryItem) {
@@ -136,7 +137,7 @@ export function InventoryStatusModal({ isOpen, onClose, user, inventoryItem }: I
                             <option value="DAÑADO">DAÑADO</option>
                             <option value="EN TALLER">EN TALLER</option>
                             <option value="EN ESPERA">EN ESPERA</option>
-                            {isCentral && (
+                            {(isCentral || isWorkshop) && (
                                 <>
                                     <option value="ENVIADO">ENVIADO A SUCURSAL</option>
                                     <option value="TRANSFERIDO">TRANSFERIDO A SUCURSAL</option>
