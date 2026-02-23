@@ -141,8 +141,7 @@ function App() {
       <div className="w-full max-w-5xl z-10 flex flex-col gap-6 md:gap-8 px-4 pt-24 pb-10">
 
         {/* Hero / Welcome Section (Mobile Only or Compact) */}
-          <p className="text-white/40 text-sm">Empresarial (SISDEPE)</p>
-        </div>
+        <p className="text-white/40 text-sm">Empresarial (SISDEPE)</p>
 
         {/* Scoreboard */}
         <Scoreboard
@@ -311,10 +310,10 @@ function App() {
         user={user}
       />
 
-      {/* Footer */ }
-  <div className="absolute bottom-4 text-center text-white/20 text-xs">
-    System Status: {isConnected || isSimulating ? "Active" : "Idle"} • Web Serial API • v1.0.0
-  </div>
+      {/* Footer */}
+      <div className="absolute bottom-4 text-center text-white/20 text-xs">
+        System Status: {isConnected || isSimulating ? "Active" : "Idle"} • Web Serial API • v1.0.0
+      </div>
     </div >
   );
 }
