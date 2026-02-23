@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { inventoryService, InventoryItem } from '../services/InventoryService';
+import { inventoryService, type InventoryItem, type InventoryStatus } from '../services/InventoryService';
 import { Box, Search, X, Activity, RefreshCw } from 'lucide-react';
 import { InventoryStatusModal } from './InventoryStatusModal';
 import clsx from 'clsx';
-import { User } from 'firebase/auth';
+import type { User } from 'firebase/auth';
 
 interface InventoryListViewProps {
     isOpen: boolean;
@@ -19,7 +19,7 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
         id: string;
         serialNumber: string;
         model: string;
-        currentStatus: any;
+        currentStatus: InventoryStatus;
         branch: string;
     } | null>(null);
 
