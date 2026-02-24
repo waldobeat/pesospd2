@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, RefreshCw, AlertCircle, CheckCircle, Loader2, ArrowRight } from 'lucide-react';
+import { X, Save, RefreshCw, AlertCircle, CheckCircle, Loader2, ArrowRight, Truck } from 'lucide-react';
 import type { User } from 'firebase/auth';
 import { historyService } from '../services/HistoryService';
+import { inventoryService } from '../services/InventoryService';
 import type { InventoryStatus } from '../services/InventoryService';
 import { ALL_BRANCHES, BRANCH_LABELS } from '../services/InventoryService';
 import clsx from 'clsx';
@@ -27,7 +28,11 @@ const STATUS_COLORS: Record<string, string> = {
     'ENVIADO': 'text-purple-400 bg-purple-500/10 border-purple-500/30',
     'TRANSFERIDO': 'text-blue-400   bg-blue-500/10   border-blue-500/30',
     'DADO DE BAJA': 'text-neutral-400 bg-neutral-500/10 border-neutral-500/30',
+    'EN TRÁNSITO': 'text-amber-400  bg-amber-500/10  border-amber-500/30',
 };
+
+/** Statuses that initiate a transfer workflow requiring a destination + confirmation */
+const TRANSFER_STATUSES: InventoryStatus[] = ['ENVIADO', 'TRANSFERIDO'];
 
 export function InventoryStatusModal({ isOpen, onClose, user, inventoryItem }: InventoryStatusModalProps) {
     const [status, setStatus] = useState<InventoryStatus>('OPERATIVO');
@@ -37,8 +42,9 @@ export function InventoryStatusModal({ isOpen, onClose, user, inventoryItem }: I
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
+    const [successMsg, setSuccessMsg] = useState('');
 
-    const userPrefix = user?.email?.split('@')[0] || '';
+    const userPrefix = user?.email?.split('@')[0] ?? '';
     const isCentral = userPrefix.toLowerCase() === 'central';
     const isWorkshop = userPrefix.toLowerCase() === 'taller';
     const canTransfer = isCentral || isWorkshop;
@@ -50,14 +56,17 @@ export function InventoryStatusModal({ isOpen, onClose, user, inventoryItem }: I
             setNote('');
             setError(null);
             setSuccess(false);
+            setSuccessMsg('');
         }
     }, [isOpen, inventoryItem]);
 
+    // All hooks before early return
     if (!isOpen || !inventoryItem) return null;
 
     const statusChanged = status !== inventoryItem.currentStatus;
-    const requiresDestination = status === 'ENVIADO' || status === 'TRANSFERIDO';
-    const requiresNote = !statusChanged; // must have note if status unchanged
+    const isTransferAction = TRANSFER_STATUSES.includes(status);
+    const requiresDestination = isTransferAction;
+    const requiresNote = !statusChanged;
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
@@ -74,27 +83,57 @@ export function InventoryStatusModal({ isOpen, onClose, user, inventoryItem }: I
         setIsSubmitting(true);
         setError(null);
 
-        const defaultNote = statusChanged
-            ? `Cambio de estado: ${inventoryItem.currentStatus} → ${status}`
-            : note.trim();
-
         try {
-            await historyService.save({
-                model: inventoryItem.model,
-                serial: inventoryItem.serialNumber,
-                branch: inventoryItem.branch,
-                note: note.trim() || defaultNote,
-                user: user?.email || 'Anon',
-                status: status,
-                inventoryId: inventoryItem.id,
-                destination: requiresDestination ? destination : undefined,
-                updatedBy: user?.email || 'Anon',
-            } as any, 'inventory_op');
+            if (isTransferAction && destination) {
+                // ── Transfer flow: create pendingTransfer, set status EN TRÁNSITO ──
+                await inventoryService.initiateTransfer(
+                    inventoryItem.id,
+                    destination,
+                    user?.email ?? 'Anon',
+                    note.trim() || undefined
+                );
+
+                // Log to history
+                await historyService.save({
+                    model: inventoryItem.model,
+                    serial: inventoryItem.serialNumber,
+                    branch: inventoryItem.branch,
+                    note: note.trim() || `Envío iniciado → ${BRANCH_LABELS[destination] ?? destination}`,
+                    user: user?.email ?? 'Anon',
+                    status: 'EN TRÁNSITO' as InventoryStatus,
+                    inventoryId: inventoryItem.id,
+                    destination,
+                    updatedBy: user?.email ?? 'Anon',
+                }, 'inventory_op');
+
+                setSuccessMsg(
+                    `✅ Envío registrado. ${BRANCH_LABELS[destination] ?? destination} recibirá una notificación para confirmar la recepción.`
+                );
+            } else {
+                // ── Normal status update ──
+                const defaultNote = statusChanged
+                    ? `Cambio de estado: ${inventoryItem.currentStatus} → ${status}`
+                    : note.trim();
+
+                await historyService.save({
+                    model: inventoryItem.model,
+                    serial: inventoryItem.serialNumber,
+                    branch: inventoryItem.branch,
+                    note: note.trim() || defaultNote,
+                    user: user?.email ?? 'Anon',
+                    status,
+                    inventoryId: inventoryItem.id,
+                    destination: requiresDestination ? destination : undefined,
+                    updatedBy: user?.email ?? 'Anon',
+                }, 'inventory_op');
+
+                setSuccessMsg('Estado actualizado y registrado en historial.');
+            }
 
             setSuccess(true);
-            setTimeout(() => onClose(), 2000);
-        } catch (err: any) {
-            setError(err.message || 'Error al actualizar estado operativo');
+            setTimeout(() => onClose(), 2500);
+        } catch (err: unknown) {
+            setError(err instanceof Error ? err.message : 'Error al actualizar estado operativo');
         } finally {
             setIsSubmitting(false);
         }
@@ -132,9 +171,9 @@ export function InventoryStatusModal({ isOpen, onClose, user, inventoryItem }: I
                         </div>
                     )}
                     {success && (
-                        <div className="bg-green-500/10 border border-green-500/30 text-green-400 p-3 rounded-lg flex items-center gap-2 text-sm">
-                            <CheckCircle className="w-4 h-4" />
-                            Estado actualizado y registrado en historial.
+                        <div className="bg-green-500/10 border border-green-500/30 text-green-400 p-3 rounded-lg flex items-start gap-2 text-sm">
+                            <CheckCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                            <span>{successMsg}</span>
                         </div>
                     )}
 
@@ -145,12 +184,12 @@ export function InventoryStatusModal({ isOpen, onClose, user, inventoryItem }: I
                             <strong className="text-white text-base block truncate">{inventoryItem.model}</strong>
                             <span className="text-white/50 font-mono text-xs">{inventoryItem.serialNumber}</span>
                             <span className="block text-white/30 text-xs mt-0.5 capitalize">
-                                {BRANCH_LABELS[inventoryItem.branch] || inventoryItem.branch}
+                                {BRANCH_LABELS[inventoryItem.branch] ?? inventoryItem.branch}
                             </span>
                         </div>
                         <span className={clsx(
                             'flex-shrink-0 text-[10px] font-bold px-2 py-1 rounded-full border',
-                            STATUS_COLORS[inventoryItem.currentStatus] || 'text-white/50 bg-white/5 border-white/10'
+                            STATUS_COLORS[inventoryItem.currentStatus] ?? 'text-white/50 bg-white/5 border-white/10'
                         )}>
                             {inventoryItem.currentStatus}
                         </span>
@@ -167,8 +206,8 @@ export function InventoryStatusModal({ isOpen, onClose, user, inventoryItem }: I
                                     {inventoryItem.currentStatus}
                                 </span>
                                 <ArrowRight className="w-3 h-3 text-white/30" />
-                                <span className={clsx('px-2 py-0.5 rounded-full border text-[10px] font-bold', STATUS_COLORS[status])}>
-                                    {status}
+                                <span className={clsx('px-2 py-0.5 rounded-full border text-[10px] font-bold', STATUS_COLORS[isTransferAction ? 'EN TRÁNSITO' : status])}>
+                                    {isTransferAction ? 'EN TRÁNSITO 🚚' : status}
                                 </span>
                             </div>
                         )}
@@ -185,14 +224,24 @@ export function InventoryStatusModal({ isOpen, onClose, user, inventoryItem }: I
                             <option value="EN ESPERA">EN ESPERA</option>
                             {canTransfer && (
                                 <>
-                                    <option value="ENVIADO">ENVIADO A SUCURSAL</option>
-                                    <option value="TRANSFERIDO">TRANSFERIDO A SUCURSAL</option>
+                                    <option value="ENVIADO">ENVIAR A SUCURSAL / TALLER</option>
+                                    <option value="TRANSFERIDO">TRANSFERIR A OTRA SUCURSAL</option>
                                 </>
                             )}
                             <option value="DADO DE BAJA">DADO DE BAJA</option>
                         </select>
                         <p className="text-[10px] text-white/25 pl-1">Este cambio quedará registrado en el historial de operaciones.</p>
                     </div>
+
+                    {/* Transfer notice */}
+                    {isTransferAction && (
+                        <div className="bg-amber-500/10 border border-amber-500/30 rounded-lg p-3 flex items-start gap-2">
+                            <Truck className="w-4 h-4 text-amber-400 shrink-0 mt-0.5" />
+                            <p className="text-amber-300 text-xs">
+                                El equipo quedará en estado <strong>EN TRÁNSITO</strong> hasta que el destino confirme la recepción.
+                            </p>
+                        </div>
+                    )}
 
                     {/* Destination Branch (only for ENVIADO / TRANSFERIDO) */}
                     {requiresDestination && (
@@ -203,14 +252,16 @@ export function InventoryStatusModal({ isOpen, onClose, user, inventoryItem }: I
                             <select
                                 value={destination}
                                 onChange={(e) => setDestination(e.target.value)}
-                                className={`${inputCls} border-blue-500/40`}
+                                className={`${inputCls} border-amber-500/40`}
                                 disabled={isSubmitting || success}
                             >
                                 <option value="">-- Seleccionar Destino --</option>
+                                {/* Include taller as destination option */}
+                                <option value="taller">Taller</option>
                                 {ALL_BRANCHES
                                     .filter((b) => b !== inventoryItem.branch)
                                     .map((b) => (
-                                        <option key={b} value={b}>{BRANCH_LABELS[b] || b}</option>
+                                        <option key={b} value={b}>{BRANCH_LABELS[b] ?? b}</option>
                                     ))
                                 }
                             </select>
@@ -220,7 +271,7 @@ export function InventoryStatusModal({ isOpen, onClose, user, inventoryItem }: I
                     {/* Note */}
                     <div className="flex flex-col gap-1.5">
                         <label className="text-xs font-bold text-white/50 uppercase tracking-wide">
-                            Nota / Observación
+                            Nota / Motivo del Envío
                             {requiresNote && <span className="text-red-400 ml-1">*</span>}
                             {!requiresNote && <span className="text-white/20 normal-case font-normal ml-1">(Opcional)</span>}
                         </label>
@@ -228,9 +279,12 @@ export function InventoryStatusModal({ isOpen, onClose, user, inventoryItem }: I
                             value={note}
                             onChange={(e) => setNote(e.target.value)}
                             className={`${inputCls} resize-none`}
-                            placeholder={statusChanged
-                                ? 'Ej. Se envió por reemplazo temporal...'
-                                : 'Debe ingresar una observación si no cambia el estado...'
+                            placeholder={
+                                isTransferAction
+                                    ? 'Ej. Balanza dañada, necesita revisión técnica...'
+                                    : statusChanged
+                                        ? 'Ej. Se envió por reemplazo temporal...'
+                                        : 'Debe ingresar una observación si no cambia el estado...'
                             }
                             rows={3}
                             disabled={isSubmitting || success}
@@ -250,14 +304,19 @@ export function InventoryStatusModal({ isOpen, onClose, user, inventoryItem }: I
                         <button
                             type="submit"
                             disabled={isSubmitting || success}
-                            className="flex-1 px-4 py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 text-white rounded-xl font-bold transition-colors flex items-center justify-center gap-2"
+                            className={clsx(
+                                'flex-1 px-4 py-3 disabled:opacity-50 text-white rounded-xl font-bold transition-colors flex items-center justify-center gap-2',
+                                isTransferAction
+                                    ? 'bg-amber-600 hover:bg-amber-500'
+                                    : 'bg-blue-600 hover:bg-blue-500'
+                            )}
                         >
                             {isSubmitting ? (
                                 <Loader2 className="w-5 h-5 animate-spin" />
                             ) : (
                                 <>
-                                    <Save className="w-5 h-5" />
-                                    ACTUALIZAR
+                                    {isTransferAction ? <Truck className="w-5 h-5" /> : <Save className="w-5 h-5" />}
+                                    {isTransferAction ? 'INICIAR ENVÍO' : 'ACTUALIZAR'}
                                 </>
                             )}
                         </button>

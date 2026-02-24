@@ -1,7 +1,7 @@
 import { db } from '../firebase';
 import {
     collection, addDoc, updateDoc, doc, getDocs,
-    onSnapshot, query, orderBy, where, Timestamp, getDoc, writeBatch
+    onSnapshot, query, orderBy, where, Timestamp, getDoc, deleteDoc
 } from 'firebase/firestore';
 
 export type InventoryStatus =
@@ -11,7 +11,8 @@ export type InventoryStatus =
     | 'EN ESPERA'
     | 'ENVIADO'
     | 'TRANSFERIDO'
-    | 'DADO DE BAJA';
+    | 'DADO DE BAJA'
+    | 'EN TRÁNSITO';
 
 export const STATUS_LABELS: Record<InventoryStatus, string> = {
     'OPERATIVO': 'Operativo',
@@ -21,6 +22,7 @@ export const STATUS_LABELS: Record<InventoryStatus, string> = {
     'ENVIADO': 'Enviado',
     'TRANSFERIDO': 'Transferido',
     'DADO DE BAJA': 'Dado de Baja',
+    'EN TRÁNSITO': 'En Tránsito 🚚',
 };
 
 export const BRANCH_LABELS: Record<string, string> = {
@@ -38,6 +40,15 @@ export const ALL_BRANCHES = Object.keys(BRANCH_LABELS).filter(
     (b) => b !== 'central' && b !== 'taller'
 );
 
+/** Info about a pending inter-branch transfer awaiting confirmation */
+export interface PendingTransfer {
+    from: string;          // branch key of sender
+    to: string;            // branch key of receiver
+    initiatedBy: string;   // email of the user who initiated
+    initiatedAt: Timestamp;
+    notes?: string;
+}
+
 export interface InventoryItem {
     id: string;
     weightType: string;       // 'PESO' | 'BALANZA'
@@ -50,6 +61,9 @@ export interface InventoryItem {
     updatedAt?: Timestamp;    // Last modification date
     updatedBy?: string;       // Who last modified
     description?: string;     // Optional notes/description on the item
+    // Transfer confirmation fields
+    pendingTransfer?: PendingTransfer;
+    hasPendingTransfer?: boolean; // Indexed helper field for Firestore queries
 }
 
 export interface InventoryStats {
@@ -61,6 +75,7 @@ export interface InventoryStats {
     enviado: number;
     transferido: number;
     dadoDeBaja: number;
+    enTransito: number;
     byBranch: Record<string, number>;
     byModel: Record<string, number>;
 }
@@ -87,7 +102,7 @@ export const inventoryService = {
             return { unique: false, existingItem: existing };
         } catch (error) {
             console.error('Error checking serial uniqueness:', error);
-            return { unique: true }; // Allow on error (fail open)
+            return { unique: true };
         }
     },
 
@@ -101,10 +116,105 @@ export const inventoryService = {
                 timestamp: now,
                 updatedAt: now,
                 updatedBy: item.recordedBy,
+                hasPendingTransfer: false,
             });
             return docRef.id;
         } catch (error) {
             console.error('Error adding inventory item: ', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Initiate a transfer: sets status to EN TRÁNSITO and writes pendingTransfer.
+     * Called when a user selects ENVIADO or TRANSFERIDO.
+     */
+    initiateTransfer: async (
+        id: string,
+        to: string,
+        initiatedBy: string,
+        notes?: string
+    ): Promise<void> => {
+        try {
+            const itemSnap = await getDoc(doc(db, 'inventory', id));
+            if (!itemSnap.exists()) throw new Error('Item not found');
+            const from = (itemSnap.data() as InventoryItem).branch;
+
+            await updateDoc(doc(db, 'inventory', id), {
+                status: 'EN TRÁNSITO' satisfies InventoryStatus,
+                updatedAt: Timestamp.now(),
+                updatedBy: initiatedBy,
+                hasPendingTransfer: true,
+                pendingTransfer: {
+                    from,
+                    to,
+                    initiatedBy,
+                    initiatedAt: Timestamp.now(),
+                    notes: notes || '',
+                } satisfies PendingTransfer,
+            });
+        } catch (error) {
+            console.error('Error initiating transfer:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Confirm receipt of a transferred item.
+     * Clears pendingTransfer, moves item to destination branch, sets new status.
+     */
+    confirmTransfer: async (
+        id: string,
+        confirmedBy: string,
+        newStatus: InventoryStatus = 'EN TALLER'
+    ): Promise<void> => {
+        try {
+            const itemSnap = await getDoc(doc(db, 'inventory', id));
+            if (!itemSnap.exists()) throw new Error('Item not found');
+            const item = itemSnap.data() as InventoryItem;
+            const destination = item.pendingTransfer?.to || item.branch;
+
+            await updateDoc(doc(db, 'inventory', id), {
+                status: newStatus,
+                branch: destination,
+                updatedAt: Timestamp.now(),
+                updatedBy: confirmedBy,
+                hasPendingTransfer: false,
+                pendingTransfer: null,
+            });
+        } catch (error) {
+            console.error('Error confirming transfer:', error);
+            throw error;
+        }
+    },
+
+    /**
+     * Reject/cancel a pending transfer. Returns item to previous state.
+     */
+    rejectTransfer: async (
+        id: string,
+        rejectedBy: string,
+        reason?: string
+    ): Promise<void> => {
+        try {
+            const itemSnap = await getDoc(doc(db, 'inventory', id));
+            if (!itemSnap.exists()) throw new Error('Item not found');
+            const item = itemSnap.data() as InventoryItem;
+            const sourceBranch = item.pendingTransfer?.from || item.branch;
+
+            await updateDoc(doc(db, 'inventory', id), {
+                status: 'DAÑADO' satisfies InventoryStatus, // Returns to damaged since it was sent for repair
+                branch: sourceBranch,
+                updatedAt: Timestamp.now(),
+                updatedBy: rejectedBy,
+                hasPendingTransfer: false,
+                pendingTransfer: null,
+                description: reason
+                    ? `[Transferencia rechazada: ${reason}]`
+                    : '[Transferencia rechazada]',
+            });
+        } catch (error) {
+            console.error('Error rejecting transfer:', error);
             throw error;
         }
     },
@@ -123,9 +233,7 @@ export const inventoryService = {
                 updatedAt: Timestamp.now(),
                 updatedBy: updatedBy || 'Sistema',
             };
-            if (newBranch) {
-                updates.branch = newBranch;
-            }
+            if (newBranch) updates.branch = newBranch;
             await updateDoc(docRef, updates);
         } catch (error) {
             console.error('Error updating inventory status: ', error);
@@ -136,8 +244,7 @@ export const inventoryService = {
     /** Get a single inventory item by ID */
     getById: async (id: string): Promise<InventoryItem | null> => {
         try {
-            const docRef = doc(db, 'inventory', id);
-            const snap = await getDoc(docRef);
+            const snap = await getDoc(doc(db, 'inventory', id));
             if (!snap.exists()) return null;
             return { id: snap.id, ...snap.data() } as InventoryItem;
         } catch (error) {
@@ -150,11 +257,8 @@ export const inventoryService = {
     getInventory: async (): Promise<InventoryItem[]> => {
         try {
             const q = query(collection(db, 'inventory'), orderBy('timestamp', 'desc'));
-            const querySnapshot = await getDocs(q);
-            return querySnapshot.docs.map((d) => ({
-                id: d.id,
-                ...d.data(),
-            })) as InventoryItem[];
+            const snap = await getDocs(q);
+            return snap.docs.map((d) => ({ id: d.id, ...d.data() })) as InventoryItem[];
         } catch (error) {
             console.error('Error getting inventory: ', error);
             throw error;
@@ -166,16 +270,8 @@ export const inventoryService = {
         const q = query(collection(db, 'inventory'), orderBy('timestamp', 'desc'));
         return onSnapshot(
             q,
-            (querySnapshot) => {
-                const items = querySnapshot.docs.map((d) => ({
-                    id: d.id,
-                    ...d.data(),
-                })) as InventoryItem[];
-                callback(items);
-            },
-            (error) => {
-                console.error('Error in inventory subscription:', error);
-            }
+            (snap) => callback(snap.docs.map((d) => ({ id: d.id, ...d.data() })) as InventoryItem[]),
+            (error) => console.error('Error in inventory subscription:', error)
         );
     },
 
@@ -188,16 +284,34 @@ export const inventoryService = {
         );
         return onSnapshot(
             q,
-            (snapshot) => {
-                const items = snapshot.docs.map((d) => ({
-                    id: d.id,
-                    ...d.data(),
-                })) as InventoryItem[];
-                callback(items);
+            (snap) => callback(snap.docs.map((d) => ({ id: d.id, ...d.data() })) as InventoryItem[]),
+            (error) => console.error('Error in branch inventory subscription:', error)
+        );
+    },
+
+    /**
+     * Real-time subscription to items with a pending transfer addressed to `targetBranch`.
+     * Uses the indexed `hasPendingTransfer` boolean field for efficient querying.
+     */
+    subscribeToPendingTransfers: (
+        targetBranch: string,
+        callback: (items: InventoryItem[]) => void
+    ) => {
+        const q = query(
+            collection(db, 'inventory'),
+            where('hasPendingTransfer', '==', true)
+        );
+        return onSnapshot(
+            q,
+            (snap) => {
+                const all = snap.docs.map((d) => ({ id: d.id, ...d.data() })) as InventoryItem[];
+                // Filter client-side: only items going TO this branch (or master sees all)
+                const relevant = targetBranch === 'taller' || targetBranch === 'central'
+                    ? all  // master users see ALL pending transfers
+                    : all.filter((item) => item.pendingTransfer?.to === targetBranch);
+                callback(relevant);
             },
-            (error) => {
-                console.error('Error in branch inventory subscription:', error);
-            }
+            (error) => console.error('Error in pending transfers subscription:', error)
         );
     },
 
@@ -205,19 +319,12 @@ export const inventoryService = {
     computeStats: (items: InventoryItem[]): InventoryStats => {
         const stats: InventoryStats = {
             total: items.length,
-            operativo: 0,
-            danado: 0,
-            enTaller: 0,
-            enEspera: 0,
-            enviado: 0,
-            transferido: 0,
-            dadoDeBaja: 0,
-            byBranch: {},
-            byModel: {},
+            operativo: 0, danado: 0, enTaller: 0, enEspera: 0,
+            enviado: 0, transferido: 0, dadoDeBaja: 0, enTransito: 0,
+            byBranch: {}, byModel: {},
         };
 
         for (const item of items) {
-            // Count by status
             switch (item.status) {
                 case 'OPERATIVO': stats.operativo++; break;
                 case 'DAÑADO': stats.danado++; break;
@@ -226,17 +333,13 @@ export const inventoryService = {
                 case 'ENVIADO': stats.enviado++; break;
                 case 'TRANSFERIDO': stats.transferido++; break;
                 case 'DADO DE BAJA': stats.dadoDeBaja++; break;
+                case 'EN TRÁNSITO': stats.enTransito++; break;
             }
-
-            // Count by branch
-            const branchKey = item.branch || 'sin sucursal';
-            stats.byBranch[branchKey] = (stats.byBranch[branchKey] || 0) + 1;
-
-            // Count by model
-            const modelKey = item.scaleModel || 'otro';
-            stats.byModel[modelKey] = (stats.byModel[modelKey] || 0) + 1;
+            const bk = item.branch || 'sin sucursal';
+            stats.byBranch[bk] = (stats.byBranch[bk] || 0) + 1;
+            const mk = item.scaleModel || 'otro';
+            stats.byModel[mk] = (stats.byModel[mk] || 0) + 1;
         }
-
         return stats;
     },
 
@@ -246,7 +349,6 @@ export const inventoryService = {
             if (filters.branch && item.branch !== filters.branch) return false;
             if (filters.status && item.status !== filters.status) return false;
             if (filters.weightType && item.weightType !== filters.weightType) return false;
-
             if (filters.searchTerm) {
                 const term = filters.searchTerm.toLowerCase();
                 return (
@@ -265,7 +367,6 @@ export const inventoryService = {
     /** Delete an inventory item (admin only) */
     deleteItem: async (id: string): Promise<void> => {
         try {
-            const { deleteDoc } = await import('firebase/firestore');
             await deleteDoc(doc(db, 'inventory', id));
         } catch (error) {
             console.error('Error deleting inventory item:', error);
@@ -273,7 +374,7 @@ export const inventoryService = {
         }
     },
 
-    /** Export items to CSV string */
+    /** Export items to CSV string (UTF-8 with BOM for Excel) */
     exportToCSV: (items: InventoryItem[]): string => {
         const headers = [
             'Serial', 'Modelo', 'Tipo', 'Sucursal', 'Estatus',
@@ -291,8 +392,7 @@ export const inventoryService = {
             item.updatedAt ? new Date(item.updatedAt.toDate()).toLocaleDateString('es-VE') : '',
             item.description || '',
         ]);
-
         const escape = (v: string) => `"${String(v).replace(/"/g, '""')}"`;
-        return [headers, ...rows].map((row) => row.map(escape).join(',')).join('\r\n');
+        return '\uFEFF' + [headers, ...rows].map((row) => row.map(escape).join(',')).join('\r\n');
     },
 };

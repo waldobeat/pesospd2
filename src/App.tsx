@@ -14,11 +14,9 @@ import { onAuthStateChanged, signOut, type User } from 'firebase/auth';
 import { Login } from './components/Login';
 import { InventoryModal } from './components/InventoryModal';
 import { InventoryListView } from './components/InventoryListView';
-
+import { TransferNotifications, usePendingTransferCount } from './components/TransferNotifications';
 import { UserManagementModal } from './components/UserManagementModal';
 import { useAuthRole } from './hooks/useAuthRole'; // Hook Integration
-
-// ... other imports
 
 function App() {
   // Auth State
@@ -49,6 +47,8 @@ function App() {
   const [isUserMgmtOpen, setIsUserMgmtOpen] = useState(false); // New Modal State
   const [isInventoryOpen, setIsInventoryOpen] = useState(false);
   const [isInventoryListOpen, setIsInventoryListOpen] = useState(false);
+  const isMaster = isAdmin || isWorkshop;
+  const pendingCount = usePendingTransferCount(user, isMaster);
   const [isSimulating, setIsSimulating] = useState(false);
   const simInterval = useRef<number | null>(null);
 
@@ -213,10 +213,15 @@ function App() {
 
           <button
             onClick={() => setIsInventoryListOpen(true)}
-            className="px-6 py-4 bg-blue-600/10 hover:bg-blue-600/20 border border-blue-500/30 text-blue-400 rounded-xl transition-all duration-300 font-bold text-lg flex items-center justify-center gap-2"
+            className="px-6 py-4 bg-blue-600/10 hover:bg-blue-600/20 border border-blue-500/30 text-blue-400 rounded-xl transition-all duration-300 font-bold text-lg flex items-center justify-center gap-2 relative"
           >
             <Box className="w-5 h-5" />
             BASE DE INVENTARIO
+            {pendingCount > 0 && (
+              <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-black rounded-full min-w-[22px] h-[22px] flex items-center justify-center px-1 shadow-lg animate-pulse">
+                {pendingCount}
+              </span>
+            )}
           </button>
 
           <button
@@ -308,6 +313,12 @@ function App() {
         isOpen={isInventoryListOpen}
         onClose={() => setIsInventoryListOpen(false)}
         user={user}
+      />
+
+      {/* Transfer Notifications — global overlay, always visible when pending */}
+      <TransferNotifications
+        user={user}
+        isMaster={isMaster}
       />
 
       {/* Footer */}
