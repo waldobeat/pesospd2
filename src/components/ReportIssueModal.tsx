@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import { auth } from '../firebase';
 import { historyService, type IssueRecord } from '../services/HistoryService';
+import { notificationService } from '../services/NotificationService';
 import { X, AlertTriangle, Send, CheckCircle } from 'lucide-react';
 import clsx from 'clsx';
 
@@ -23,18 +24,42 @@ export const ReportIssueModal: React.FC<ReportIssueModalProps> = ({ isOpen, onCl
         e.preventDefault();
         setLoading(true);
 
+        const currentUser = auth.currentUser;
+        const userEmail = currentUser?.email ?? 'Usuario';
+        const userBranch = userEmail.split('@')[0];
+
+        const ISSUE_LABELS: Record<string, string> = {
+            weight_error: 'Error de Peso / Desviación',
+            damaged_scale: 'Balanza Dañada (Físico)',
+            component_failure: 'Fallo de Componente',
+            other: 'Otro',
+        };
+
         try {
+            // 1. Save to history
             await historyService.save({
                 model,
                 serial,
-                branch: "Central", // Could be dynamic
-                note: description, // Mapping description to note for BaseRecord compatibility
+                branch: userBranch,
+                note: description,
                 issueType,
                 description,
                 status: sendToRepair ? 'in_repair' : 'open',
-                reportedBy: auth.currentUser?.email || "Usuario Estándar",
-                user: auth.currentUser?.email || "Usuario Estándar"
+                reportedBy: userEmail,
+                user: userEmail,
             }, 'issue');
+
+            // 2. Create real-time notification for taller/masters
+            await notificationService.create({
+                type: 'issue_report',
+                title: `Avería Reportada — ${ISSUE_LABELS[issueType] ?? issueType}`,
+                message: description,
+                fromUser: userEmail,
+                fromBranch: userBranch,
+                targetBranch: 'taller',
+                relatedSerial: serial,
+                relatedModel: model,
+            });
 
             setSuccess(true);
             setTimeout(() => {
@@ -43,8 +68,8 @@ export const ReportIssueModal: React.FC<ReportIssueModalProps> = ({ isOpen, onCl
                 resetForm();
             }, 2000);
         } catch (error) {
-            console.error("Error reporting issue", error);
-            alert("Error al enviar el reporte.");
+            console.error('Error reporting issue', error);
+            alert('Error al enviar el reporte.');
         } finally {
             setLoading(false);
         }
