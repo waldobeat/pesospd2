@@ -33,12 +33,14 @@ const STATUS_STYLES: Record<string, string> = {
     'ENVIADO': 'bg-purple-500/10 text-purple-400 border-purple-500/20',
     'TRANSFERIDO': 'bg-blue-500/10 text-blue-400 border-blue-500/20',
     'DADO DE BAJA': 'bg-neutral-500/10 text-neutral-400 border-neutral-500/20',
+    'EN TRÁNSITO': 'bg-amber-500/10 text-amber-400 border-amber-500/30',
 };
 
 const ROW_SHADOW: Record<string, string> = {
     'DAÑADO': 'bg-red-500/5',
     'EN TALLER': 'bg-orange-500/5',
     'EN ESPERA': 'bg-yellow-500/5',
+    'EN TRÁNSITO': 'bg-amber-500/5',
     'DADO DE BAJA': 'bg-neutral-900/60',
 };
 
@@ -49,6 +51,7 @@ const KPI_CARDS = [
     { label: 'Dañado', key: 'danado', icon: AlertTriangle, color: 'text-red-400', bg: 'bg-red-500/10' },
     { label: 'En Espera', key: 'enEspera', icon: Clock, color: 'text-yellow-400', bg: 'bg-yellow-500/10' },
     { label: 'Enviado', key: 'enviado', icon: Truck, color: 'text-purple-400', bg: 'bg-purple-500/10' },
+    { label: 'En Tránsito', key: 'enTransito', icon: Truck, color: 'text-amber-400', bg: 'bg-amber-500/10' },
     { label: 'De Baja', key: 'dadoDeBaja', icon: Ban, color: 'text-neutral-400', bg: 'bg-neutral-500/10' },
 ];
 
@@ -432,6 +435,15 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
                                                     {item.status === 'OPERATIVO' ? <Activity className="w-3 h-3" /> : <RefreshCw className="w-3 h-3" />}
                                                     {item.status}
                                                 </span>
+                                                {/* Transit badge */}
+                                                {item.hasPendingTransfer && item.pendingTransfer && (
+                                                    <div className="mt-1 text-[9px] text-amber-400 flex items-center gap-1 animate-pulse">
+                                                        <Truck className="w-2.5 h-2.5" />
+                                                        {BRANCH_LABELS[item.pendingTransfer.from] ?? item.pendingTransfer.from}
+                                                        {' → '}
+                                                        {BRANCH_LABELS[item.pendingTransfer.to] ?? item.pendingTransfer.to}
+                                                    </div>
+                                                )}
                                             </td>
 
                                             {/* Model */}
