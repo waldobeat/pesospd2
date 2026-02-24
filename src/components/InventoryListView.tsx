@@ -10,7 +10,7 @@ import {
 import {
     Box, Search, X, Activity, RefreshCw, Download, Filter,
     ChevronUp, ChevronDown, ChevronsUpDown, AlertTriangle,
-    CheckCircle2, Clock, Truck, Ban, BarChart3,
+    CheckCircle2, Clock, Truck, Ban, BarChart3, Trash2, Pencil,
 } from 'lucide-react';
 import { InventoryStatusModal } from './InventoryStatusModal';
 import clsx from 'clsx';
@@ -79,6 +79,22 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
         currentStatus: InventoryStatus;
         branch: string;
     } | null>(null);
+
+    const [deletingId, setDeletingId] = useState<string | null>(null);
+
+    const handleDeleteItem = async (item: InventoryItem, e: React.MouseEvent) => {
+        e.stopPropagation();
+        if (!confirm(`¿Eliminar permanentemente "${item.scaleModel}" (${item.serialNumber})? Esta acción no se puede deshacer.`)) return;
+        setDeletingId(item.id);
+        try {
+            await inventoryService.deleteItem(item.id);
+        } catch (err) {
+            console.error('Error deleting item', err);
+            alert('Error al eliminar el equipo.');
+        } finally {
+            setDeletingId(null);
+        }
+    };
 
     const userPrefix = user?.email?.split('@')[0] || '';
     const isCentral = userPrefix.toLowerCase() === 'central';
@@ -480,18 +496,32 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
 
                                             {/* Control */}
                                             <td className="p-3 px-4 text-center">
-                                                <button
-                                                    onClick={() => setSelectedItem({
-                                                        id: item.id,
-                                                        serialNumber: item.serialNumber,
-                                                        model: item.scaleModel,
-                                                        currentStatus: item.status,
-                                                        branch: item.branch,
-                                                    })}
-                                                    className="inline-flex items-center justify-center px-3 py-1.5 bg-blue-600/20 hover:bg-blue-600 border border-blue-500/30 hover:border-blue-500 text-blue-400 hover:text-white rounded-lg transition-all text-xs font-bold opacity-70 group-hover:opacity-100"
-                                                >
-                                                    ACTUALIZAR
-                                                </button>
+                                                <div className="flex items-center justify-center gap-1.5">
+                                                    <button
+                                                        onClick={() => setSelectedItem({
+                                                            id: item.id,
+                                                            serialNumber: item.serialNumber,
+                                                            model: item.scaleModel,
+                                                            currentStatus: item.status,
+                                                            branch: item.branch,
+                                                        })}
+                                                        className="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 bg-blue-600/15 hover:bg-blue-600 border border-blue-500/25 hover:border-blue-500 text-blue-400 hover:text-white rounded-lg transition-all text-[10px] font-bold opacity-70 group-hover:opacity-100"
+                                                        title="Actualizar estado"
+                                                    >
+                                                        <Pencil className="w-3 h-3" />
+                                                        EDITAR
+                                                    </button>
+                                                    {isMaster && (
+                                                        <button
+                                                            onClick={(e) => handleDeleteItem(item, e)}
+                                                            disabled={deletingId === item.id}
+                                                            className="inline-flex items-center justify-center p-1.5 bg-red-500/10 hover:bg-red-600 border border-red-500/20 hover:border-red-500 text-red-400 hover:text-white rounded-lg transition-all opacity-0 group-hover:opacity-100 disabled:opacity-50"
+                                                            title="Eliminar equipo"
+                                                        >
+                                                            <Trash2 className="w-3.5 h-3.5" />
+                                                        </button>
+                                                    )}
+                                                </div>
                                             </td>
                                         </tr>
                                     ))
@@ -530,18 +560,30 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
                                             <span>📍 {BRANCH_LABELS[item.branch] || item.branch}</span>
                                             <span>📅 {fmtDate(item.updatedAt || item.timestamp)}</span>
                                         </div>
-                                        <button
-                                            onClick={() => setSelectedItem({
-                                                id: item.id,
-                                                serialNumber: item.serialNumber,
-                                                model: item.scaleModel,
-                                                currentStatus: item.status,
-                                                branch: item.branch,
-                                            })}
-                                            className="w-full mt-1 py-2 bg-blue-600/20 border border-blue-500/30 text-blue-400 rounded-lg text-xs font-bold transition-all hover:bg-blue-600 hover:text-white"
-                                        >
-                                            ACTUALIZAR ESTADO
-                                        </button>
+                                        <div className="flex gap-2 mt-1">
+                                            <button
+                                                onClick={() => setSelectedItem({
+                                                    id: item.id,
+                                                    serialNumber: item.serialNumber,
+                                                    model: item.scaleModel,
+                                                    currentStatus: item.status,
+                                                    branch: item.branch,
+                                                })}
+                                                className="flex-1 py-2 bg-blue-600/20 border border-blue-500/30 text-blue-400 rounded-lg text-xs font-bold transition-all hover:bg-blue-600 hover:text-white flex items-center justify-center gap-1"
+                                            >
+                                                <Pencil className="w-3.5 h-3.5" /> EDITAR ESTADO
+                                            </button>
+                                            {isMaster && (
+                                                <button
+                                                    onClick={(e) => handleDeleteItem(item, e)}
+                                                    disabled={deletingId === item.id}
+                                                    className="py-2 px-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-lg text-xs font-bold transition-all hover:bg-red-600 hover:text-white disabled:opacity-50"
+                                                    title="Eliminar"
+                                                >
+                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                </button>
+                                            )}
+                                        </div>
                                     </div>
                                 ))
                             )}
