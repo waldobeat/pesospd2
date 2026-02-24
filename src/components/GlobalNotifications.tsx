@@ -68,10 +68,23 @@ export function GlobalNotifications({ user, isMaster }: GlobalNotificationsProps
 
     if (totalCount === 0) return null;
 
-    const handleResolve = async (id: string) => {
-        setResolvingId(id);
+    const handleResolve = async (n: AppNotification) => {
+        setResolvingId(n.id);
         try {
-            await notificationService.resolve(id, user?.email ?? '');
+            // Mark the original notification as resolved
+            await notificationService.resolve(n.id, user?.email ?? '');
+
+            // Create feedback notification for the original reporter
+            await notificationService.create({
+                type: 'status_change',
+                title: '✅ Reporte Atendido por el Taller',
+                message: `Tu avería sobre ${n.relatedModel ?? 'el equipo'} (${n.relatedSerial ?? ''}) fue revisada y marcada como atendida.`,
+                fromUser: user?.email ?? 'taller',
+                fromBranch: 'taller',
+                targetUser: n.fromUser,      // Route back to original reporter
+                relatedSerial: n.relatedSerial,
+                relatedModel: n.relatedModel,
+            });
         } finally {
             setResolvingId(null);
         }
@@ -81,6 +94,21 @@ export function GlobalNotifications({ user, isMaster }: GlobalNotificationsProps
         setConfirmingTransferId(item.id);
         try {
             await inventoryService.confirmTransfer(item.id, user?.email ?? 'Taller');
+
+            // Notify the sending branch user
+            if (item.pendingTransfer?.initiatedBy) {
+                await notificationService.create({
+                    type: 'status_change',
+                    title: '📦 Recepción Confirmada',
+                    message: `${BRANCH_LABELS[item.pendingTransfer.to] ?? item.pendingTransfer.to} confirmó la recepción de ${item.scaleModel} #${item.serialNumber}. El equipo está ahora EN TALLER.`,
+                    fromUser: user?.email ?? 'taller',
+                    fromBranch: 'taller',
+                    targetUser: item.pendingTransfer.initiatedBy,
+                    relatedSerial: item.serialNumber,
+                    relatedModel: item.scaleModel,
+                    relatedInventoryId: item.id,
+                });
+            }
         } finally {
             setConfirmingTransferId(null);
         }
@@ -90,6 +118,21 @@ export function GlobalNotifications({ user, isMaster }: GlobalNotificationsProps
         setConfirmingTransferId(item.id);
         try {
             await inventoryService.rejectTransfer(item.id, user?.email ?? 'Taller', 'Rechazado por el receptor');
+
+            // Notify the sending branch user of the rejection
+            if (item.pendingTransfer?.initiatedBy) {
+                await notificationService.create({
+                    type: 'status_change',
+                    title: '❌ Envío Rechazado',
+                    message: `El taller rechazó la recepción de ${item.scaleModel} #${item.serialNumber}. El equipo regresó a estado DAÑADO en tu sucursal.`,
+                    fromUser: user?.email ?? 'taller',
+                    fromBranch: 'taller',
+                    targetUser: item.pendingTransfer.initiatedBy,
+                    relatedSerial: item.serialNumber,
+                    relatedModel: item.scaleModel,
+                    relatedInventoryId: item.id,
+                });
+            }
         } finally {
             setConfirmingTransferId(null);
         }
@@ -229,7 +272,7 @@ export function GlobalNotifications({ user, isMaster }: GlobalNotificationsProps
                                     </div>
                                     {isMaster && (
                                         <button
-                                            onClick={() => handleResolve(n.id)}
+                                            onClick={() => handleResolve(n)}
                                             disabled={resolvingId === n.id}
                                             className="mt-2 w-full text-xs font-bold py-1.5 px-3 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-colors disabled:opacity-50 flex items-center justify-center gap-1"
                                         >
@@ -255,10 +298,7 @@ export function useNotificationCount(user: User | null, isMaster: boolean): numb
     useEffect(() => {
         if (!user) return;
         return notificationService.subscribeToActive(user.email ?? '', isMaster, (notifs) => {
-            setCount((prev) => {
-                // store notifs count in closure, we'll combine with transfers below
-                return notifs.length;
-            });
+            setCount(notifs.length);
         });
     }, [user, isMaster]);
 

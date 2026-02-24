@@ -11,9 +11,10 @@ export interface AppNotification {
     type: NotificationType;
     title: string;
     message: string;
-    fromUser: string;      // email of whoever triggered this
-    fromBranch?: string;   // branch of the sender
-    targetBranch?: string; // 'taller' | 'central' | specific branch (undefined = all masters)
+    fromUser: string;       // email of whoever triggered this
+    fromBranch?: string;    // branch of the sender
+    targetBranch?: string;  // 'taller' | 'central' | specific branch
+    targetUser?: string;    // specific user email to route feedback back to sender
     relatedSerial?: string;
     relatedModel?: string;
     relatedInventoryId?: string;
@@ -68,16 +69,15 @@ export const notificationService = {
     },
 
     /**
-     * Subscribe to active (unresolved) notifications for a target.
-     * Masters (taller/central) see everything. Branch users see only their own.
+     * Subscribe to active (unresolved) notifications.
+     * - Masters see all notifications NOT directed at a specific targetUser
+     * - Branch users see only notifications targeted at them (targetUser === their email)
      */
     subscribeToActive: (
-        _userEmail: string,
+        userEmail: string,
         isMaster: boolean,
         callback: (notifications: AppNotification[]) => void
     ) => {
-        // Masters see all unresolved notifications targeting 'taller' or 'central' or universal
-        // For simplicity: masters subscribe to all unresolved, filter client-side
         const q = query(
             collection(db, COLLECTION),
             where('resolved', '==', false),
@@ -92,10 +92,12 @@ export const notificationService = {
                     ...d.data(),
                 })) as AppNotification[];
 
-                // Masters see all; branch users see their own reports
-                const filtered = isMaster ? all : all.filter(
-                    (n) => n.fromUser === _userEmail
-                );
+                const filtered = isMaster
+                    // Masters see all that are NOT targeted to a specific non-master user
+                    ? all.filter((n) => !n.targetUser)
+                    // Branch users see only feedback directed at them
+                    : all.filter((n) => n.targetUser === userEmail);
+
                 callback(filtered);
             },
             (err) => console.error('Error in notifications subscription:', err)
