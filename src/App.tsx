@@ -6,7 +6,7 @@ import { CalibrationTest } from './components/CalibrationTest';
 import { HistoryView } from './components/HistoryView';
 import { ReportIssueModal } from './components/ReportIssueModal';
 import { RepairModule } from './components/RepairModule';
-import { Zap, Beaker, LayoutDashboard, ClipboardCheck, History, Wrench, LogOut, AlertTriangle, Shield, Users, Box } from 'lucide-react';
+import { Zap, Beaker, LayoutDashboard, ClipboardCheck, History, Wrench, LogOut, AlertTriangle, Shield, Users, Box, Megaphone } from 'lucide-react';
 import clsx from 'clsx';
 import { serialService } from './services/SerialService';
 import { auth } from './firebase'; // Import auth
@@ -15,6 +15,7 @@ import { Login } from './components/Login';
 import { InventoryModal } from './components/InventoryModal';
 import { InventoryListView } from './components/InventoryListView';
 import { GlobalNotifications } from './components/GlobalNotifications';
+import { BroadcastModal } from './components/BroadcastModal';
 import { UserManagementModal } from './components/UserManagementModal';
 import { useAuthRole } from './hooks/useAuthRole'; // Hook Integration
 
@@ -48,6 +49,7 @@ function App() {
   const [isInventoryOpen, setIsInventoryOpen] = useState(false);
   const [isInventoryListOpen, setIsInventoryListOpen] = useState(false);
   const isMaster = isAdmin || isWorkshop;
+  const [isBroadcastOpen, setIsBroadcastOpen] = useState(false);
   const [isSimulating, setIsSimulating] = useState(false);
   const simInterval = useRef<number | null>(null);
 
@@ -218,6 +220,17 @@ function App() {
             BASE DE INVENTARIO
           </button>
 
+          {/* Master-only: Broadcast announcement panel */}
+          {isMaster && (
+            <button
+              onClick={() => setIsBroadcastOpen(true)}
+              className="px-6 py-4 bg-yellow-500/10 hover:bg-yellow-500/20 border border-yellow-500/30 text-yellow-400 rounded-xl transition-all duration-300 font-bold text-lg flex items-center justify-center gap-2"
+            >
+              <Megaphone className="w-5 h-5" />
+              ENVIAR ANUNCIO
+            </button>
+          )}
+
           <button
             onClick={() => setIsIssueOpen(true)}
             className="px-6 py-4 bg-red-600/10 hover:bg-red-600/20 border border-red-500/30 text-red-400 rounded-xl transition-all duration-300 font-bold text-lg flex items-center justify-center gap-2"
@@ -314,6 +327,14 @@ function App() {
         user={user}
         isMaster={isMaster}
       />
+
+      {/* Broadcast Modal — master-only announcement composer */}
+      {isMaster && (
+        <BroadcastModal
+          isOpen={isBroadcastOpen}
+          onClose={() => setIsBroadcastOpen(false)}
+        />
+      )}
 
       {/* Footer */}
       <div className="absolute bottom-4 text-center text-white/20 text-xs">

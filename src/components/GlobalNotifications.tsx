@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import {
     Bell, X, CheckCircle2, AlertTriangle, Truck,
-    ChevronDown, ChevronUp, RefreshCw, Clock
+    ChevronDown, ChevronUp, RefreshCw, Clock, Megaphone
 } from 'lucide-react';
 import { notificationService } from '../services/NotificationService';
 import type { AppNotification } from '../services/NotificationService';
@@ -37,6 +37,13 @@ const TYPE_CONFIG = {
         border: 'border-amber-500/30',
         label: 'En Tránsito',
     },
+    broadcast: {
+        icon: Megaphone,
+        color: 'text-yellow-400',
+        bg: 'bg-yellow-500/10',
+        border: 'border-yellow-500/30',
+        label: 'Anuncio',
+    },
 };
 
 export function GlobalNotifications({ user, isMaster }: GlobalNotificationsProps) {
@@ -49,9 +56,11 @@ export function GlobalNotifications({ user, isMaster }: GlobalNotificationsProps
     // Subscribe to general notifications
     useEffect(() => {
         if (!user) return;
+        const userBranch = user.email?.split('@')[0] ?? '';
         return notificationService.subscribeToActive(
             user.email ?? '',
             isMaster,
+            userBranch,
             setNotifications
         );
     }, [user, isMaster]);
@@ -66,7 +75,8 @@ export function GlobalNotifications({ user, isMaster }: GlobalNotificationsProps
 
     const totalCount = notifications.length + pendingTransfers.length;
 
-    if (totalCount === 0) return null;
+    // Always render the bell if there's at least one notification; hide only when panel is closed and count is 0
+    if (totalCount === 0 && !isOpen) return null;
 
     const handleResolve = async (n: AppNotification) => {
         setResolvingId(n.id);
@@ -297,7 +307,8 @@ export function useNotificationCount(user: User | null, isMaster: boolean): numb
     // General notifications
     useEffect(() => {
         if (!user) return;
-        return notificationService.subscribeToActive(user.email ?? '', isMaster, (notifs) => {
+        const userBranch = user.email?.split('@')[0] ?? '';
+        return notificationService.subscribeToActive(user.email ?? '', isMaster, userBranch, (notifs) => {
             setCount(notifs.length);
         });
     }, [user, isMaster]);
