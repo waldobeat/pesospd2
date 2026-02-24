@@ -93,9 +93,8 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
         return () => unsub();
     }, [isOpen]);
 
-    if (!isOpen) return null;
-
     // ── Branch-scoped items ─────────────────────────────────────────────────
+    // IMPORTANT: All hooks must appear before any conditional return
     const scopedItems = useMemo(() => {
         if (isMaster) return allItems;
         return allItems.filter(
@@ -135,6 +134,9 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
     // ── Pagination ─────────────────────────────────────────────────────────
     const totalPages = Math.max(1, Math.ceil(filteredItems.length / PAGE_SIZE));
     const pagedItems = filteredItems.slice((page - 1) * PAGE_SIZE, page * PAGE_SIZE);
+
+    // ── Early return (after ALL hooks) ─────────────────────────────────────
+    if (!isOpen) return null;
 
     // ── Helpers ────────────────────────────────────────────────────────────
     const handleSort = (field: SortField) => {
