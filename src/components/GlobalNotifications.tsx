@@ -56,7 +56,7 @@ export function GlobalNotifications({ user, isMaster }: GlobalNotificationsProps
     // Subscribe to general notifications
     useEffect(() => {
         if (!user) return;
-        const userBranch = user.email?.split('@')[0] ?? '';
+        const userBranch = user.email?.split('@')[0].toLowerCase() ?? '';
         return notificationService.subscribeToActive(
             user.email ?? '',
             isMaster,

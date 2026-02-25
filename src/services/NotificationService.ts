@@ -117,10 +117,11 @@ export const notificationService = {
                         // Personal feedback (taller resolved an issue, etc.)
                         if (n.targetUser === userEmail) return true;
                         // Transfer requests or Status changes targeted at this branch
-                        if ((n.type === 'transfer_request' || n.type === 'status_change') && n.targetBranch === userBranch) return true;
+                        if ((n.type === 'transfer_request' || n.type === 'status_change') &&
+                            n.targetBranch?.toLowerCase() === userBranch.toLowerCase()) return true;
                         // Broadcast announcements
                         if (n.type === 'broadcast') {
-                            return n.targetBranch === 'all' || n.targetBranch === userBranch;
+                            return n.targetBranch === 'all' || n.targetBranch?.toLowerCase() === userBranch.toLowerCase();
                         }
                         return false;
                     });

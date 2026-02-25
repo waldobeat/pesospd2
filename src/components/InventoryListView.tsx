@@ -503,22 +503,35 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
                                             {/* Control */}
                                             <td className="p-3 px-4 text-center">
                                                 <div className="flex items-center justify-center gap-1.5">
-                                                    <button
-                                                        onClick={() => setSelectedItem({
-                                                            id: item.id,
-                                                            serialNumber: item.serialNumber,
-                                                            model: item.scaleModel,
-                                                            currentStatus: item.status,
-                                                            branch: item.branch,
-                                                            lastBranch: item.lastBranch,
-                                                            recordedBy: item.recordedBy,
-                                                        })}
-                                                        className="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 bg-blue-600/15 hover:bg-blue-600 border border-blue-500/25 hover:border-blue-500 text-blue-400 hover:text-white rounded-lg transition-all text-[10px] font-bold opacity-70 group-hover:opacity-100"
-                                                        title="Actualizar estado"
-                                                    >
-                                                        <Pencil className="w-3 h-3" />
-                                                        EDITAR
-                                                    </button>
+                                                    {(() => {
+                                                        const isWorkshopManaged = ['EN TALLER', 'REPARANDO', 'EN ESPERA', 'ENVIADO', 'TRANSFERIDO', 'EN TRÁNSITO'].includes(item.status);
+                                                        const canEdit = isMaster || !isWorkshopManaged;
+
+                                                        return (
+                                                            <button
+                                                                onClick={() => setSelectedItem({
+                                                                    id: item.id,
+                                                                    serialNumber: item.serialNumber,
+                                                                    model: item.scaleModel,
+                                                                    currentStatus: item.status,
+                                                                    branch: item.branch,
+                                                                    lastBranch: item.lastBranch,
+                                                                    recordedBy: item.recordedBy,
+                                                                })}
+                                                                disabled={!canEdit}
+                                                                className={clsx(
+                                                                    "inline-flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg transition-all text-[10px] font-bold opacity-70 group-hover:opacity-100 border",
+                                                                    canEdit
+                                                                        ? "bg-blue-600/15 hover:bg-blue-600 border-blue-500/25 hover:border-blue-500 text-blue-400 hover:text-white"
+                                                                        : "bg-white/5 border-white/10 text-white/20 cursor-not-allowed"
+                                                                )}
+                                                                title={canEdit ? "Actualizar estado" : "Solo el Taller puede editar equipos en este estado"}
+                                                            >
+                                                                <Pencil className="w-3 h-3" />
+                                                                {canEdit ? 'EDITAR' : 'BLOQUEADO'}
+                                                            </button>
+                                                        );
+                                                    })()}
                                                     {isMaster && (
                                                         <button
                                                             onClick={(e) => handleDeleteItem(item, e)}
@@ -569,20 +582,34 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
                                             <span>📅 {fmtDate(item.updatedAt || item.timestamp)}</span>
                                         </div>
                                         <div className="flex gap-2 mt-1">
-                                            <button
-                                                onClick={() => setSelectedItem({
-                                                    id: item.id,
-                                                    serialNumber: item.serialNumber,
-                                                    model: item.scaleModel,
-                                                    currentStatus: item.status,
-                                                    branch: item.branch,
-                                                    lastBranch: item.lastBranch,
-                                                    recordedBy: item.recordedBy,
-                                                })}
-                                                className="flex-1 py-2 bg-blue-600/20 border border-blue-500/30 text-blue-400 rounded-lg text-xs font-bold transition-all hover:bg-blue-600 hover:text-white flex items-center justify-center gap-1"
-                                            >
-                                                <Pencil className="w-3.5 h-3.5" /> EDITAR ESTADO
-                                            </button>
+                                            {(() => {
+                                                const isWorkshopManaged = ['EN TALLER', 'REPARANDO', 'EN ESPERA', 'ENVIADO', 'TRANSFERIDO', 'EN TRÁNSITO'].includes(item.status);
+                                                const canEdit = isMaster || !isWorkshopManaged;
+
+                                                return (
+                                                    <button
+                                                        onClick={() => setSelectedItem({
+                                                            id: item.id,
+                                                            serialNumber: item.serialNumber,
+                                                            model: item.scaleModel,
+                                                            currentStatus: item.status,
+                                                            branch: item.branch,
+                                                            lastBranch: item.lastBranch,
+                                                            recordedBy: item.recordedBy,
+                                                        })}
+                                                        disabled={!canEdit}
+                                                        className={clsx(
+                                                            "flex-1 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 border",
+                                                            canEdit
+                                                                ? "bg-blue-600/20 border-blue-500/30 text-blue-400 hover:bg-blue-600 hover:text-white"
+                                                                : "bg-white/5 border-white/10 text-white/20 cursor-not-allowed"
+                                                        )}
+                                                    >
+                                                        <Pencil className="w-3.5 h-3.5" />
+                                                        {canEdit ? 'EDITAR ESTADO' : 'BLOQUEADO POR TALLER'}
+                                                    </button>
+                                                );
+                                            })()}
                                             {isMaster && (
                                                 <button
                                                     onClick={(e) => handleDeleteItem(item, e)}
