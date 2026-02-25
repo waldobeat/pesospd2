@@ -65,12 +65,13 @@ export function GlobalNotifications({ user, isMaster }: GlobalNotificationsProps
         );
     }, [user, isMaster]);
 
-    // Subscribe to pending transfers (for master users)
+    // Subscribe to pending transfers
     useEffect(() => {
-        if (!user || !isMaster) return;
-        return inventoryService.subscribeToPendingTransfers('taller', (items) => {
-            setPendingTransfers(items);
-        });
+        if (!user) return;
+        const targetBranch = isMaster ? 'taller' : user.email?.split('@')[0].toLowerCase() || '';
+        if (!targetBranch) return;
+
+        return inventoryService.subscribeToPendingTransfers(targetBranch, setPendingTransfers);
     }, [user, isMaster]);
 
     const totalCount = notifications.length + pendingTransfers.length;
@@ -103,16 +104,39 @@ export function GlobalNotifications({ user, isMaster }: GlobalNotificationsProps
     const handleConfirmTransfer = async (item: InventoryItem) => {
         setConfirmingTransferId(item.id);
         try {
-            await inventoryService.confirmTransfer(item.id, user?.email ?? 'Taller');
+            const destBranch = item.pendingTransfer?.to || item.branch;
+            const fromBranch = item.pendingTransfer?.from || '';
+
+            // Logic:
+            // 1. If destination is workshop -> Status: EN TALLER
+            // 2. If coming FROM workshop -> Status: OPERATIVO (assuming repair done)
+            // 3. Else (Branch transfer) -> Restore original status
+            let finalStatus: InventoryStatus = 'OPERATIVO';
+
+            if (destBranch === 'taller') {
+                finalStatus = 'EN TALLER';
+            } else if (fromBranch === 'taller') {
+                finalStatus = 'OPERATIVO';
+            } else if (item.pendingTransfer?.originalStatus) {
+                finalStatus = item.pendingTransfer.originalStatus;
+            }
+
+            await inventoryService.confirmTransfer(item.id, user?.email ?? 'Sistema', finalStatus);
+
+            // Find and resolve the related AppNotification if it exists
+            const relatedNotif = notifications.find(n => n.relatedInventoryId === item.id && n.type === 'transfer_request');
+            if (relatedNotif) {
+                await notificationService.resolve(relatedNotif.id, user?.email ?? 'Sistema');
+            }
 
             // Notify the sending branch user
             if (item.pendingTransfer?.initiatedBy) {
                 await notificationService.create({
                     type: 'status_change',
                     title: '📦 Recepción Confirmada',
-                    message: `${BRANCH_LABELS[item.pendingTransfer.to] ?? item.pendingTransfer.to} confirmó la recepción de ${item.scaleModel} #${item.serialNumber}. El equipo está ahora EN TALLER.`,
-                    fromUser: user?.email ?? 'taller',
-                    fromBranch: 'taller',
+                    message: `${BRANCH_LABELS[destBranch] ?? destBranch} confirmó la recepción de ${item.scaleModel} #${item.serialNumber}. El equipo está ahora ${finalStatus}.`,
+                    fromUser: user?.email ?? 'Sistema',
+                    fromBranch: destBranch,
                     targetUser: item.pendingTransfer.initiatedBy,
                     relatedSerial: item.serialNumber,
                     relatedModel: item.scaleModel,
@@ -227,7 +251,7 @@ export function GlobalNotifications({ user, isMaster }: GlobalNotificationsProps
                                         </p>
                                     </div>
                                 </div>
-                                {isMaster && (
+                                {(isMaster || item.pendingTransfer?.to === (user?.email?.split('@')[0].toLowerCase())) && (
                                     <div className="flex gap-2 mt-2">
                                         <button
                                             onClick={() => handleConfirmTransfer(item)}

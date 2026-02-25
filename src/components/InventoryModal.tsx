@@ -29,6 +29,7 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
     const [serialNumber, setSerialNumber] = useState('');
     const [branch, setBranch] = useState('');
     const [status, setStatus] = useState<InventoryStatus>('OPERATIVO');
+    const [originalStatus, setOriginalStatus] = useState<InventoryStatus>('OPERATIVO');
     const [description, setDescription] = useState('');
     const [destinationBranch, setDestinationBranch] = useState('');
 
@@ -86,6 +87,7 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
                 setScaleModel(existing.scaleModel);
                 setBranch(existing.branch);
                 setStatus(existing.status);
+                setOriginalStatus(existing.status);
                 setDescription(existing.description || '');
                 setExistingFoundMsg(
                     `✨ Equipo reconocido: Este serial ya existe. Se han cargado los datos para actualización rápida.`
@@ -134,6 +136,7 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
             initiatedBy: recordedBy,
             initiatedAt: now,
             notes: description.trim() || '',
+            originalStatus: isUpdateMode ? originalStatus : status,
         } : undefined;
 
         try {

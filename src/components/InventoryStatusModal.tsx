@@ -3,6 +3,7 @@ import { X, Save, RefreshCw, AlertCircle, CheckCircle, Loader2, ArrowRight, Truc
 import type { User } from 'firebase/auth';
 import { historyService } from '../services/HistoryService';
 import { inventoryService } from '../services/InventoryService';
+import { notificationService } from '../services/NotificationService';
 import type { InventoryStatus } from '../services/InventoryService';
 import { ALL_BRANCHES, BRANCH_LABELS } from '../services/InventoryService';
 import clsx from 'clsx';
@@ -92,6 +93,19 @@ export function InventoryStatusModal({ isOpen, onClose, user, inventoryItem }: I
                     user?.email ?? 'Anon',
                     note.trim() || undefined
                 );
+
+                // Create notification for destination branch
+                await notificationService.create({
+                    type: 'transfer_request',
+                    title: 'Nuevo equipo en camino',
+                    message: `Se ha enviado el equipo ${inventoryItem.model} (${inventoryItem.serialNumber}) desde ${BRANCH_LABELS[inventoryItem.branch] || inventoryItem.branch} con destino a su sucursal.`,
+                    fromUser: user?.email || 'Sistema',
+                    fromBranch: inventoryItem.branch,
+                    targetBranch: destination,
+                    relatedSerial: inventoryItem.serialNumber,
+                    relatedModel: inventoryItem.model,
+                    relatedInventoryId: inventoryItem.id,
+                });
 
                 // Log to history
                 await historyService.save({

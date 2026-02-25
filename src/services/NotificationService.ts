@@ -116,6 +116,8 @@ export const notificationService = {
                     filtered = all.filter((n) => {
                         // Personal feedback (taller resolved an issue, etc.)
                         if (n.targetUser === userEmail) return true;
+                        // Transfer requests targeted at this branch
+                        if (n.type === 'transfer_request' && n.targetBranch === userBranch) return true;
                         // Broadcast announcements
                         if (n.type === 'broadcast') {
                             return n.targetBranch === 'all' || n.targetBranch === userBranch;

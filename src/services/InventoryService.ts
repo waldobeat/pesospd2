@@ -55,6 +55,7 @@ export interface PendingTransfer {
     initiatedBy: string;   // email of the user who initiated
     initiatedAt: Timestamp;
     notes?: string;
+    originalStatus: InventoryStatus; // The status before EN TRÁNSITO
 }
 
 export interface InventoryItem {
@@ -146,7 +147,9 @@ export const inventoryService = {
         try {
             const itemSnap = await getDoc(doc(db, 'inventory', id));
             if (!itemSnap.exists()) throw new Error('Item not found');
-            const from = (itemSnap.data() as InventoryItem).branch;
+            const itemData = itemSnap.data() as InventoryItem;
+            const from = itemData.branch;
+            const originalStatus = itemData.status;
 
             await updateDoc(doc(db, 'inventory', id), {
                 status: 'EN TRÁNSITO' satisfies InventoryStatus,
@@ -159,6 +162,7 @@ export const inventoryService = {
                     initiatedBy,
                     initiatedAt: Timestamp.now(),
                     notes: notes || '',
+                    originalStatus,
                 } satisfies PendingTransfer,
             });
         } catch (error) {

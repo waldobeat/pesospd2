@@ -39,18 +39,22 @@ export function TransferNotifications({ user, isMaster, onCountChange }: Transfe
         setConfirming(item.id);
         setError(null);
         try {
-            await inventoryService.confirmTransfer(item.id, user.email ?? 'Taller');
+            const destBranch = item.pendingTransfer?.to || '';
+            const isToTaller = destBranch === 'taller';
+            const finalStatus = isToTaller ? 'EN TALLER' : 'OPERATIVO';
+
+            await inventoryService.confirmTransfer(item.id, user.email ?? 'Sistema', finalStatus);
 
             // Log to history
             await historyService.save({
                 model: item.scaleModel,
                 serial: item.serialNumber,
-                branch: item.pendingTransfer?.to ?? item.branch,
+                branch: destBranch,
                 note: `Recepción confirmada desde ${BRANCH_LABELS[item.pendingTransfer?.from ?? ''] ?? item.pendingTransfer?.from}`,
                 user: user.email ?? '',
-                status: 'EN TALLER',
+                status: finalStatus,
                 inventoryId: item.id,
-                destination: item.pendingTransfer?.to,
+                destination: destBranch,
                 updatedBy: user.email ?? '',
             }, 'inventory_op');
         } catch {
@@ -162,8 +166,8 @@ export function TransferNotifications({ user, isMaster, onCountChange }: Transfe
                                     </span>
                                 </div>
 
-                                {/* Action buttons — only for master users (taller/central) */}
-                                {isMaster && (
+                                {/* Action buttons — for master users (taller/central) OR the specific recipient branch */}
+                                {(isMaster || item.pendingTransfer?.to === userPrefix) && (
                                     <div className="flex gap-2">
                                         <button
                                             onClick={() => handleConfirm(item)}
