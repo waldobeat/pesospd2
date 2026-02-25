@@ -342,6 +342,8 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
                             <option value="OPERATIVO">OPERATIVO</option>
                             <option value="DAÑADO">DAÑADO</option>
                             <option value="EN TALLER">EN TALLER</option>
+                            <option value="REPARANDO">REPARANDO</option>
+                            <option value="REPARADO">REPARADO</option>
                             <option value="EN ESPERA">EN ESPERA</option>
                             <option value="ENVIADO">ENVIADO</option>
                             <option value="TRANSFERIDO">TRANSFERIDO</option>

@@ -29,6 +29,7 @@ const STATUS_COLORS: Record<string, string> = {
     'EN TALLER': 'text-orange-400 bg-orange-500/10 border-orange-500/30',
     'EN ESPERA': 'text-yellow-400 bg-yellow-500/10 border-yellow-500/30',
     'REPARANDO': 'text-cyan-400   bg-cyan-500/10   border-cyan-500/30',
+    'REPARADO': 'text-green-400  bg-green-500/10  border-green-500/30',
     'ENVIADO': 'text-purple-400 bg-purple-500/10 border-purple-500/30',
     'TRANSFERIDO': 'text-blue-400   bg-blue-500/10   border-blue-500/30',
     'DADO DE BAJA': 'text-neutral-400 bg-neutral-500/10 border-neutral-500/30',
@@ -188,6 +189,34 @@ export function InventoryStatusModal({ isOpen, onClose, user, inventoryItem }: I
                         });
                     }
                 }
+
+                // ── NOTIFICACIÓN: Reparación Finalizada (REPARADO) ──
+                if (status === 'REPARADO' && inventoryItem.currentStatus !== 'REPARADO') {
+                    let targetBranch = inventoryItem.lastBranch;
+                    if (!targetBranch && inventoryItem.recordedBy) {
+                        const prefix = inventoryItem.recordedBy.split('@')[0].toLowerCase();
+                        if (prefix !== 'taller' && prefix !== 'central') {
+                            targetBranch = prefix;
+                        }
+                    }
+                    if (!targetBranch) {
+                        targetBranch = inventoryItem.branch;
+                    }
+
+                    if (isWorkshop && targetBranch !== 'taller') {
+                        await notificationService.create({
+                            type: 'status_change',
+                            title: '✅ Equipo Reparado',
+                            message: `¡Excelentes noticias! Tu equipo ${inventoryItem.model} (#${inventoryItem.serialNumber}) ha sido reparado y ahora está a la espera de ser enviado.`,
+                            fromUser: user?.email ?? 'Taller',
+                            fromBranch: 'taller',
+                            targetBranch: targetBranch,
+                            relatedSerial: inventoryItem.serialNumber,
+                            relatedModel: inventoryItem.model,
+                            relatedInventoryId: inventoryItem.id,
+                        });
+                    }
+                }
             }
 
             setSuccess(true);
@@ -286,6 +315,7 @@ export function InventoryStatusModal({ isOpen, onClose, user, inventoryItem }: I
                                 <>
                                     <option value="EN TALLER">EN TALLER</option>
                                     <option value="REPARANDO">REPARANDO EN ESTE MOMENTO</option>
+                                    <option value="REPARADO">REPARADO - ESPERANDO ENVÍO</option>
                                     <option value="EN ESPERA">EN ESPERA</option>
                                 </>
                             )}

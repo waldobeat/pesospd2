@@ -13,6 +13,7 @@ export type InventoryStatus =
     | 'ENVIADO'
     | 'TRANSFERIDO'
     | 'DADO DE BAJA'
+    | 'REPARADO'
     | 'EN TRÁNSITO';
 
 export const STATUS_LABELS: Record<InventoryStatus, string> = {
@@ -24,6 +25,7 @@ export const STATUS_LABELS: Record<InventoryStatus, string> = {
     'ENVIADO': 'Enviado',
     'TRANSFERIDO': 'Transferido',
     'DADO DE BAJA': 'Dado de Baja',
+    'REPARADO': 'Reparado - Esperando Envío ✅',
     'EN TRÁNSITO': 'En Tránsito 🚚',
 };
 
@@ -87,6 +89,7 @@ export interface InventoryStats {
     enviado: number;
     transferido: number;
     dadoDeBaja: number;
+    reparado: number;
     enTransito: number;
     byBranch: Record<string, number>;
     byModel: Record<string, number>;
@@ -321,7 +324,7 @@ export const inventoryService = {
         const stats: InventoryStats = {
             total: items.length,
             operativo: 0, danado: 0, enTaller: 0, enEspera: 0,
-            enviado: 0, transferido: 0, dadoDeBaja: 0, enTransito: 0,
+            enviado: 0, transferido: 0, dadoDeBaja: 0, reparado: 0, enTransito: 0,
             byBranch: {}, byModel: {},
         };
 
@@ -336,6 +339,7 @@ export const inventoryService = {
                 case 'ENVIADO': stats.enviado++; break;
                 case 'TRANSFERIDO': stats.transferido++; break;
                 case 'DADO DE BAJA': stats.dadoDeBaja++; break;
+                case 'REPARADO': stats.reparado++; break;
                 case 'EN TRÁNSITO': stats.enTransito++; break;
             }
             const bk = item.branch || 'sin sucursal';
@@ -352,7 +356,7 @@ export const inventoryService = {
             if (filters.branch && item.branch !== filters.branch) return false;
             if (filters.status) {
                 if (filters.status === 'EN TALLER') {
-                    if (item.status !== 'EN TALLER' && item.status !== 'REPARANDO') return false;
+                    if (item.status !== 'EN TALLER' && item.status !== 'REPARANDO' && item.status !== 'REPARADO') return false;
                 } else {
                     if (item.status !== filters.status) return false;
                 }

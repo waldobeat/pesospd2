@@ -27,3 +27,9 @@ dist-ssr
 .env
 .env.*
 !.env.example
+
+# WhatsApp Bridge
+whatsapp-bridge/.wwebjs_cache
+whatsapp-bridge/wa_auth
+whatsapp-bridge/node_modules
+whatsapp-bridge/.env

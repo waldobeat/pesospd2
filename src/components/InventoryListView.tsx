@@ -34,6 +34,7 @@ const STATUS_STYLES: Record<string, string> = {
     'TRANSFERIDO': 'bg-blue-500/10 text-blue-400 border-blue-500/20',
     'DADO DE BAJA': 'bg-neutral-500/10 text-neutral-400 border-neutral-500/20',
     'REPARANDO': 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
+    'REPARADO': 'bg-green-500/10 text-green-400 border-green-500/20',
     'EN TRÁNSITO': 'bg-amber-500/10 text-amber-400 border-amber-500/30',
 };
 
@@ -42,6 +43,7 @@ const ROW_SHADOW: Record<string, string> = {
     'EN TALLER': 'bg-orange-500/5',
     'EN ESPERA': 'bg-yellow-500/5',
     'REPARANDO': 'bg-cyan-500/5',
+    'REPARADO': 'bg-green-500/5',
     'EN TRÁNSITO': 'bg-amber-500/5',
     'DADO DE BAJA': 'bg-neutral-900/60',
 };
@@ -54,6 +56,7 @@ const STATUS_MAP: Record<string, string> = {
     enEspera: 'EN ESPERA',
     enviado: 'ENVIADO',
     enTransito: 'EN TRÁNSITO',
+    reparado: 'REPARADO',
     dadoDeBaja: 'DADO DE BAJA',
 };
 
@@ -61,6 +64,7 @@ const KPI_CARDS = [
     { label: 'Total', key: 'total', icon: Box, color: 'text-white', bg: 'bg-white/5' },
     { label: 'Operativo', key: 'operativo', icon: CheckCircle2, color: 'text-green-400', bg: 'bg-green-500/10' },
     { label: 'En Taller', key: 'enTaller', icon: RefreshCw, color: 'text-orange-400', bg: 'bg-orange-500/10' },
+    { label: 'Reparado', key: 'reparado', icon: CheckCircle2, color: 'text-green-400', bg: 'bg-green-500/10' },
     { label: 'Dañado', key: 'danado', icon: AlertTriangle, color: 'text-red-400', bg: 'bg-red-500/10' },
     { label: 'En Espera', key: 'enEspera', icon: Clock, color: 'text-yellow-400', bg: 'bg-yellow-500/10' },
     { label: 'Enviado', key: 'enviado', icon: Truck, color: 'text-purple-400', bg: 'bg-purple-500/10' },
@@ -360,6 +364,8 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
                                         <option value="DAÑADO">DAÑADO</option>
                                         <option value="EN TALLER">EN TALLER</option>
                                         <option value="EN ESPERA">EN ESPERA</option>
+                                        <option value="REPARANDO">REPARANDO</option>
+                                        <option value="REPARADO">REPARADO</option>
                                         <option value="ENVIADO">ENVIADO</option>
                                         <option value="TRANSFERIDO">TRANSFERIDO</option>
                                         <option value="DADO DE BAJA">DADO DE BAJA</option>
