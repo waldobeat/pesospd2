@@ -8,6 +8,7 @@ export type InventoryStatus =
     | 'OPERATIVO'
     | 'DAÑADO'
     | 'EN TALLER'
+    | 'REPARANDO'
     | 'EN ESPERA'
     | 'ENVIADO'
     | 'TRANSFERIDO'
@@ -18,6 +19,7 @@ export const STATUS_LABELS: Record<InventoryStatus, string> = {
     'OPERATIVO': 'Operativo',
     'DAÑADO': 'Dañado',
     'EN TALLER': 'En Taller',
+    'REPARANDO': 'Reparando en este momento ⚙️',
     'EN ESPERA': 'En Espera',
     'ENVIADO': 'Enviado',
     'TRANSFERIDO': 'Transferido',
@@ -73,6 +75,7 @@ export interface InventoryItem {
     // Transfer confirmation fields
     pendingTransfer?: PendingTransfer;
     hasPendingTransfer?: boolean; // Indexed helper field for Firestore queries
+    lastBranch?: string;          // Remembers the previous branch for notifications
 }
 
 export interface InventoryStats {
@@ -185,10 +188,12 @@ export const inventoryService = {
             if (!itemSnap.exists()) throw new Error('Item not found');
             const item = itemSnap.data() as InventoryItem;
             const destination = item.pendingTransfer?.to || item.branch;
+            const sourceBranch = item.pendingTransfer?.from || item.branch;
 
             await updateDoc(doc(db, 'inventory', id), {
                 status: newStatus,
                 branch: destination,
+                lastBranch: sourceBranch, // Save for later status-change notifications
                 updatedAt: Timestamp.now(),
                 updatedBy: confirmedBy,
                 hasPendingTransfer: false,
