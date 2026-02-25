@@ -36,6 +36,11 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
     const [formError, setFormError] = useState<string | null>(null);
     const [success, setSuccess] = useState(false);
 
+    // Update Mode States
+    const [isUpdateMode, setIsUpdateMode] = useState(false);
+    const [existingId, setExistingId] = useState<string | null>(null);
+    const [existingFoundMsg, setExistingFoundMsg] = useState<string | null>(null);
+
     const userPrefix = user?.email?.split('@')[0] || '';
     const isCentral = userPrefix.toLowerCase() === 'central';
 
@@ -51,6 +56,9 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
             setSerialOk(false);
             setFormError(null);
             setSuccess(false);
+            setIsUpdateMode(false);
+            setExistingId(null);
+            setExistingFoundMsg(null);
         }
     }, [isOpen, isCentral, userPrefix]);
 
@@ -68,10 +76,22 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
             const result = await inventoryService.isSerialUnique(serialNumber);
             if (!result.unique && result.existingItem) {
                 const existing = result.existingItem;
-                setSerialError(
-                    `⚠️ Serial ya registrado: ${existing.scaleModel} en sucursal "${BRANCH_LABELS[existing.branch] || existing.branch}" (${existing.status})`
+                // Recognize existing item
+                setIsUpdateMode(true);
+                setExistingId(existing.id);
+                setWeightType(existing.weightType);
+                setScaleModel(existing.scaleModel);
+                setBranch(existing.branch);
+                setStatus(existing.status);
+                setDescription(existing.description || '');
+                setExistingFoundMsg(
+                    `✨ Equipo reconocido: Este serial ya existe. Se han cargado los datos para actualización rápida.`
                 );
+                setSerialOk(true); // It's "Ok" now because we allow updating
             } else {
+                setIsUpdateMode(false);
+                setExistingId(null);
+                setExistingFoundMsg(null);
                 setSerialOk(true);
             }
             setIsCheckingSerial(false);
@@ -98,16 +118,26 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
         const recordedBy = isCentral ? `central → ${branch}` : userPrefix;
 
         try {
-            await inventoryService.addInventory({
-                weightType,
-                scaleModel,
-                serialNumber: serialNumber.trim().toUpperCase(),
-                branch,
-                status,
-                recordedBy,
-                description: description.trim() || undefined,
-            } as any);
-            setSuccess(true);
+            if (isUpdateMode && existingId) {
+                await inventoryService.updateItem(existingId, {
+                    status,
+                    description: description.trim() || undefined,
+                    updatedBy: recordedBy,
+                } as any);
+                setSuccess(true);
+            } else {
+                await inventoryService.addInventory({
+                    weightType,
+                    scaleModel,
+                    serialNumber: serialNumber.trim().toUpperCase(),
+                    branch,
+                    status,
+                    recordedBy,
+                    description: description.trim() || undefined,
+                } as any);
+                setSuccess(true);
+            }
+
             setTimeout(() => {
                 onClose();
                 setSuccess(false);
@@ -132,8 +162,12 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
                             <Box className="w-5 h-5 text-blue-400" />
                         </div>
                         <div>
-                            <h2 className="text-base font-bold text-white leading-tight">Registro de Nuevo Equipo</h2>
-                            <p className="text-xs text-white/30">Inventario físico SISDEPE</p>
+                            <h2 className="text-base font-bold text-white leading-tight">
+                                {isUpdateMode ? 'Actualización de Equipo' : 'Registro de Nuevo Equipo'}
+                            </h2>
+                            <p className="text-xs text-white/30">
+                                {isUpdateMode ? 'El serial ya existe, actualizando estatus' : 'Inventario físico SISDEPE'}
+                            </p>
                         </div>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-lg text-white/50 transition-colors">
@@ -154,7 +188,13 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
                     {success && (
                         <div className="bg-green-500/10 border border-green-500/30 text-green-400 p-3 rounded-lg flex items-center gap-2 text-sm">
                             <CheckCircle className="w-4 h-4" />
-                            Equipo registrado correctamente en el inventario.
+                            {isUpdateMode ? 'Estatus actualizado correctamente.' : 'Equipo registrado correctamente.'}
+                        </div>
+                    )}
+                    {existingFoundMsg && !success && (
+                        <div className="bg-blue-500/10 border border-blue-500/30 text-blue-400 p-3 rounded-lg flex items-start gap-2 text-sm animate-pulse">
+                            <Box className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                            <span>{existingFoundMsg}</span>
                         </div>
                     )}
 
@@ -165,7 +205,7 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
                             value={weightType}
                             onChange={(e) => { setWeightType(e.target.value); setScaleModel(''); }}
                             className={inputCls}
-                            disabled={isSubmitting || success}
+                            disabled={isSubmitting || success || isUpdateMode}
                         >
                             <option value="">-- Seleccionar Tipo --</option>
                             <option value="PESO">PESO</option>
@@ -180,7 +220,7 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
                             value={scaleModel}
                             onChange={(e) => setScaleModel(e.target.value)}
                             className={inputCls}
-                            disabled={isSubmitting || success || !weightType}
+                            disabled={isSubmitting || success || !weightType || isUpdateMode}
                         >
                             <option value="">-- Seleccionar Modelo --</option>
                             {(SCALE_MODELS[weightType] || []).map((m) => (
@@ -238,11 +278,18 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
                                 className="w-full bg-[#1e293b]/50 border border-white/5 rounded-lg px-4 py-3 text-white/40 cursor-not-allowed font-medium"
                             />
                         )}
+                        {isUpdateMode && !isCentral && (
+                            <p className="text-[10px] text-yellow-500/70 pl-1 mt-1 font-medium">
+                                ⚠️ El equipo pertenece a la sucursal original: {(BRANCH_LABELS[branch] || branch).toUpperCase()}
+                            </p>
+                        )}
                     </div>
 
                     {/* Estatus Inicial */}
                     <div className="flex flex-col gap-1.5">
-                        <label className="text-xs font-bold text-white/50 uppercase tracking-wide">Estatus Inicial *</label>
+                        <label className="text-xs font-bold text-white/50 uppercase tracking-wide">
+                            {isUpdateMode ? 'Nuevo Estatus *' : 'Estatus Inicial *'}
+                        </label>
                         <select
                             value={status}
                             onChange={(e) => setStatus(e.target.value as InventoryStatus)}
@@ -294,7 +341,7 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
                             ) : (
                                 <>
                                     <Save className="w-5 h-5" />
-                                    GUARDAR
+                                    {isUpdateMode ? 'ACTUALIZAR ESTATUS' : 'GUARDAR'}
                                 </>
                             )}
                         </button>

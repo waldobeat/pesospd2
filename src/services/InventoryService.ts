@@ -249,6 +249,20 @@ export const inventoryService = {
         }
     },
 
+    /** General update for an inventory item */
+    updateItem: async (id: string, updates: Partial<InventoryItem>) => {
+        try {
+            const docRef = doc(db, 'inventory', id);
+            await updateDoc(docRef, {
+                ...updates,
+                updatedAt: Timestamp.now(),
+            });
+        } catch (error) {
+            console.error('Error updating inventory item:', error);
+            throw error;
+        }
+    },
+
     /** Get a single inventory item by ID */
     getById: async (id: string): Promise<InventoryItem | null> => {
         try {
