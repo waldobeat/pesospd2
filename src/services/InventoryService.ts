@@ -26,14 +26,22 @@ export const STATUS_LABELS: Record<InventoryStatus, string> = {
 };
 
 export const BRANCH_LABELS: Record<string, string> = {
-    sandiego: 'San Diego',
-    bosque: 'Bosque',
-    trigal: 'Trigal',
-    naguanagua: 'Naguanagua',
-    guacara: 'Guacara',
-    valencia: 'Valencia',
-    central: 'Central',
     taller: 'Taller',
+    sandiego: 'San Diego',
+    acacias: 'Acacias',
+    victoria: 'Victoria',
+    naguanagua: 'Naguanagua',
+    bosque: 'Bosque',
+    central: 'Central',
+    mora: 'Mora',
+    villas: 'Villas',
+    barquisimeto: 'Barquisimeto',
+    tucacas: 'Tucacas',
+    castano: 'Castaño',
+    circulo: 'Circulo',
+    guacara: 'Guacara',
+    sanjuan: 'San Juan',
+    ipsfa: 'Ipsfa',
 };
 
 export const ALL_BRANCHES = Object.keys(BRANCH_LABELS).filter(

@@ -15,14 +15,22 @@ interface BroadcastModalProps {
 // Build target list: 'all' + every branch
 const BROADCAST_TARGETS: { key: string; label: string; icon: React.ElementType }[] = [
     { key: 'all', label: '@Todos los usuarios', icon: Users },
-    { key: 'sandiego', label: '@San Diego', icon: User },
-    { key: 'bosque', label: '@Bosque', icon: User },
-    { key: 'trigal', label: '@Trigal', icon: User },
-    { key: 'naguanagua', label: '@Naguanagua', icon: User },
-    { key: 'guacara', label: '@Guacara', icon: User },
-    { key: 'valencia', label: '@Valencia', icon: User },
     { key: 'taller', label: '@Taller', icon: User },
+    { key: 'sandiego', label: '@San Diego', icon: User },
+    { key: 'acacias', label: '@Acacias', icon: User },
+    { key: 'victoria', label: '@Victoria', icon: User },
+    { key: 'naguanagua', label: '@Naguanagua', icon: User },
+    { key: 'bosque', label: '@Bosque', icon: User },
     { key: 'central', label: '@Central', icon: User },
+    { key: 'mora', label: '@Mora', icon: User },
+    { key: 'villas', label: '@Villas', icon: User },
+    { key: 'barquisimeto', label: '@Barquisimeto', icon: User },
+    { key: 'tucacas', label: '@Tucacas', icon: User },
+    { key: 'castano', label: '@Castaño', icon: User },
+    { key: 'circulo', label: '@Circulo', icon: User },
+    { key: 'guacara', label: '@Guacara', icon: User },
+    { key: 'sanjuan', label: '@San Juan', icon: User },
+    { key: 'ipsfa', label: '@Ipsfa', icon: User },
 ];
 
 export const BroadcastModal: React.FC<BroadcastModalProps> = ({ isOpen, onClose }) => {
