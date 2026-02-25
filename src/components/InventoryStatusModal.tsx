@@ -131,6 +131,16 @@ export function InventoryStatusModal({ isOpen, onClose, user, inventoryItem }: I
                     ? `Cambio de estado: ${inventoryItem.currentStatus} → ${status}`
                     : note.trim();
 
+                // CRITICAL: Actually update the inventory item status in DB for real-time reflection
+                if (statusChanged) {
+                    await inventoryService.updateInventoryStatus(
+                        inventoryItem.id,
+                        status,
+                        undefined,
+                        user?.email ?? 'Anon'
+                    );
+                }
+
                 await historyService.save({
                     model: inventoryItem.model,
                     serial: inventoryItem.serialNumber,
@@ -145,16 +155,16 @@ export function InventoryStatusModal({ isOpen, onClose, user, inventoryItem }: I
 
                 setSuccessMsg('Estado actualizado y registrado en historial.');
 
-                // ── Notification flow for REPARANDO status ──
+                // ── Real-time Notification flow for REPARANDO status ──
                 if (status === 'REPARANDO' && inventoryItem.currentStatus !== 'REPARANDO') {
                     const targetBranch = inventoryItem.lastBranch || inventoryItem.branch;
-                    // Only notify if we are in the workshop and sending TO a branch
+                    // Only notify the owner if we are in the workshop and it's not staying in the workshop
                     if (isWorkshop && targetBranch !== 'taller') {
                         await notificationService.create({
                             type: 'status_change',
-                            title: '🛠️ Equipo en Reparación',
-                            message: `Tu equipo ${inventoryItem.model} (#${inventoryItem.serialNumber}) está siendo reparado en este momento en el taller.`,
-                            fromUser: user?.email || 'Taller',
+                            title: '🛠️ Inicio de Reparación',
+                            message: `Buenas noticias: Tu equipo ${inventoryItem.model} (#${inventoryItem.serialNumber}) ha entrado a reparación técnica en este momento.`,
+                            fromUser: user?.email ?? 'Taller',
                             fromBranch: 'taller',
                             targetBranch: targetBranch,
                             relatedSerial: inventoryItem.serialNumber,
