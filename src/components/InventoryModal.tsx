@@ -1,7 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, Box, AlertCircle, CheckCircle, Loader2, AlertTriangle } from 'lucide-react';
+import { X, Save, Box, AlertCircle, CheckCircle, Loader2, AlertTriangle, Truck } from 'lucide-react';
 import { inventoryService, ALL_BRANCHES, BRANCH_LABELS } from '../services/InventoryService';
-import type { InventoryStatus } from '../services/InventoryService';
+import { notificationService } from '../services/NotificationService';
+import type { InventoryStatus, PendingTransfer } from '../services/InventoryService';
+import { Timestamp } from 'firebase/firestore';
 import type { User } from 'firebase/auth';
 
 interface InventoryModalProps {
@@ -28,6 +30,7 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
     const [branch, setBranch] = useState('');
     const [status, setStatus] = useState<InventoryStatus>('OPERATIVO');
     const [description, setDescription] = useState('');
+    const [destinationBranch, setDestinationBranch] = useState('');
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isCheckingSerial, setIsCheckingSerial] = useState(false);
@@ -53,12 +56,12 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
             setStatus('OPERATIVO');
             setDescription('');
             setSerialError(null);
-            setSerialOk(false);
             setFormError(null);
             setSuccess(false);
             setIsUpdateMode(false);
             setExistingId(null);
             setExistingFoundMsg(null);
+            setDestinationBranch('');
         }
     }, [isOpen, isCentral, userPrefix]);
 
@@ -112,30 +115,67 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
             return;
         }
 
+        const isTransfer = status === 'ENVIADO' || status === 'TRANSFERIDO';
+        if (isTransfer && !destinationBranch) {
+            setFormError('Por favor, seleccione una sucursal de destino.');
+            return;
+        }
+
         setIsSubmitting(true);
         setFormError(null);
 
         const recordedBy = isCentral ? `central → ${branch}` : userPrefix;
+        const now = Timestamp.now();
+
+        // Prepare transfer data if applicable
+        const pendingTransfer: PendingTransfer | undefined = isTransfer ? {
+            from: branch,
+            to: destinationBranch,
+            initiatedBy: recordedBy,
+            initiatedAt: now,
+            notes: description.trim() || '',
+        } : undefined;
 
         try {
+            let itemId = existingId;
             if (isUpdateMode && existingId) {
                 await inventoryService.updateItem(existingId, {
-                    status,
+                    status: isTransfer ? 'EN TRÁNSITO' : status,
                     description: description.trim() || undefined,
                     updatedBy: recordedBy,
+                    hasPendingTransfer: isTransfer,
+                    pendingTransfer: isTransfer ? pendingTransfer : null,
                 } as any);
                 setSuccess(true);
             } else {
-                await inventoryService.addInventory({
+                const newId = await inventoryService.addInventory({
                     weightType,
                     scaleModel,
                     serialNumber: serialNumber.trim().toUpperCase(),
                     branch,
-                    status,
+                    status: isTransfer ? 'EN TRÁNSITO' : status,
                     recordedBy,
                     description: description.trim() || undefined,
+                    hasPendingTransfer: isTransfer,
+                    pendingTransfer: isTransfer ? pendingTransfer : undefined,
                 } as any);
+                itemId = newId;
                 setSuccess(true);
+            }
+
+            // Trigger notification
+            if (isTransfer && destinationBranch) {
+                await notificationService.create({
+                    type: 'transfer_request',
+                    title: 'Nuevo equipo en camino',
+                    message: `Se ha enviado el equipo ${scaleModel} (${serialNumber}) desde ${BRANCH_LABELS[branch] || branch} con destino a su sucursal.`,
+                    fromUser: recordedBy,
+                    fromBranch: branch,
+                    targetBranch: destinationBranch,
+                    relatedSerial: serialNumber.trim().toUpperCase(),
+                    relatedModel: scaleModel,
+                    relatedInventoryId: itemId || undefined,
+                });
             }
 
             setTimeout(() => {
@@ -305,6 +345,32 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
                         </select>
                         <p className="text-[10px] text-white/25 pl-1">Estado físico/lógico actual del equipo al momento del registro.</p>
                     </div>
+
+                    {/* Sucursal Destino (Conditional) */}
+                    {(status === 'ENVIADO' || status === 'TRANSFERIDO') && (
+                        <div className="flex flex-col gap-1.5 animate-in slide-in-from-top-2 duration-200">
+                            <label className="text-xs font-bold text-yellow-500 uppercase tracking-wide flex items-center gap-1.5">
+                                <Truck className="w-3.5 h-3.5" />
+                                Sucursal Destino *
+                            </label>
+                            <select
+                                value={destinationBranch}
+                                onChange={(e) => setDestinationBranch(e.target.value)}
+                                className={`${inputCls} border-yellow-500/30 focus:border-yellow-500`}
+                                disabled={isSubmitting || success}
+                            >
+                                <option value="">-- Seleccionar Destino --</option>
+                                {Object.keys(BRANCH_LABELS)
+                                    .filter(b => b !== branch) // Don't send to self
+                                    .map((b) => (
+                                        <option key={b} value={b}>{BRANCH_LABELS[b] || b}</option>
+                                    ))}
+                            </select>
+                            <p className="text-[10px] text-yellow-500/50 pl-1">
+                                El equipo pasará a estado <strong>EN TRÁNSITO</strong> y se notificará a la sucursal de destino.
+                            </p>
+                        </div>
+                    )}
 
                     {/* Descripción */}
                     <div className="flex flex-col gap-1.5">
