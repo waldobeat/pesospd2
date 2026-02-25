@@ -350,7 +350,13 @@ export const inventoryService = {
     applyFilters: (items: InventoryItem[], filters: InventoryFilter): InventoryItem[] => {
         return items.filter((item) => {
             if (filters.branch && item.branch !== filters.branch) return false;
-            if (filters.status && item.status !== filters.status) return false;
+            if (filters.status) {
+                if (filters.status === 'EN TALLER') {
+                    if (item.status !== 'EN TALLER' && item.status !== 'REPARANDO') return false;
+                } else {
+                    if (item.status !== filters.status) return false;
+                }
+            }
             if (filters.weightType && item.weightType !== filters.weightType) return false;
             if (filters.searchTerm) {
                 const term = filters.searchTerm.toLowerCase();

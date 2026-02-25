@@ -46,6 +46,17 @@ const ROW_SHADOW: Record<string, string> = {
     'DADO DE BAJA': 'bg-neutral-900/60',
 };
 
+const STATUS_MAP: Record<string, string> = {
+    total: '',
+    operativo: 'OPERATIVO',
+    enTaller: 'EN TALLER',
+    danado: 'DAÑADO',
+    enEspera: 'EN ESPERA',
+    enviado: 'ENVIADO',
+    enTransito: 'EN TRÁNSITO',
+    dadoDeBaja: 'DADO DE BAJA',
+};
+
 const KPI_CARDS = [
     { label: 'Total', key: 'total', icon: Box, color: 'text-white', bg: 'bg-white/5' },
     { label: 'Operativo', key: 'operativo', icon: CheckCircle2, color: 'text-green-400', bg: 'bg-green-500/10' },
@@ -244,26 +255,18 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
                         {KPI_CARDS.map(({ label, key, icon: Icon, color, bg }) => {
                             const val = stats[key as keyof typeof stats];
                             const numVal = typeof val === 'number' ? val : 0;
+                            const targetStatus = STATUS_MAP[key] ?? '';
+
                             return (
                                 <button
                                     key={key}
                                     onClick={() => {
-                                        const statusMap: Record<string, string> = {
-                                            total: '',
-                                            operativo: 'OPERATIVO',
-                                            enTaller: 'EN TALLER',
-                                            danado: 'DAÑADO',
-                                            enEspera: 'EN ESPERA',
-                                            enviado: 'ENVIADO',
-                                            dadoDeBaja: 'DADO DE BAJA',
-                                        };
-                                        const newStatus = statusMap[key] ?? '';
-                                        handleFilterChange('status', filters.status === newStatus && newStatus !== '' ? '' : newStatus);
+                                        handleFilterChange('status', filters.status === targetStatus && targetStatus !== '' ? '' : targetStatus);
                                     }}
                                     className={clsx(
                                         'flex flex-col items-center justify-center gap-1 p-2 md:p-3 rounded-xl border transition-all',
                                         bg,
-                                        filters.status === (key === 'total' ? '' : key.toUpperCase().replace('danado', 'DAÑADO').replace('enTaller', 'EN TALLER').replace('enEspera', 'EN ESPERA').replace('dadoDeBaja', 'DADO DE BAJA').replace('operativo', 'OPERATIVO').replace('enviado', 'ENVIADO'))
+                                        (filters.status === targetStatus)
                                             ? 'border-white/30 scale-105'
                                             : 'border-white/5 hover:border-white/20'
                                     )}
