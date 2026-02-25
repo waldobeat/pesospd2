@@ -510,6 +510,8 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
                                                             model: item.scaleModel,
                                                             currentStatus: item.status,
                                                             branch: item.branch,
+                                                            lastBranch: item.lastBranch,
+                                                            recordedBy: item.recordedBy,
                                                         })}
                                                         className="inline-flex items-center justify-center gap-1 px-2.5 py-1.5 bg-blue-600/15 hover:bg-blue-600 border border-blue-500/25 hover:border-blue-500 text-blue-400 hover:text-white rounded-lg transition-all text-[10px] font-bold opacity-70 group-hover:opacity-100"
                                                         title="Actualizar estado"
@@ -575,6 +577,7 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
                                                     currentStatus: item.status,
                                                     branch: item.branch,
                                                     lastBranch: item.lastBranch,
+                                                    recordedBy: item.recordedBy,
                                                 })}
                                                 className="flex-1 py-2 bg-blue-600/20 border border-blue-500/30 text-blue-400 rounded-lg text-xs font-bold transition-all hover:bg-blue-600 hover:text-white flex items-center justify-center gap-1"
                                             >

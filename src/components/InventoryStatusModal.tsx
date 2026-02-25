@@ -19,6 +19,7 @@ interface InventoryStatusModalProps {
         currentStatus: InventoryStatus;
         branch: string;
         lastBranch?: string;
+        recordedBy?: string;
     } | null;
 }
 
@@ -50,7 +51,8 @@ export function InventoryStatusModal({ isOpen, onClose, user, inventoryItem }: I
     const userPrefix = user?.email?.split('@')[0] ?? '';
     const isCentral = userPrefix.toLowerCase() === 'central';
     const isWorkshop = userPrefix.toLowerCase() === 'taller';
-    const canTransfer = isCentral || isWorkshop;
+    const isMaster = isCentral || isWorkshop;
+    const canTransfer = isMaster;
 
     useEffect(() => {
         if (isOpen && inventoryItem) {
@@ -157,7 +159,20 @@ export function InventoryStatusModal({ isOpen, onClose, user, inventoryItem }: I
 
                 // ── Real-time Notification flow for REPARANDO status ──
                 if (status === 'REPARANDO' && inventoryItem.currentStatus !== 'REPARANDO') {
-                    const targetBranch = inventoryItem.lastBranch || inventoryItem.branch;
+                    // Fallback logic: lastBranch > recordedBy prefix > current branch
+                    let targetBranch = inventoryItem.lastBranch;
+
+                    if (!targetBranch && inventoryItem.recordedBy) {
+                        const prefix = inventoryItem.recordedBy.split('@')[0].toLowerCase();
+                        if (prefix !== 'taller' && prefix !== 'central') {
+                            targetBranch = prefix;
+                        }
+                    }
+
+                    if (!targetBranch) {
+                        targetBranch = inventoryItem.branch;
+                    }
+
                     // Only notify the owner if we are in the workshop and it's not staying in the workshop
                     if (isWorkshop && targetBranch !== 'taller') {
                         await notificationService.create({
@@ -265,9 +280,16 @@ export function InventoryStatusModal({ isOpen, onClose, user, inventoryItem }: I
                         >
                             <option value="OPERATIVO">OPERATIVO</option>
                             <option value="DAÑADO">DAÑADO</option>
-                            <option value="EN TALLER">EN TALLER</option>
-                            <option value="REPARANDO">REPARANDO EN ESTE MOMENTO</option>
-                            <option value="EN ESPERA">EN ESPERA</option>
+
+                            {/* Workshop-only/Master statuses */}
+                            {isMaster && (
+                                <>
+                                    <option value="EN TALLER">EN TALLER</option>
+                                    <option value="REPARANDO">REPARANDO EN ESTE MOMENTO</option>
+                                    <option value="EN ESPERA">EN ESPERA</option>
+                                </>
+                            )}
+
                             {canTransfer && (
                                 <>
                                     <option value="ENVIADO">ENVIAR A SUCURSAL / TALLER</option>
