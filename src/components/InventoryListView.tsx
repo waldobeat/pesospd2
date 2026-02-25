@@ -33,6 +33,7 @@ const STATUS_STYLES: Record<string, string> = {
     'ENVIADO': 'bg-purple-500/10 text-purple-400 border-purple-500/20',
     'TRANSFERIDO': 'bg-blue-500/10 text-blue-400 border-blue-500/20',
     'DADO DE BAJA': 'bg-neutral-500/10 text-neutral-400 border-neutral-500/20',
+    'REPARANDO': 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
     'EN TRÁNSITO': 'bg-amber-500/10 text-amber-400 border-amber-500/30',
 };
 
@@ -40,6 +41,7 @@ const ROW_SHADOW: Record<string, string> = {
     'DAÑADO': 'bg-red-500/5',
     'EN TALLER': 'bg-orange-500/5',
     'EN ESPERA': 'bg-yellow-500/5',
+    'REPARANDO': 'bg-cyan-500/5',
     'EN TRÁNSITO': 'bg-amber-500/5',
     'DADO DE BAJA': 'bg-neutral-900/60',
 };
@@ -78,6 +80,7 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
         model: string;
         currentStatus: InventoryStatus;
         branch: string;
+        lastBranch?: string;
     } | null>(null);
 
     const [deletingId, setDeletingId] = useState<string | null>(null);
@@ -568,6 +571,7 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
                                                     model: item.scaleModel,
                                                     currentStatus: item.status,
                                                     branch: item.branch,
+                                                    lastBranch: item.lastBranch,
                                                 })}
                                                 className="flex-1 py-2 bg-blue-600/20 border border-blue-500/30 text-blue-400 rounded-lg text-xs font-bold transition-all hover:bg-blue-600 hover:text-white flex items-center justify-center gap-1"
                                             >

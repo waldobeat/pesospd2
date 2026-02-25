@@ -329,7 +329,9 @@ export const inventoryService = {
             switch (item.status) {
                 case 'OPERATIVO': stats.operativo++; break;
                 case 'DAÑADO': stats.danado++; break;
-                case 'EN TALLER': stats.enTaller++; break;
+                case 'EN TALLER':
+                case 'REPARANDO':
+                    stats.enTaller++; break;
                 case 'EN ESPERA': stats.enEspera++; break;
                 case 'ENVIADO': stats.enviado++; break;
                 case 'TRANSFERIDO': stats.transferido++; break;
