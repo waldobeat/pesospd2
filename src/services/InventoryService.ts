@@ -200,36 +200,6 @@ export const inventoryService = {
         }
     },
 
-    /**
-     * Reject/cancel a pending transfer. Returns item to previous state.
-     */
-    rejectTransfer: async (
-        id: string,
-        rejectedBy: string,
-        reason?: string
-    ): Promise<void> => {
-        try {
-            const itemSnap = await getDoc(doc(db, 'inventory', id));
-            if (!itemSnap.exists()) throw new Error('Item not found');
-            const item = itemSnap.data() as InventoryItem;
-            const sourceBranch = item.pendingTransfer?.from || item.branch;
-
-            await updateDoc(doc(db, 'inventory', id), {
-                status: 'DAÑADO' satisfies InventoryStatus, // Returns to damaged since it was sent for repair
-                branch: sourceBranch,
-                updatedAt: Timestamp.now(),
-                updatedBy: rejectedBy,
-                hasPendingTransfer: false,
-                pendingTransfer: null,
-                description: reason
-                    ? `[Transferencia rechazada: ${reason}]`
-                    : '[Transferencia rechazada]',
-            });
-        } catch (error) {
-            console.error('Error rejecting transfer:', error);
-            throw error;
-        }
-    },
 
     /** Update status (and optionally branch) of an inventory item */
     updateInventoryStatus: async (

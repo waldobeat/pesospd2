@@ -148,27 +148,11 @@ export function GlobalNotifications({ user, isMaster }: GlobalNotificationsProps
         }
     };
 
-    const handleRejectTransfer = async (item: InventoryItem) => {
-        setConfirmingTransferId(item.id);
-        try {
-            await inventoryService.rejectTransfer(item.id, user?.email ?? 'Taller', 'Rechazado por el receptor');
-
-            // Notify the sending branch user of the rejection
-            if (item.pendingTransfer?.initiatedBy) {
-                await notificationService.create({
-                    type: 'status_change',
-                    title: '❌ Envío Rechazado',
-                    message: `El taller rechazó la recepción de ${item.scaleModel} #${item.serialNumber}. El equipo regresó a estado DAÑADO en tu sucursal.`,
-                    fromUser: user?.email ?? 'taller',
-                    fromBranch: 'taller',
-                    targetUser: item.pendingTransfer.initiatedBy,
-                    relatedSerial: item.serialNumber,
-                    relatedModel: item.scaleModel,
-                    relatedInventoryId: item.id,
-                });
-            }
-        } finally {
-            setConfirmingTransferId(null);
+    const handleAcknowledgeTransfer = async (item: InventoryItem) => {
+        // Find the related notification and mark it as read
+        const relatedNotif = notifications.find(n => n.relatedInventoryId === item.id && n.type === 'transfer_request');
+        if (relatedNotif) {
+            await notificationService.markRead(relatedNotif.id);
         }
     };
 
@@ -222,56 +206,73 @@ export function GlobalNotifications({ user, isMaster }: GlobalNotificationsProps
                     <div className="max-h-[70vh] overflow-y-auto divide-y divide-gray-700/50">
 
                         {/* ── Pending Transfers ── */}
-                        {pendingTransfers.map((item) => (
-                            <div key={item.id} className="p-4 bg-amber-500/5 hover:bg-amber-500/10 transition-colors">
-                                <div className="flex items-start gap-3 mb-3">
-                                    <div className="w-8 h-8 rounded-lg bg-amber-500/20 flex items-center justify-center shrink-0">
-                                        <Truck className="w-4 h-4 text-amber-400" />
+                        {pendingTransfers.map((item) => {
+                            const relatedNotif = notifications.find(n => n.relatedInventoryId === item.id && n.type === 'transfer_request');
+                            const isAcknowledged = relatedNotif?.read || false;
+
+                            return (
+                                <div key={item.id} className={clsx(
+                                    "p-4 transition-colors",
+                                    isAcknowledged ? "bg-white/[0.02]" : "bg-amber-500/5 hover:bg-amber-500/10"
+                                )}>
+                                    <div className="flex items-start gap-3 mb-3">
+                                        <div className={clsx(
+                                            "w-8 h-8 rounded-lg flex items-center justify-center shrink-0",
+                                            isAcknowledged ? "bg-gray-700/30" : "bg-amber-500/20"
+                                        )}>
+                                            <Truck className={clsx("w-4 h-4", isAcknowledged ? "text-gray-500" : "text-amber-400")} />
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <div className="flex items-center justify-between gap-2">
+                                                <p className={clsx("font-semibold text-sm", isAcknowledged ? "text-white/40" : "text-white")}>
+                                                    Equipo en Tránsito
+                                                </p>
+                                                {!isAcknowledged && (
+                                                    <span className="px-1.5 py-0.5 rounded text-[8px] font-black uppercase tracking-wider bg-amber-500 text-black">Nuevo</span>
+                                                )}
+                                            </div>
+                                            <p className={clsx("text-xs mt-0.5", isAcknowledged ? "text-amber-300/40" : "text-amber-300")}>
+                                                {item.scaleModel} <span className="font-mono opacity-60">#{item.serialNumber}</span>
+                                            </p>
+                                            <p className="text-white/50 text-xs mt-1">
+                                                {BRANCH_LABELS[item.pendingTransfer?.from ?? ''] ?? item.pendingTransfer?.from}
+                                                {' → '}
+                                                {BRANCH_LABELS[item.pendingTransfer?.to ?? ''] ?? item.pendingTransfer?.to}
+                                            </p>
+                                            {item.pendingTransfer?.notes && (
+                                                <p className="text-white/40 text-xs italic mt-1">"{item.pendingTransfer.notes}"</p>
+                                            )}
+                                            <p className="text-white/30 text-xs flex items-center gap-1 mt-1">
+                                                <Clock className="w-3 h-3" />
+                                                {formatTime(item.pendingTransfer?.initiatedAt)}
+                                                {' · '}
+                                                {item.pendingTransfer?.initiatedBy?.split('@')[0]}
+                                            </p>
+                                        </div>
                                     </div>
-                                    <div className="flex-1 min-w-0">
-                                        <p className="text-white font-semibold text-sm">
-                                            Equipo en Tránsito
-                                        </p>
-                                        <p className="text-amber-300 text-xs mt-0.5">
-                                            {item.scaleModel} <span className="font-mono text-white/60">#{item.serialNumber}</span>
-                                        </p>
-                                        <p className="text-white/50 text-xs mt-1">
-                                            {BRANCH_LABELS[item.pendingTransfer?.from ?? ''] ?? item.pendingTransfer?.from}
-                                            {' → '}
-                                            {BRANCH_LABELS[item.pendingTransfer?.to ?? ''] ?? item.pendingTransfer?.to}
-                                        </p>
-                                        {item.pendingTransfer?.notes && (
-                                            <p className="text-white/40 text-xs italic mt-1">"{item.pendingTransfer.notes}"</p>
-                                        )}
-                                        <p className="text-white/30 text-xs flex items-center gap-1 mt-1">
-                                            <Clock className="w-3 h-3" />
-                                            {formatTime(item.pendingTransfer?.initiatedAt)}
-                                            {' · '}
-                                            {item.pendingTransfer?.initiatedBy?.split('@')[0]}
-                                        </p>
-                                    </div>
+                                    {(item.pendingTransfer?.to === (user?.email?.split('@')[0].toLowerCase())) && (
+                                        <div className="flex gap-2 mt-2">
+                                            <button
+                                                onClick={() => handleConfirmTransfer(item)}
+                                                disabled={confirmingTransferId === item.id}
+                                                className="flex-1 text-xs font-bold py-1.5 px-3 rounded-lg bg-green-600 hover:bg-green-500 text-white transition-colors disabled:opacity-50 flex items-center justify-center gap-1"
+                                            >
+                                                <CheckCircle2 className="w-3.5 h-3.5" />
+                                                {confirmingTransferId === item.id ? '...' : 'Confirmar Recepción'}
+                                            </button>
+                                            {!isAcknowledged && (
+                                                <button
+                                                    onClick={() => handleAcknowledgeTransfer(item)}
+                                                    className="text-[10px] font-bold py-1.5 px-3 rounded-lg bg-white/5 hover:bg-white/10 text-white/60 hover:text-white transition-colors border border-white/5"
+                                                >
+                                                    Marcar pendiente por recibir
+                                                </button>
+                                            )}
+                                        </div>
+                                    )}
                                 </div>
-                                {(isMaster || item.pendingTransfer?.to === (user?.email?.split('@')[0].toLowerCase())) && (
-                                    <div className="flex gap-2 mt-2">
-                                        <button
-                                            onClick={() => handleConfirmTransfer(item)}
-                                            disabled={confirmingTransferId === item.id}
-                                            className="flex-1 text-xs font-bold py-1.5 px-3 rounded-lg bg-green-600 hover:bg-green-500 text-white transition-colors disabled:opacity-50 flex items-center justify-center gap-1"
-                                        >
-                                            <CheckCircle2 className="w-3.5 h-3.5" />
-                                            {confirmingTransferId === item.id ? '...' : 'Confirmar Recepción'}
-                                        </button>
-                                        <button
-                                            onClick={() => handleRejectTransfer(item)}
-                                            disabled={confirmingTransferId === item.id}
-                                            className="text-xs font-bold py-1.5 px-3 rounded-lg bg-red-700/80 hover:bg-red-600 text-white transition-colors disabled:opacity-50"
-                                        >
-                                            Rechazar
-                                        </button>
-                                    </div>
-                                )}
-                            </div>
-                        ))}
+                            );
+                        })}
 
                         {/* ── Issue / Status Notifications ── */}
                         {notifications.map((n) => {
