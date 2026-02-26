@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, Box, AlertCircle, CheckCircle, Loader2, AlertTriangle, Truck, Hash, Tag, Scale, ChevronDown, Shield } from 'lucide-react';
+import { X, Save, Box, AlertCircle, CheckCircle, Loader2, AlertTriangle, Truck } from 'lucide-react';
 import { inventoryService, ALL_BRANCHES, BRANCH_LABELS } from '../services/InventoryService';
 import { notificationService } from '../services/NotificationService';
 import type { InventoryStatus, PendingTransfer } from '../services/InventoryService';
@@ -32,7 +32,6 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
     const [originalStatus, setOriginalStatus] = useState<InventoryStatus>('OPERATIVO');
     const [description, setDescription] = useState('');
     const [destinationBranch, setDestinationBranch] = useState('');
-    const [weightCapacity, setWeightCapacity] = useState('');
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isCheckingSerial, setIsCheckingSerial] = useState(false);
@@ -54,12 +53,16 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
             setBranch(isCentral ? '' : userPrefix);
             setWeightType('');
             setScaleModel('');
+            setSerialNumber('');
+            setStatus('OPERATIVO');
+            setDescription('');
+            setSerialError(null);
+            setFormError(null);
             setSuccess(false);
             setIsUpdateMode(false);
             setExistingId(null);
             setExistingFoundMsg(null);
             setDestinationBranch('');
-            setWeightCapacity('');
         }
     }, [isOpen, isCentral, userPrefix]);
 
@@ -77,12 +80,10 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
             const result = await inventoryService.isSerialUnique(serialNumber);
             if (!result.unique && result.existingItem) {
                 const existing = result.existingItem;
-                // Recognize existing item
                 setIsUpdateMode(true);
                 setExistingId(existing.id);
                 setWeightType(existing.weightType);
                 setScaleModel(existing.scaleModel);
-                setWeightCapacity(existing.weightCapacity || '');
                 setBranch(existing.branch);
                 setStatus(existing.status);
                 setOriginalStatus(existing.status);
@@ -90,7 +91,7 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
                 setExistingFoundMsg(
                     `✨ Equipo reconocido: Este serial ya existe. Se han cargado los datos para actualización rápida.`
                 );
-                setSerialOk(true); // It's "Ok" now because we allow updating
+                setSerialOk(true);
             } else {
                 setIsUpdateMode(false);
                 setExistingId(null);
@@ -127,7 +128,6 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
         const recordedBy = isCentral ? `central → ${branch}` : userPrefix;
         const now = Timestamp.now();
 
-        // Prepare transfer data if applicable
         const pendingTransfer: PendingTransfer | undefined = isTransfer ? {
             from: branch,
             to: destinationBranch,
@@ -142,8 +142,7 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
             if (isUpdateMode && existingId) {
                 await inventoryService.updateItem(existingId, {
                     status: isTransfer ? 'EN TRÁNSITO' : status,
-                    description: description.trim() || '',
-                    weightCapacity: weightCapacity.trim() || '',
+                    description: description.trim() || undefined,
                     updatedBy: recordedBy,
                     hasPendingTransfer: isTransfer,
                     pendingTransfer: isTransfer ? pendingTransfer : null,
@@ -153,12 +152,11 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
                 const newId = await inventoryService.addInventory({
                     weightType,
                     scaleModel,
-                    weightCapacity: weightCapacity.trim() || '',
                     serialNumber: serialNumber.trim().toUpperCase(),
                     branch,
                     status: isTransfer ? 'EN TRÁNSITO' : status,
                     recordedBy,
-                    description: description.trim() || '',
+                    description: description.trim() || undefined,
                     hasPendingTransfer: isTransfer,
                     pendingTransfer: isTransfer ? pendingTransfer : undefined,
                 } as any);
@@ -166,7 +164,6 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
                 setSuccess(true);
             }
 
-            // Trigger notification
             if (isTransfer && destinationBranch) {
                 await notificationService.create({
                     type: 'transfer_request',
@@ -192,275 +189,219 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
         }
     };
 
-    const inputCls = 'w-full bg-slate-900 border border-white/5 rounded-xl px-4 py-3 text-white placeholder:text-slate-600 focus:outline-none focus:border-cyan-500/50 focus:ring-1 focus:ring-cyan-500/20 transition-all duration-300 font-medium';
+    const inputCls = 'w-full bg-[#1e293b] border border-white/10 rounded-lg px-4 py-3 text-white focus:outline-none focus:border-blue-500 transition-colors appearance-none placeholder-white/20';
 
     return (
-        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-slate-950/40 backdrop-blur-md p-4 overflow-y-auto">
-            <div className="relative w-full max-w-md my-auto">
-                {/* Neon Glow Layer */}
-                <div className="absolute -inset-1 bg-gradient-to-br from-cyan-500/20 to-blue-500/0 rounded-[2.5rem] blur-2xl opacity-50" />
+        <div className="fixed inset-0 z-[100] flex items-center justify-center bg-black/80 backdrop-blur-sm p-4">
+            <div className="w-full max-w-md bg-[#09090b] border border-white/10 rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-200">
 
-                <div className="relative bg-slate-900/80 backdrop-blur-2xl border border-white/10 rounded-[2rem] shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col animate-in fade-in zoom-in-95 duration-500">
-
-                    {/* Header */}
-                    <div className="relative flex items-center justify-between p-7 border-b border-white/5">
-                        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent" />
-                        <div className="flex items-center gap-4">
-                            <div className="w-11 h-11 bg-slate-800 border border-white/10 rounded-2xl flex items-center justify-center shadow-inner group">
-                                <Box className="w-6 h-6 text-cyan-400 group-hover:scale-110 transition-transform" />
-                            </div>
-                            <div>
-                                <h2 className="text-xl font-black text-white tracking-tight leading-none uppercase">
-                                    {isUpdateMode ? 'ACTUALIZAR EQUIPO' : 'REGISTRAR EQUIPO'}
-                                </h2>
-                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-2 flex items-center gap-2">
-                                    <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
-                                    {isUpdateMode ? 'EDITAR PROPIEDADES HARDWARE' : 'NUEVO NODO EN SISTEMA'}
-                                </p>
-                            </div>
+                {/* Header */}
+                <div className="flex items-center justify-between p-5 border-b border-white/10 bg-white/5">
+                    <div className="flex items-center gap-3">
+                        <div className="w-9 h-9 bg-blue-500/10 rounded-xl flex items-center justify-center">
+                            <Box className="w-5 h-5 text-blue-400" />
                         </div>
-                        <button
-                            onClick={onClose}
-                            className="p-2.5 bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl text-slate-400 hover:text-white transition-all duration-300"
+                        <div>
+                            <h2 className="text-base font-bold text-white leading-tight">
+                                {isUpdateMode ? 'Actualización de Equipo' : 'Registro de Nuevo Equipo'}
+                            </h2>
+                            <p className="text-xs text-white/30">
+                                {isUpdateMode ? 'El serial ya existe, actualizando estatus' : 'Inventario físico SISDEPE'}
+                            </p>
+                        </div>
+                    </div>
+                    <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-lg text-white/50 transition-colors">
+                        <X className="w-5 h-5" />
+                    </button>
+                </div>
+
+                {/* Form */}
+                <form onSubmit={handleSubmit} className="p-5 flex flex-col gap-4 overflow-y-auto">
+
+                    {formError && (
+                        <div className="bg-red-500/10 border border-red-500/30 text-red-400 p-3 rounded-lg flex items-start gap-2 text-sm">
+                            <AlertCircle className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                            <span>{formError}</span>
+                        </div>
+                    )}
+                    {success && (
+                        <div className="bg-green-500/10 border border-green-500/30 text-green-400 p-3 rounded-lg flex items-center gap-2 text-sm">
+                            <CheckCircle className="w-4 h-4" />
+                            {isUpdateMode ? 'Estatus actualizado correctamente.' : 'Equipo registrado correctamente.'}
+                        </div>
+                    )}
+                    {existingFoundMsg && !success && (
+                        <div className="bg-blue-500/10 border border-blue-500/30 text-blue-400 p-3 rounded-lg flex items-start gap-2 text-sm animate-pulse">
+                            <Box className="w-4 h-4 flex-shrink-0 mt-0.5" />
+                            <span>{existingFoundMsg}</span>
+                        </div>
+                    )}
+
+                    {/* Tipo de Peso */}
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-bold text-white/50 uppercase tracking-wide">Tipo de Equipo *</label>
+                        <select
+                            value={weightType}
+                            onChange={(e) => { setWeightType(e.target.value); setScaleModel(''); }}
+                            className={inputCls}
+                            disabled={isSubmitting || success || isUpdateMode}
                         >
-                            <X className="w-5 h-5" />
-                        </button>
+                            <option value="">-- Seleccionar Tipo --</option>
+                            <option value="PESO">PESO</option>
+                            <option value="BALANZA">BALANZA</option>
+                        </select>
                     </div>
 
-                    {/* Form */}
-                    <form onSubmit={handleSubmit} className="p-7 flex flex-col gap-5 max-h-[75vh] overflow-y-auto custom-scrollbar">
+                    {/* Modelo */}
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-bold text-white/50 uppercase tracking-wide">Modelo *</label>
+                        <select
+                            value={scaleModel}
+                            onChange={(e) => setScaleModel(e.target.value)}
+                            className={inputCls}
+                            disabled={isSubmitting || success || !weightType || isUpdateMode}
+                        >
+                            <option value="">-- Seleccionar Modelo --</option>
+                            {(SCALE_MODELS[weightType] || []).map((m) => (
+                                <option key={m} value={m}>{m}</option>
+                            ))}
+                        </select>
+                    </div>
 
-                        {/* Alerts */}
-                        {formError && (
-                            <div className="bg-red-500/10 border border-red-500/20 text-red-400 p-4 rounded-2xl flex items-start gap-3 text-xs font-bold leading-relaxed animate-in slide-in-from-top-2">
-                                <AlertCircle className="w-5 h-5 flex-shrink-0" />
-                                <span>{formError}</span>
-                            </div>
-                        )}
-                        {success && (
-                            <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-4 rounded-2xl flex items-center gap-3 text-xs font-bold animate-in zoom-in-95">
-                                <CheckCircle className="w-5 h-5" />
-                                {isUpdateMode ? 'ESTADO ACTUALIZADO CORRECTAMENTE' : 'EQUIPO REGISTRADO EXITOSAMENTE'}
-                            </div>
-                        )}
-                        {existingFoundMsg && !success && (
-                            <div className="bg-cyan-500/10 border border-cyan-500/20 text-cyan-400 p-4 rounded-2xl flex items-start gap-3 text-xs font-bold animate-pulse">
-                                <Box className="w-5 h-5 flex-shrink-0" />
-                                <span>{existingFoundMsg}</span>
-                            </div>
-                        )}
-
-                        {/* Serial */}
-                        <div className="space-y-2">
-                            <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest pl-1">Serial_Identificador</label>
-                            <div className="relative group">
-                                <Hash className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 group-focus-within:text-blue-400 transition-colors" />
-                                <input
-                                    type="text"
-                                    value={serialNumber}
-                                    onChange={(e) => setSerialNumber(e.target.value.toUpperCase())}
-                                    className="w-full bg-slate-900/60 border border-white/5 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder:text-slate-700 outline-none focus:border-blue-500/30 focus:ring-1 focus:ring-blue-500/10 text-xs font-bold tracking-widest uppercase transition-all"
-                                    placeholder="SN_000000_OFFICIAL"
-                                    required
-                                    disabled={isSubmitting || success}
-                                />
-                                <div className="absolute right-3 top-1/2 -translate-y-1/2">
-                                    {isCheckingSerial && <Loader2 className="w-4 h-4 text-white/40 animate-spin" />}
-                                    {!isCheckingSerial && serialOk && <CheckCircle className="w-4 h-4 text-green-400" />}
-                                    {!isCheckingSerial && serialError && <AlertTriangle className="w-4 h-4 text-red-400" />}
-                                </div>
-                            </div>
-                            {serialError && (
-                                <p className="text-xs text-red-400 pl-1">{serialError}</p>
-                            )}
-                            {serialOk && !serialError && (
-                                <p className="text-xs text-green-400 pl-1">Serial disponible ✓</p>
-                            )}
-                        </div>
-
-                        {/* Modelo */}
-                        <div className="space-y-2">
-                            <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest pl-1">Modelo_Hardware</label>
-                            <div className="relative group">
-                                <Tag className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 group-focus-within:text-blue-400 transition-colors" />
-                                <input
-                                    type="text"
-                                    value={scaleModel}
-                                    onChange={(e) => setScaleModel(e.target.value)}
-                                    className="w-full bg-slate-900/60 border border-white/5 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder:text-slate-700 outline-none focus:border-blue-500/30 focus:ring-1 focus:ring-blue-500/10 text-xs font-bold tracking-widest uppercase transition-all"
-                                    placeholder="MODELO_CORE_V2"
-                                    required
-                                    disabled={isSubmitting || success || isUpdateMode}
-                                />
-                            </div>
-                        </div>
-
-                        {/* Peso Capacidad */}
-                        <div className="space-y-2">
-                            <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest pl-1">Peso_Capacidad</label>
-                            <div className="relative group">
-                                <Scale className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 group-focus-within:text-blue-400 transition-colors" />
-                                <input
-                                    type="text"
-                                    value={weightCapacity}
-                                    onChange={(e) => setWeightCapacity(e.target.value)}
-                                    className="w-full bg-slate-900/60 border border-white/5 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder:text-slate-700 outline-none focus:border-blue-500/30 focus:ring-1 focus:ring-blue-500/10 text-xs font-bold tracking-widest uppercase transition-all"
-                                    placeholder="MAX_CAP_KG"
-                                    required
-                                    disabled={isSubmitting || success || isUpdateMode}
-                                />
-                            </div>
-                        </div>
-
-                        {/* Tipo de Balanza */}
-                        <div className="space-y-2">
-                            <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest pl-1">Tipo_Balanza</label>
-                            <div className="relative group">
-                                <Box className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 group-focus-within:text-blue-400 transition-colors" />
-                                <select
-                                    value={weightType}
-                                    onChange={(e) => setWeightType(e.target.value as 'PESO' | 'BALANZA')}
-                                    className="w-full bg-slate-900/60 border border-white/5 rounded-2xl pl-12 pr-4 py-3.5 text-white outline-none focus:border-blue-500/30 focus:ring-1 focus:ring-blue-500/10 text-xs font-bold tracking-widest uppercase appearance-none cursor-pointer"
-                                    required
-                                    disabled={isSubmitting || success || isUpdateMode}
-                                >
-                                    <option value="PESO">MODULO_PESO</option>
-                                    <option value="BALANZA">DISPOSITIVO_BALANZA</option>
-                                </select>
-                                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 pointer-events-none" />
-                            </div>
-                        </div>
-
-                        {/* Sucursal */}
-                        <div className="flex flex-col gap-1.5">
-                            <label className="text-xs font-bold text-white/50 uppercase tracking-wide">Sucursal *</label>
-                            {isCentral ? (
-                                <select
-                                    value={branch}
-                                    onChange={(e) => setBranch(e.target.value)}
-                                    className={inputCls}
-                                    disabled={isSubmitting || success}
-                                >
-                                    <option value="">-- Seleccionar Sucursal --</option>
-                                    {ALL_BRANCHES.map((b) => (
-                                        <option key={b} value={b}>{BRANCH_LABELS[b] || b}</option>
-                                    ))}
-                                </select>
-                            ) : (
-                                <div className="relative group">
-                                    <input
-                                        type="text"
-                                        value={BRANCH_LABELS[branch] || branch}
-                                        readOnly
-                                        className="w-full bg-slate-900/40 border border-white/5 rounded-xl px-4 py-3 text-slate-500 cursor-not-allowed font-black text-xs tracking-widest uppercase"
-                                    />
-                                    <div className="absolute inset-0 bg-slate-950/20 rounded-xl" />
-                                </div>
-                            )}
-                            {isUpdateMode && !isCentral && (
-                                <p className="text-[10px] text-yellow-500/70 pl-1 mt-1 font-medium">
-                                    ⚠️ El equipo pertenece a la sucursal original: {(BRANCH_LABELS[branch] || branch).toUpperCase()}
-                                </p>
-                            )}
-                        </div>
-
-                        {/* Estatus Inicial */}
-                        <div className="space-y-2">
-                            <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest pl-1">Estado_Operativo</label>
-                            <div className="relative group">
-                                <Shield className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 group-focus-within:text-blue-400 transition-colors" />
-                                <select
-                                    value={status}
-                                    onChange={(e) => setStatus(e.target.value as any)}
-                                    className="w-full bg-slate-900/60 border border-white/5 rounded-2xl pl-12 pr-4 py-3.5 text-white outline-none focus:border-blue-500/30 focus:ring-1 focus:ring-blue-500/10 text-xs font-bold tracking-widest uppercase appearance-none cursor-pointer"
-                                    required
-                                    disabled={isSubmitting || success}
-                                >
-                                    <option value="OPERATIVO">OPERATIVO_ACTIVO</option>
-                                    <option value="DAÑADO">FALLA_CRÍTICA</option>
-                                    <option value="EN TALLER">MANTENIMIENTO_TALLER</option>
-                                    <option value="DE BAJA">SISTEMA_OBSOLETO</option>
-                                    <option value="REPARADO">REPARACIÓN_EXITOSA</option>
-                                    <option value="EN ESPERA">EN ESPERA</option>
-                                    <option value="ENVIADO">ENVIADO</option>
-                                    <option value="TRANSFERIDO">TRANSFERIDO</option>
-                                </select>
-                                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 pointer-events-none" />
-                            </div>
-                            <p className="text-[10px] text-white/25 pl-1">Estado físico/lógico actual del equipo al momento del registro.</p>
-                        </div>
-
-                        {/* Sucursal Destino (Conditional) */}
-                        {(status === 'ENVIADO' || status === 'TRANSFERIDO') && (
-                            <div className="flex flex-col gap-1.5 animate-in slide-in-from-top-2 duration-200">
-                                <label className="text-xs font-bold text-yellow-500 uppercase tracking-wide flex items-center gap-1.5">
-                                    <Truck className="w-3.5 h-3.5" />
-                                    Sucursal Destino *
-                                </label>
-                                <select
-                                    value={destinationBranch}
-                                    onChange={(e) => setDestinationBranch(e.target.value)}
-                                    className={`${inputCls} border-yellow-500/30 focus:border-yellow-500`}
-                                    disabled={isSubmitting || success}
-                                >
-                                    <option value="">-- Seleccionar Destino --</option>
-                                    {Object.keys(BRANCH_LABELS)
-                                        .filter(b => b !== branch) // Don't send to self
-                                        .map((b) => (
-                                            <option key={b} value={b}>{BRANCH_LABELS[b] || b}</option>
-                                        ))}
-                                </select>
-                                <p className="text-[10px] text-yellow-500/50 pl-1">
-                                    El equipo pasará a estado <strong>EN TRÁNSITO</strong> y se notificará a la sucursal de destino.
-                                </p>
-                            </div>
-                        )}
-
-                        {/* Descripción */}
-                        <div className="flex flex-col gap-1.5">
-                            <label className="text-xs font-bold text-white/50 uppercase tracking-wide">
-                                Observaciones <span className="normal-case font-normal text-white/20">(Opcional)</span>
-                            </label>
-                            <textarea
-                                value={description}
-                                onChange={(e) => setDescription(e.target.value)}
-                                className={`${inputCls} resize-none`}
-                                placeholder="Detalles adicionales del equipo..."
-                                rows={2}
+                    {/* Serial */}
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-bold text-white/50 uppercase tracking-wide">Número de Serial *</label>
+                        <div className="relative">
+                            <input
+                                type="text"
+                                value={serialNumber}
+                                onChange={(e) => setSerialNumber(e.target.value)}
+                                className={`${inputCls} pr-10 font-mono ${serialError ? 'border-red-500/60' : serialOk ? 'border-green-500/60' : ''}`}
+                                placeholder="SN-XXXX"
                                 disabled={isSubmitting || success}
                             />
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                                {isCheckingSerial && <Loader2 className="w-4 h-4 text-white/40 animate-spin" />}
+                                {!isCheckingSerial && serialOk && <CheckCircle className="w-4 h-4 text-green-400" />}
+                                {!isCheckingSerial && serialError && <AlertTriangle className="w-4 h-4 text-red-400" />}
+                            </div>
                         </div>
+                        {serialError && <p className="text-xs text-red-400 pl-1">{serialError}</p>}
+                        {serialOk && !serialError && <p className="text-xs text-green-400 pl-1">Serial disponible ✓</p>}
+                    </div>
 
-                        {/* Actions */}
-                        <div className="flex gap-4 pt-4 border-t border-white/5">
-                            <button
-                                type="button"
-                                onClick={onClose}
+                    {/* Sucursal */}
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-bold text-white/50 uppercase tracking-wide">Sucursal *</label>
+                        {isCentral ? (
+                            <select
+                                value={branch}
+                                onChange={(e) => setBranch(e.target.value)}
+                                className={inputCls}
                                 disabled={isSubmitting || success}
-                                className="flex-1 h-14 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-2xl font-black text-xs tracking-[0.2em] transition-all duration-300 border border-white/5"
                             >
-                                CANCELAR
-                            </button>
-                            <button
-                                type="submit"
-                                disabled={isSubmitting || success || !!serialError || isCheckingSerial}
-                                className="flex-1 h-14 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-30 text-slate-950 rounded-2xl font-black text-xs tracking-[0.2em] transition-all duration-300 shadow-[0_0_20px_rgba(8,145,178,0.25)] flex items-center justify-center gap-3 active:scale-95"
+                                <option value="">-- Seleccionar Sucursal --</option>
+                                {ALL_BRANCHES.map((b) => (
+                                    <option key={b} value={b}>{BRANCH_LABELS[b] || b}</option>
+                                ))}
+                            </select>
+                        ) : (
+                            <input
+                                type="text"
+                                value={BRANCH_LABELS[branch] || branch}
+                                readOnly
+                                className="w-full bg-[#1e293b]/50 border border-white/5 rounded-lg px-4 py-3 text-white/40 cursor-not-allowed font-medium"
+                            />
+                        )}
+                    </div>
+
+                    {/* Estatus Inicial */}
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-bold text-white/50 uppercase tracking-wide">
+                            {isUpdateMode ? 'Nuevo Estatus *' : 'Estatus Inicial *'}
+                        </label>
+                        <select
+                            value={status}
+                            onChange={(e) => setStatus(e.target.value as InventoryStatus)}
+                            className={inputCls}
+                            disabled={isSubmitting || success}
+                        >
+                            <option value="OPERATIVO">OPERATIVO</option>
+                            <option value="DAÑADO">DAÑADO</option>
+                            <option value="EN TALLER">EN TALLER</option>
+                            <option value="REPARANDO">REPARANDO</option>
+                            <option value="REPARADO">REPARADO</option>
+                            <option value="EN ESPERA">EN ESPERA</option>
+                            <option value="ENVIADO">ENVIADO</option>
+                            <option value="TRANSFERIDO">TRANSFERIDO</option>
+                        </select>
+                        <p className="text-[10px] text-white/25 pl-1">Estado físico/lógico actual del equipo al momento del registro.</p>
+                    </div>
+
+                    {/* Sucursal Destino (Conditional) */}
+                    {(status === 'ENVIADO' || status === 'TRANSFERIDO') && (
+                        <div className="flex flex-col gap-1.5 animate-in slide-in-from-top-2 duration-200">
+                            <label className="text-xs font-bold text-yellow-500 uppercase tracking-wide flex items-center gap-1.5">
+                                <Truck className="w-3.5 h-3.5" />
+                                Sucursal Destino *
+                            </label>
+                            <select
+                                value={destinationBranch}
+                                onChange={(e) => setDestinationBranch(e.target.value)}
+                                className={`${inputCls} border-yellow-500/30 focus:border-yellow-500`}
+                                disabled={isSubmitting || success}
                             >
-                                {isSubmitting ? (
-                                    <>
-                                        <div className="w-3 h-3 border-2 border-white/20 border-t-white rounded-full animate-spin" />
-                                        PROCESANDO...
-                                    </>
-                                ) : (
-                                    <>
-                                        <Save className="w-5 h-5" />
-                                        CONFIRMAR_CAMBIOS
-                                    </>
-                                )}
-                            </button>
+                                <option value="">-- Seleccionar Destino --</option>
+                                {Object.keys(BRANCH_LABELS)
+                                    .filter(b => b !== branch)
+                                    .map((b) => (
+                                        <option key={b} value={b}>{BRANCH_LABELS[b] || b}</option>
+                                    ))}
+                            </select>
                         </div>
-                    </form>
-                </div>
+                    )}
+
+                    {/* Descripción */}
+                    <div className="flex flex-col gap-1.5">
+                        <label className="text-xs font-bold text-white/50 uppercase tracking-wide">
+                            Observaciones <span className="normal-case font-normal text-white/20">(Opcional)</span>
+                        </label>
+                        <textarea
+                            value={description}
+                            onChange={(e) => setDescription(e.target.value)}
+                            className={`${inputCls} resize-none`}
+                            placeholder="Detalles adicionales del equipo..."
+                            rows={2}
+                            disabled={isSubmitting || success}
+                        />
+                    </div>
+
+                    {/* Actions */}
+                    <div className="flex gap-3 pt-1">
+                        <button
+                            type="button"
+                            onClick={onClose}
+                            disabled={isSubmitting || success}
+                            className="flex-1 px-4 py-3 bg-white/5 hover:bg-white/10 text-white rounded-xl font-bold transition-colors border border-white/10"
+                        >
+                            CANCELAR
+                        </button>
+                        <button
+                            type="submit"
+                            disabled={isSubmitting || success || !!serialError || isCheckingSerial}
+                            className="flex-1 px-4 py-3 bg-blue-600 hover:bg-blue-500 disabled:opacity-50 disabled:cursor-not-allowed text-white rounded-xl font-bold transition-colors flex items-center justify-center gap-2"
+                        >
+                            {isSubmitting ? (
+                                <Loader2 className="w-5 h-5 animate-spin" />
+                            ) : (
+                                <>
+                                    <Save className="w-5 h-5" />
+                                    {isUpdateMode ? 'ACTUALIZAR ESTATUS' : 'GUARDAR'}
+                                </>
+                            )}
+                        </button>
+                    </div>
+                </form>
             </div>
         </div>
     );
