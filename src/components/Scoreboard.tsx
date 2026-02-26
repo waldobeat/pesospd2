@@ -22,7 +22,7 @@ export const Scoreboard: React.FC<ScoreboardProps> = ({
     error
 }) => {
     return (
-        <div className="relative w-full max-w-3xl mx-auto p-1px rounded-[2rem] bg-gradient-to-b from-slate-700/50 to-slate-900/50 shadow-2xl overflow-hidden group">
+        <div className="relative w-full max-w-3xl mx-auto p-1px rounded-[2rem] bg-gradient-to-b from-slate-700/50 to-slate-900/50 shadow-2xl overflow-hidden group" translate="no">
             {/* Animated Border Glow */}
             <div className={clsx(
                 "absolute -inset-[2px] opacity-20 blur-xl transition-all duration-1000 group-hover:opacity-40",

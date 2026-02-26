@@ -96,7 +96,7 @@ function App() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-cyan-500/30">
+    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-cyan-500/30" translate="no">
 
       {/* Dynamic Background */}
       <div className="fixed inset-0 overflow-hidden pointer-events-none -z-10">
