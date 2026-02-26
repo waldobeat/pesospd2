@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, Box, AlertCircle, CheckCircle, Loader2, AlertTriangle, Truck, Hash, Tag } from 'lucide-react';
+import { X, Save, Box, AlertCircle, CheckCircle, Loader2, AlertTriangle, Truck, Hash, Tag, Scale, ChevronDown, Shield } from 'lucide-react';
 import { inventoryService, ALL_BRANCHES, BRANCH_LABELS } from '../services/InventoryService';
 import { notificationService } from '../services/NotificationService';
 import type { InventoryStatus, PendingTransfer } from '../services/InventoryService';
@@ -32,6 +32,7 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
     const [originalStatus, setOriginalStatus] = useState<InventoryStatus>('OPERATIVO');
     const [description, setDescription] = useState('');
     const [destinationBranch, setDestinationBranch] = useState('');
+    const [weightCapacity, setWeightCapacity] = useState('');
 
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [isCheckingSerial, setIsCheckingSerial] = useState(false);
@@ -53,16 +54,12 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
             setBranch(isCentral ? '' : userPrefix);
             setWeightType('');
             setScaleModel('');
-            setSerialNumber('');
-            setStatus('OPERATIVO');
-            setDescription('');
-            setSerialError(null);
-            setFormError(null);
             setSuccess(false);
             setIsUpdateMode(false);
             setExistingId(null);
             setExistingFoundMsg(null);
             setDestinationBranch('');
+            setWeightCapacity('');
         }
     }, [isOpen, isCentral, userPrefix]);
 
@@ -85,6 +82,7 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
                 setExistingId(existing.id);
                 setWeightType(existing.weightType);
                 setScaleModel(existing.scaleModel);
+                setWeightCapacity(existing.weightCapacity || '');
                 setBranch(existing.branch);
                 setStatus(existing.status);
                 setOriginalStatus(existing.status);
@@ -145,6 +143,7 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
                 await inventoryService.updateItem(existingId, {
                     status: isTransfer ? 'EN TRÁNSITO' : status,
                     description: description.trim() || '',
+                    weightCapacity: weightCapacity.trim() || '',
                     updatedBy: recordedBy,
                     hasPendingTransfer: isTransfer,
                     pendingTransfer: isTransfer ? pendingTransfer : null,
@@ -154,6 +153,7 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
                 const newId = await inventoryService.addInventory({
                     weightType,
                     scaleModel,
+                    weightCapacity: weightCapacity.trim() || '',
                     serialNumber: serialNumber.trim().toUpperCase(),
                     branch,
                     status: isTransfer ? 'EN TRÁNSITO' : status,
