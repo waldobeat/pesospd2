@@ -36,7 +36,7 @@ export const Scoreboard: React.FC<ScoreboardProps> = ({
                     <div className="space-y-1">
                         <div className="flex items-center gap-2 text-cyan-500/80">
                             <Scale className="w-4 h-4" />
-                            <span className="text-[10px] font-black tracking-[0.2em] uppercase opacity-70">Industrial Core</span>
+                            <span className="text-[10px] font-black tracking-[0.2em] uppercase opacity-70">Núcleo Industrial</span>
                         </div>
                         <h2 className="text-xl font-extrabold tracking-tight text-white/90">SISDEPE <span className="text-white/30 font-light">v2.0</span></h2>
                     </div>
@@ -48,7 +48,7 @@ export const Scoreboard: React.FC<ScoreboardProps> = ({
                             : "bg-red-500/5 border-red-500/20 text-red-400"
                     )}>
                         <Activity className={clsx("w-4 h-4", isConnected && "animate-pulse")} />
-                        <span className="text-xs font-black tracking-widest">{isConnected ? "ONLINE" : "OFFLINE"}</span>
+                        <span className="text-xs font-black tracking-widest">{isConnected ? "EN LÍNEA" : "DESCONECTADO"}</span>
                     </div>
                 </div>
 
@@ -73,12 +73,12 @@ export const Scoreboard: React.FC<ScoreboardProps> = ({
                                     ? "text-cyan-400 text-7xl md:text-9xl lg:text-[10rem] drop-shadow-[0_0_25px_rgba(6,182,212,0.4)]"
                                     : "text-white/90 text-7xl md:text-9xl lg:text-[10rem]"
                         )}>
-                            {error ? "SYSTEM_ERR" : weight.toFixed(2)}
+                            {error ? "ERROR_SISTEMA" : weight.toFixed(2)}
                         </div>
 
                         {!error && (
                             <div className="absolute bottom-6 right-10 flex flex-col items-end">
-                                <span className="text-[10px] font-black text-white/20 tracking-[0.3em] mb-1 uppercase italic">Metric Unit</span>
+                                <span className="text-[10px] font-black text-white/20 tracking-[0.3em] mb-1 uppercase italic">Unidad de Medida</span>
                                 <span className="text-2xl md:text-3xl font-black text-cyan-500/40">{unit.toUpperCase()}</span>
                             </div>
                         )}
@@ -94,9 +94,9 @@ export const Scoreboard: React.FC<ScoreboardProps> = ({
 
                 {/* Industrial Indicator Bars */}
                 <div className="grid grid-cols-3 gap-4">
-                    <StatusPill label="STABLE" active={isStable} activeColor="bg-cyan-400" />
-                    <StatusPill label="ZERO" active={isZero} activeColor="bg-blue-400" />
-                    <StatusPill label="NET" active={isNet} activeColor="bg-orange-400" />
+                    <StatusPill label="ESTABLE" active={isStable} activeColor="bg-cyan-400" />
+                    <StatusPill label="CERO" active={isZero} activeColor="bg-blue-400" />
+                    <StatusPill label="NETO" active={isNet} activeColor="bg-orange-400" />
                 </div>
 
                 {/* Reactive Error Bar */}

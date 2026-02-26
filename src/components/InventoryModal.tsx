@@ -210,12 +210,12 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
                                 <Box className="w-6 h-6 text-cyan-400 group-hover:scale-110 transition-transform" />
                             </div>
                             <div>
-                                <h2 className="text-lg font-black text-white tracking-tight leading-none uppercase">
-                                    {isUpdateMode ? 'Update_Asset' : 'New_Registration'}
+                                <h2 className="text-xl font-black text-white tracking-tight leading-none uppercase">
+                                    {isUpdateMode ? 'Actualización_Activo' : 'Nuevo_Registro'}
                                 </h2>
-                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1.5 flex items-center gap-1.5">
-                                    <span className="w-1 h-1 bg-cyan-500 rounded-full animate-pulse" />
-                                    {isUpdateMode ? 'Hardware System Update' : 'SISDEPE Weigher DB v2.0'}
+                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-2 flex items-center gap-2">
+                                    <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
+                                    {isUpdateMode ? 'EDITAR_PROPIEDADES_HARDWARE' : 'NUEVO_NODO_EN_SISTEMA'}
                                 </p>
                             </div>
                         </div>
@@ -250,47 +250,18 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
                             </div>
                         )}
 
-                        {/* Tipo de Peso */}
-                        <div className="flex flex-col gap-1.5">
-                            <label className="text-xs font-bold text-white/50 uppercase tracking-wide">Tipo de Equipo *</label>
-                            <select
-                                value={weightType}
-                                onChange={(e) => { setWeightType(e.target.value); setScaleModel(''); }}
-                                className={inputCls}
-                                disabled={isSubmitting || success || isUpdateMode}
-                            >
-                                <option value="">-- Seleccionar Tipo --</option>
-                                <option value="PESO">PESO</option>
-                                <option value="BALANZA">BALANZA</option>
-                            </select>
-                        </div>
-
-                        {/* Modelo */}
-                        <div className="flex flex-col gap-1.5">
-                            <label className="text-xs font-bold text-white/50 uppercase tracking-wide">Modelo *</label>
-                            <select
-                                value={scaleModel}
-                                onChange={(e) => setScaleModel(e.target.value)}
-                                className={inputCls}
-                                disabled={isSubmitting || success || !weightType || isUpdateMode}
-                            >
-                                <option value="">-- Seleccionar Modelo --</option>
-                                {(SCALE_MODELS[weightType] || []).map((m) => (
-                                    <option key={m} value={m}>{m}</option>
-                                ))}
-                            </select>
-                        </div>
-
                         {/* Serial */}
-                        <div className="flex flex-col gap-1.5">
-                            <label className="text-xs font-bold text-white/50 uppercase tracking-wide">Número de Serial *</label>
-                            <div className="relative">
+                        <div className="space-y-2">
+                            <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest pl-1">Serial_Identificador</label>
+                            <div className="relative group">
+                                <Hash className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 group-focus-within:text-blue-400 transition-colors" />
                                 <input
                                     type="text"
                                     value={serialNumber}
-                                    onChange={(e) => setSerialNumber(e.target.value)}
-                                    className={`${inputCls} pr-10 font-mono ${serialError ? 'border-red-500/60' : serialOk ? 'border-green-500/60' : ''}`}
-                                    placeholder="SN-XXXX"
+                                    onChange={(e) => setSerialNumber(e.target.value.toUpperCase())}
+                                    className="w-full bg-slate-900/60 border border-white/5 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder:text-slate-700 outline-none focus:border-blue-500/30 focus:ring-1 focus:ring-blue-500/10 text-xs font-bold tracking-widest uppercase transition-all"
+                                    placeholder="SN_000000_OFFICIAL"
+                                    required
                                     disabled={isSubmitting || success}
                                 />
                                 <div className="absolute right-3 top-1/2 -translate-y-1/2">
@@ -305,6 +276,59 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
                             {serialOk && !serialError && (
                                 <p className="text-xs text-green-400 pl-1">Serial disponible ✓</p>
                             )}
+                        </div>
+
+                        {/* Modelo */}
+                        <div className="space-y-2">
+                            <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest pl-1">Modelo_Hardware</label>
+                            <div className="relative group">
+                                <Tag className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 group-focus-within:text-blue-400 transition-colors" />
+                                <input
+                                    type="text"
+                                    value={scaleModel}
+                                    onChange={(e) => setScaleModel(e.target.value)}
+                                    className="w-full bg-slate-900/60 border border-white/5 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder:text-slate-700 outline-none focus:border-blue-500/30 focus:ring-1 focus:ring-blue-500/10 text-xs font-bold tracking-widest uppercase transition-all"
+                                    placeholder="MODELO_CORE_V2"
+                                    required
+                                    disabled={isSubmitting || success || isUpdateMode}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Peso Capacidad */}
+                        <div className="space-y-2">
+                            <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest pl-1">Peso_Capacidad</label>
+                            <div className="relative group">
+                                <Scale className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 group-focus-within:text-blue-400 transition-colors" />
+                                <input
+                                    type="text"
+                                    value={weightCapacity}
+                                    onChange={(e) => setWeightCapacity(e.target.value)}
+                                    className="w-full bg-slate-900/60 border border-white/5 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder:text-slate-700 outline-none focus:border-blue-500/30 focus:ring-1 focus:ring-blue-500/10 text-xs font-bold tracking-widest uppercase transition-all"
+                                    placeholder="MAX_CAP_KG"
+                                    required
+                                    disabled={isSubmitting || success || isUpdateMode}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Tipo de Balanza */}
+                        <div className="space-y-2">
+                            <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest pl-1">Tipo_Balanza</label>
+                            <div className="relative group">
+                                <Box className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 group-focus-within:text-blue-400 transition-colors" />
+                                <select
+                                    value={weightType}
+                                    onChange={(e) => setWeightType(e.target.value as 'PESO' | 'BALANZA')}
+                                    className="w-full bg-slate-900/60 border border-white/5 rounded-2xl pl-12 pr-4 py-3.5 text-white outline-none focus:border-blue-500/30 focus:ring-1 focus:ring-blue-500/10 text-xs font-bold tracking-widest uppercase appearance-none cursor-pointer"
+                                    required
+                                    disabled={isSubmitting || success || isUpdateMode}
+                                >
+                                    <option value="PESO">MODULO_PESO</option>
+                                    <option value="BALANZA">DISPOSITIVO_BALANZA</option>
+                                </select>
+                                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 pointer-events-none" />
+                            </div>
                         </div>
 
                         {/* Sucursal */}
@@ -341,25 +365,28 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
                         </div>
 
                         {/* Estatus Inicial */}
-                        <div className="flex flex-col gap-1.5">
-                            <label className="text-xs font-bold text-white/50 uppercase tracking-wide">
-                                {isUpdateMode ? 'Nuevo Estatus *' : 'Estatus Inicial *'}
-                            </label>
-                            <select
-                                value={status}
-                                onChange={(e) => setStatus(e.target.value as InventoryStatus)}
-                                className={inputCls}
-                                disabled={isSubmitting || success}
-                            >
-                                <option value="OPERATIVO">OPERATIVO</option>
-                                <option value="DAÑADO">DAÑADO</option>
-                                <option value="EN TALLER">EN TALLER</option>
-                                <option value="REPARANDO">REPARANDO</option>
-                                <option value="REPARADO">REPARADO</option>
-                                <option value="EN ESPERA">EN ESPERA</option>
-                                <option value="ENVIADO">ENVIADO</option>
-                                <option value="TRANSFERIDO">TRANSFERIDO</option>
-                            </select>
+                        <div className="space-y-2">
+                            <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest pl-1">Estado_Operativo</label>
+                            <div className="relative group">
+                                <Shield className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 group-focus-within:text-blue-400 transition-colors" />
+                                <select
+                                    value={status}
+                                    onChange={(e) => setStatus(e.target.value as any)}
+                                    className="w-full bg-slate-900/60 border border-white/5 rounded-2xl pl-12 pr-4 py-3.5 text-white outline-none focus:border-blue-500/30 focus:ring-1 focus:ring-blue-500/10 text-xs font-bold tracking-widest uppercase appearance-none cursor-pointer"
+                                    required
+                                    disabled={isSubmitting || success}
+                                >
+                                    <option value="OPERATIVO">OPERATIVO_ACTIVO</option>
+                                    <option value="DAÑADO">FALLA_CRÍTICA</option>
+                                    <option value="EN TALLER">MANTENIMIENTO_TALLER</option>
+                                    <option value="DE BAJA">SISTEMA_OBSOLETO</option>
+                                    <option value="REPARADO">REPARACIÓN_EXITOSA</option>
+                                    <option value="EN ESPERA">EN ESPERA</option>
+                                    <option value="ENVIADO">ENVIADO</option>
+                                    <option value="TRANSFERIDO">TRANSFERIDO</option>
+                                </select>
+                                <ChevronDown className="absolute right-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 pointer-events-none" />
+                            </div>
                             <p className="text-[10px] text-white/25 pl-1">Estado físico/lógico actual del equipo al momento del registro.</p>
                         </div>
 
@@ -412,7 +439,7 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
                                 disabled={isSubmitting || success}
                                 className="flex-1 h-14 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white rounded-2xl font-black text-xs tracking-[0.2em] transition-all duration-300 border border-white/5"
                             >
-                                CANCEL
+                                CANCELAR
                             </button>
                             <button
                                 type="submit"
@@ -420,11 +447,14 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
                                 className="flex-1 h-14 bg-cyan-600 hover:bg-cyan-500 disabled:opacity-30 text-slate-950 rounded-2xl font-black text-xs tracking-[0.2em] transition-all duration-300 shadow-[0_0_20px_rgba(8,145,178,0.25)] flex items-center justify-center gap-3 active:scale-95"
                             >
                                 {isSubmitting ? (
-                                    <Loader2 className="w-5 h-5 animate-spin" />
+                                    <>
+                                        <div className="w-3 h-3 border-2 border-white/20 border-t-white rounded-full animate-spin" />
+                                        PROCESANDO...
+                                    </>
                                 ) : (
                                     <>
                                         <Save className="w-5 h-5" />
-                                        {isUpdateMode ? 'COMMIT_UPDATE' : 'SUBMIT_DATA'}
+                                        CONFIRMAR_CAMBIOS
                                     </>
                                 )}
                             </button>

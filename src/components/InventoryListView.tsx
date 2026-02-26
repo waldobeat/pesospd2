@@ -224,13 +224,13 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
                                 </div>
                                 <div>
                                     <h2 className="text-xl font-black text-white tracking-tight leading-none uppercase">
-                                        Hardware_Inventory
+                                        Inventario_Hardware
                                     </h2>
                                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-2 flex items-center gap-2">
                                         <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
                                         {isMaster
-                                            ? 'SYSTEM_MASTER_VIEW // ALL_ACCESS'
-                                            : `LOCAL_NODE // ${(BRANCH_LABELS[userPrefix] || userPrefix).toUpperCase()}`}
+                                            ? 'VISTA_MAESTRA // ACCESO_TOTAL'
+                                            : `NODO_LOCAL // ${(BRANCH_LABELS[userPrefix] || userPrefix).toUpperCase()}`}
                                     </p>
                                 </div>
                             </div>
@@ -240,7 +240,7 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
                                     className="h-11 px-5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 rounded-2xl font-black text-[10px] tracking-[0.2em] transition-all flex items-center gap-3 active:scale-95"
                                 >
                                     <Download className="w-4 h-4" />
-                                    EXPORT_DATA
+                                    EXPORTAR_DATOS
                                 </button>
                                 <button
                                     onClick={onClose}
@@ -300,7 +300,7 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
                                     </div>
                                     <input
                                         type="text"
-                                        placeholder="SEARCH_REGISTRY // SERIAL_NUMBER // MODEL_ID..."
+                                        placeholder="BUSCAR_REGISTRO // SERIAL // MODELO..."
                                         value={filters.searchTerm || ''}
                                         onChange={(e) => handleFilterChange('searchTerm', e.target.value)}
                                         className="w-full h-11 bg-slate-950/50 border border-white/5 rounded-xl pl-12 pr-10 text-[11px] font-bold text-white uppercase tracking-wider outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 placeholder-slate-600 transition-all"
@@ -325,7 +325,7 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
                                     )}
                                 >
                                     <Filter className="w-3.5 h-3.5" />
-                                    ADVANCED_FILTERS
+                                    FILTROS_AVANZADOS
                                     {activeFilterCount > 0 && (
                                         <span className="w-4 h-4 rounded-md bg-blue-500 text-white text-[8px] flex items-center justify-center font-black">
                                             {activeFilterCount}
@@ -338,13 +338,13 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
                                 <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-5 bg-slate-950/40 border border-white/5 rounded-[1.5rem] animate-in slide-in-from-top-4 duration-500">
                                     {isMaster && (
                                         <div className="space-y-2">
-                                            <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest pl-1">Target_Branch</label>
+                                            <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest pl-1">Sucursal_Destino</label>
                                             <select
                                                 value={filters.branch || ''}
                                                 onChange={(e) => handleFilterChange('branch', e.target.value)}
                                                 className="w-full h-10 bg-slate-900 border border-white/5 rounded-xl px-4 text-[10px] font-bold text-slate-300 outline-none focus:border-blue-500/30"
                                             >
-                                                <option value="">ALL_STATIONS</option>
+                                                <option value="">TODAS_LAS_STACIONES</option>
                                                 {ALL_BRANCHES.map((b) => (
                                                     <option key={b} value={b}>{BRANCH_LABELS[b] || b}</option>
                                                 ))}
@@ -352,28 +352,28 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
                                         </div>
                                     )}
                                     <div className="space-y-2">
-                                        <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest pl-1">System_Status</label>
+                                        <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest pl-1">Estado_Sistema</label>
                                         <select
                                             value={filters.status || ''}
                                             onChange={(e) => handleFilterChange('status', e.target.value)}
                                             className="w-full h-10 bg-slate-900 border border-white/5 rounded-xl px-4 text-[10px] font-bold text-slate-300 outline-none focus:border-blue-500/30"
                                         >
-                                            <option value="">ALL_MODES</option>
+                                            <option value="">TODOS_LOS_MODOS</option>
                                             {Object.keys(STATUS_STYLES).map(s => (
                                                 <option key={s} value={s}>{s}</option>
                                             ))}
                                         </select>
                                     </div>
                                     <div className="space-y-2">
-                                        <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest pl-1">Module_Type</label>
+                                        <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest pl-1">Tipo_Modulo</label>
                                         <select
                                             value={filters.weightType || ''}
                                             onChange={(e) => handleFilterChange('weightType', e.target.value)}
                                             className="w-full h-10 bg-slate-900 border border-white/5 rounded-xl px-4 text-[10px] font-bold text-slate-300 outline-none focus:border-blue-500/30"
                                         >
-                                            <option value="">ALL_TYPES</option>
-                                            <option value="PESO">WEIGHT_MODULE</option>
-                                            <option value="BALANZA">SCALE_DEVICE</option>
+                                            <option value="">TODOS_LOS_TIPOS</option>
+                                            <option value="PESO">MODULO_PESO</option>
+                                            <option value="BALANZA">DISPOSITIVO_BALANZA</option>
                                         </select>
                                     </div>
                                     <div className="flex items-end">
@@ -381,7 +381,7 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
                                             onClick={() => setFilters({ searchTerm: filters.searchTerm, branch: '', status: '', weightType: '' })}
                                             className="h-10 w-full bg-red-500/5 hover:bg-red-500/10 text-red-400/50 hover:text-red-400 border border-red-500/10 rounded-xl text-[9px] font-black tracking-widest transition-all"
                                         >
-                                            RESET_FILTERS
+                                            LIMPIAR_FILTROS
                                         </button>
                                     </div>
                                 </div>
@@ -393,7 +393,7 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
                             {loading && (
                                 <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-md z-30 flex flex-col items-center justify-center gap-4">
                                     <div className="w-12 h-12 border-2 border-blue-500/20 border-t-blue-500 rounded-full animate-spin" />
-                                    <span className="text-[10px] font-black text-blue-400 uppercase tracking-[0.3em] animate-pulse">Syncing_Database</span>
+                                    <span className="text-[10px] font-black text-blue-400 uppercase tracking-[0.3em] animate-pulse">Sincronizando_Base_Datos</span>
                                 </div>
                             )}
 
@@ -402,13 +402,13 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
                                 <thead className="sticky top-0 z-20">
                                     <tr className="bg-slate-900/90 backdrop-blur-xl">
                                         {[
-                                            { label: 'Status_Node', field: 'status' as SortField, w: '180px' },
-                                            { label: 'Hardware_Model', field: 'scaleModel' as SortField },
-                                            { label: 'System_Serial', field: 'serialNumber' as SortField },
-                                            { label: 'Deployment_Zone', field: 'branch' as SortField },
-                                            { label: 'Registry_Date', field: 'timestamp' as SortField },
-                                            { label: 'Last_Update', field: 'updatedAt' as SortField },
-                                            { label: 'Action_Control', field: null, w: '180px' },
+                                            { label: 'Nodo_Estatus', field: 'status' as SortField, w: '180px' },
+                                            { label: 'Modelo_Hardware', field: 'scaleModel' as SortField },
+                                            { label: 'Serial_Sistema', field: 'serialNumber' as SortField },
+                                            { label: 'Zona_Despliegue', field: 'branch' as SortField },
+                                            { label: 'Fecha_Registro', field: 'timestamp' as SortField },
+                                            { label: 'Ultima_Actualización', field: 'updatedAt' as SortField },
+                                            { label: 'Control_Acción', field: null, w: '180px' },
                                         ].map(({ label, field, w }) => (
                                             <th
                                                 key={label}
@@ -483,7 +483,7 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
                                                         className="h-9 px-4 bg-blue-500/10 hover:bg-blue-500 text-blue-400 hover:text-white border border-blue-500/20 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all inline-flex items-center gap-2"
                                                     >
                                                         <Pencil className="w-3.5 h-3.5" />
-                                                        EDIT
+                                                        EDITAR
                                                     </button>
                                                     {isMaster && (
                                                         <button
@@ -532,7 +532,7 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
                                                 })}
                                                 className="h-8 px-4 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-lg text-[8px] font-black uppercase tracking-widest"
                                             >
-                                                EDIT
+                                                EDITAR
                                             </button>
                                         </div>
                                     </div>
@@ -544,7 +544,7 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
                         {totalPages > 1 && (
                             <div className="px-8 py-4 border-t border-white/5 bg-slate-950/40 flex items-center justify-between shrink-0">
                                 <div className="text-[9px] font-black text-slate-600 uppercase tracking-widest">
-                                    Page {page.toString().padStart(2, '0')} // Total {totalPages.toString().padStart(2, '0')} // Result_Count {filteredItems.length}
+                                    Página {page.toString().padStart(2, '0')} // Total {totalPages.toString().padStart(2, '0')} // Resultados {filteredItems.length}
                                 </div>
                                 <div className="flex gap-2">
                                     {[1, page - 1, page + 1, totalPages].map((p, i) => {

@@ -22,10 +22,10 @@ interface HistoryViewProps {
 
 // ── Type metadata ─────────────────────────────────────────────────────────────
 const TYPE_META = {
-    calibration: { icon: CheckCircle, color: 'text-cyan-400', bg: 'bg-cyan-500/10', label: 'Calibration', border: 'border-cyan-500/20' },
-    repair: { icon: Wrench, color: 'text-blue-400', bg: 'bg-blue-500/10', label: 'Maintenance', border: 'border-blue-500/20' },
-    issue: { icon: AlertTriangle, color: 'text-red-400', bg: 'bg-red-500/10', label: 'System_Fail', border: 'border-red-500/20' },
-    inventory_op: { icon: RefreshCw, color: 'text-emerald-400', bg: 'bg-emerald-500/10', label: 'Logic_Flow', border: 'border-emerald-500/20' },
+    calibration: { icon: CheckCircle, color: 'text-cyan-400', bg: 'bg-cyan-500/10', label: 'CALIBRACIÓN', border: 'border-cyan-500/20' },
+    repair: { icon: Wrench, color: 'text-blue-400', bg: 'bg-blue-500/10', label: 'MANTENIMIENTO', border: 'border-blue-500/20' },
+    issue: { icon: AlertTriangle, color: 'text-red-400', bg: 'bg-red-500/10', label: 'REPORTE_FALLA', border: 'border-red-500/20' },
+    inventory_op: { icon: RefreshCw, color: 'text-emerald-400', bg: 'bg-emerald-500/10', label: 'OPERACIÓN_LÓGICA', border: 'border-emerald-500/20' },
 };
 
 // ── Detail panel ──────────────────────────────────────────────────────────────
@@ -237,11 +237,11 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                             </div>
                             <div>
                                 <h2 className="text-xl font-black text-white tracking-tight leading-none uppercase">
-                                    Operation_Archives
+                                    Archivos_Operación
                                 </h2>
                                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-2 flex items-center gap-2">
                                     <span className="w-1.5 h-1.5 bg-cyan-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(6,182,212,0.8)]" />
-                                    SISDEPE_CORE_LOGS // {filteredRecords.length} ENTRIES
+                                    SISTEMA_HISTORIAL // LOG_AUDITORÍA
                                 </p>
                             </div>
                         </div>
@@ -251,7 +251,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                 className="h-11 px-5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-white/5 rounded-2xl font-black text-[10px] tracking-[0.2em] transition-all flex items-center gap-3 active:scale-95"
                             >
                                 <FileDown className="w-4 h-4 text-cyan-400" />
-                                EXPORT_PDF
+                                EXPORTAR_PDF
                             </button>
                             <button
                                 onClick={onClose}
@@ -269,7 +269,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                             <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 group-focus-within:text-cyan-400 transition-colors" />
                             <input
                                 type="text"
-                                placeholder="IDENTIFY_SERIAL_OR_MODEL..."
+                                placeholder="SERIAL // MODELO // TÉCNICO..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 className="w-full bg-slate-900/60 border border-white/5 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder:text-slate-600 outline-none focus:border-cyan-500/30 focus:ring-1 focus:ring-cyan-500/10 text-xs font-bold tracking-widest uppercase transition-all"
@@ -282,11 +282,11 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                 onChange={(e) => setTypeFilter(e.target.value as typeof typeFilter)}
                                 className="appearance-none bg-slate-900 border border-white/5 rounded-2xl px-6 py-3.5 text-slate-400 outline-none focus:border-cyan-500/30 text-[10px] font-black tracking-[0.2em] uppercase pr-10 hover:bg-slate-800 transition-colors cursor-pointer"
                             >
-                                <option value="">ALL_FLOWS</option>
-                                <option value="calibration">CALIBRATION</option>
-                                <option value="repair">MAINTENANCE</option>
-                                <option value="issue">FAILURES</option>
-                                <option value="inventory_op">LOGIC_OPS</option>
+                                <option value="">TODOS_LOS_EVENTOS</option>
+                                <option value="calibration">CALIBRACIÓN</option>
+                                <option value="repair">MANTENIMIENTO</option>
+                                <option value="issue">FALLAS</option>
+                                <option value="inventory_op">OPERACIONES_LÓGICAS</option>
                             </select>
                             <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 pointer-events-none" />
                         </div>
@@ -309,8 +309,8 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                         <th className="p-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Timestamp</th>
                                         <th className="p-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Operator</th>
                                         <th className="p-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Hardware_ID</th>
-                                        <th className="p-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Live_Status</th>
-                                        <th className="p-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Operation_Notes</th>
+                                        <th className="p-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">ESTADO_ACTUAL</th>
+                                        <th className="p-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">NOTAS_OPERACIÓN</th>
                                         <th className="p-5 text-center w-20"></th>
                                     </tr>
                                 </thead>
@@ -341,7 +341,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                                     <div className={clsx('inline-flex items-center px-3 py-1 rounded-full border text-[9px] font-black tracking-widest uppercase',
                                                         record.passed ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20')}>
                                                         <span className={clsx('w-1 h-1 rounded-full mr-2', record.passed ? 'bg-emerald-400' : 'bg-red-400')} />
-                                                        {record.passed ? 'Passed' : 'Failed'}
+                                                        {record.passed ? 'APROBADO' : 'FALLIDO'}
                                                     </div>
                                                 );
                                             } else if (record.type === 'repair') {
@@ -350,7 +350,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                                     <div className={clsx('inline-flex items-center px-3 py-1 rounded-full border text-[9px] font-black tracking-widest uppercase',
                                                         rep ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20')}>
                                                         <span className={clsx('w-1 h-1 rounded-full mr-2', rep ? 'bg-blue-400' : 'bg-yellow-400')} />
-                                                        {rep ? 'Restored' : 'In_Work'}
+                                                        {rep ? 'RESTAURADO' : 'EN_PROCESO'}
                                                     </div>
                                                 );
                                             } else if (record.type === 'issue') {
@@ -401,7 +401,7 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                                             </div>
                                                             <div className="min-w-0">
                                                                 <div className="text-[11px] font-black text-white truncate uppercase tracking-tighter">{record.user?.split('@')[0] ?? 'N/A'}</div>
-                                                                <div className="text-[9px] font-bold text-cyan-500/50 truncate uppercase tracking-widest">{record.branch ?? 'UNKNOWN'}</div>
+                                                                <div className="text-[9px] font-bold text-cyan-500/50 truncate uppercase tracking-widest">{record.branch ?? 'DESCONOCIDO'}</div>
                                                             </div>
                                                         </div>
                                                     </td>
@@ -457,10 +457,10 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                     <div className="px-8 py-4 bg-slate-950/40 border-t border-white/5 flex items-center justify-between shrink-0">
                         <div className="flex items-center gap-2 text-[10px] font-black text-slate-600 uppercase tracking-widest">
                             <RefreshCw className="w-3 h-3 animate-spin-slow" />
-                            Live_Stream // Real-Time DB Connected
+                            LIVE_STREAM // DB_CONECTADA
                         </div>
                         <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
-                            Select Entry to View Full Telemetry
+                            SELECCIONE_ENTRADA_PARA_VER_TELEMETRÍA
                         </div>
                     </div>
                 </div>
@@ -468,3 +468,4 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
         </div>
     );
 };
+```

@@ -119,21 +119,21 @@ function App() {
 
             <div className="flex flex-col">
               <span className="text-xl font-black tracking-tight leading-none text-white">SISDEPE</span>
-              <span className="text-[10px] uppercase tracking-[0.3em] font-bold text-slate-500 mt-1">Certified Weighing Hub</span>
+              <span className="text-[10px] uppercase tracking-[0.3em] font-bold text-slate-500 mt-1">Centro de Pesaje Certificado</span>
             </div>
           </div>
 
           <div className="flex items-center gap-6">
             <div className="hidden lg:flex items-center gap-8 mr-6 border-r border-white/5 pr-8">
-              <StatusIndicator label="Scale" active={isConnected} color="cyan" />
-              <StatusIndicator label="Security" active={isAdmin} color="blue" />
+              <StatusIndicator label="Balanza" active={isConnected} color="cyan" />
+              <StatusIndicator label="Seguridad" active={isAdmin} color="blue" />
             </div>
 
             <button
               onClick={() => signOut(auth)}
               className="group relative px-5 py-2.5 bg-red-500/5 hover:bg-red-500/10 border border-red-500/20 hover:border-red-500/40 rounded-xl transition-all duration-300 flex items-center gap-3"
             >
-              <span className="text-xs font-black tracking-widest text-red-400 group-hover:text-red-300">SYSTEM_EXIT</span>
+              <span className="text-xs font-black tracking-widest text-red-400 group-hover:text-red-300">SALIDA_SISTEMA</span>
               <LogOut className="w-4 h-4 text-red-400 group-hover:translate-x-1 transition-transform" />
             </button>
           </div>
@@ -165,7 +165,7 @@ function App() {
             <div className="p-1px rounded-3xl bg-gradient-to-br from-white/10 to-transparent shadow-2xl">
               <div className="bg-slate-900/60 backdrop-blur-xl rounded-[23px] p-6 space-y-6">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">Master Controls</h3>
+                  <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">Controles Maestros</h3>
                   <Zap className="w-4 h-4 text-cyan-500/50" />
                 </div>
 
@@ -176,7 +176,7 @@ function App() {
                         <ActionButton
                           onClick={() => connect()}
                           icon={Zap}
-                          label="Initialize Scale"
+                          label="Inicializar Balanza"
                           variant="primary"
                           loading={isConnecting}
                         />
@@ -184,7 +184,7 @@ function App() {
                         <ActionButton
                           onClick={isConnected ? disconnect : () => setIsSimulating(false)}
                           icon={LogOut}
-                          label={isConnected ? "Shutdown System" : "Stop Simulation"}
+                          label={isConnected ? "Apagar Sistema" : "Detener Simulación"}
                           variant="danger"
                         />
                       )}
@@ -192,7 +192,7 @@ function App() {
                       <ActionButton
                         onClick={() => serialService.send('W')}
                         icon={RotateCcw}
-                        label="Hard Reset (W)"
+                        label="Reinicio Forzado (W)"
                       />
                     </>
                   )}
@@ -204,27 +204,27 @@ function App() {
               <ActionCard
                 onClick={() => setIsInventoryOpen(true)}
                 icon={Box}
-                label="New Asset"
+                label="Nuevo Equipo"
                 sub="Registro"
               />
               <ActionCard
                 onClick={() => setIsInventoryListOpen(true)}
                 icon={ClipboardCheck}
-                label="Asset DB"
+                label="Base de Datos"
                 sub="Inventario"
                 highlight
               />
               <ActionCard
                 onClick={() => setIsIssueOpen(true)}
                 icon={AlertTriangle}
-                label="Failure"
+                label="Falla"
                 sub="Reportar"
                 variant="danger"
               />
               <ActionCard
                 onClick={() => setIsHistoryOpen(true)}
                 icon={History}
-                label="Archives"
+                label="Archivos"
                 sub="Historial"
               />
             </div>
@@ -245,8 +245,8 @@ function App() {
                         <ClipboardCheck className="w-6 h-6" />
                       </div>
                       <div className="text-left">
-                        <span className="block text-sm font-black text-white tracking-wide">3-Point Calibration</span>
-                        <span className="block text-[10px] text-slate-500 uppercase tracking-widest mt-0.5">Hardware Verification</span>
+                        <span className="block text-sm font-black text-white tracking-wide">Calibración 3-Puntos</span>
+                        <span className="block text-[10px] text-slate-500 uppercase tracking-widest mt-0.5">Verificación de Hardware</span>
                       </div>
                     </div>
                     <Box className="w-5 h-5 text-slate-700 group-hover:text-cyan-500/50 transition-colors" />
@@ -262,8 +262,8 @@ function App() {
                       <Shield className="w-6 h-6" />
                     </div>
                     <div className="text-left">
-                      <span className="block text-sm font-black text-white tracking-wide">User Privilege MGMT</span>
-                      <span className="block text-[10px] text-slate-500 uppercase tracking-widest mt-0.5">RBAC Access Control</span>
+                      <span className="block text-sm font-black text-white tracking-wide">Gestión de Usuarios</span>
+                      <span className="block text-[10px] text-slate-500 uppercase tracking-widest mt-0.5">Control de Acceso RBAC</span>
                     </div>
                   </div>
                   <Users className="w-5 h-5 text-slate-700 group-hover:text-blue-500/50 transition-colors" />
@@ -305,12 +305,12 @@ function App() {
         <div className="flex items-center gap-6 text-[9px] font-black uppercase tracking-[0.2em] text-slate-600">
           <div className="flex items-center gap-2">
             <div className={clsx("w-1.5 h-1.5 rounded-full", (isConnected || isSimulating) ? "bg-cyan-500 shadow-[0_0_8px_rgba(6,182,212,0.8)]" : "bg-slate-700")} />
-            System {(isConnected || isSimulating) ? "Active" : "Ready"}
+            Sistema {(isConnected || isSimulating) ? "Activo" : "Listo"}
           </div>
           <span className="w-1 h-1 bg-slate-800 rounded-full" />
           <span>Web Serial / TLS 1.3</span>
           <span className="w-1 h-1 bg-slate-800 rounded-full" />
-          <span>v2.0.Titanium</span>
+          <span>v2.0.Titanio</span>
         </div>
       </footer>
 
@@ -322,7 +322,7 @@ const StatusIndicator = ({ label, active, color }: { label: string, active: bool
   <div className="flex flex-col items-end gap-1">
     <span className="text-[10px] font-black uppercase tracking-widest text-slate-600">{label}</span>
     <div className="flex items-center gap-2">
-      <span className={clsx("text-xs font-bold", active ? "text-white" : "text-slate-500")}>{active ? "ENABLED" : "SECURED"}</span>
+      <span className={clsx("text-xs font-bold", active ? "text-white" : "text-slate-500")}>{active ? "HABILITADO" : "PROTEGIDO"}</span>
       <div className={clsx(
         "w-2 h-2 rounded-full",
         active
