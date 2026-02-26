@@ -165,7 +165,7 @@ function App() {
             <div className="p-1px rounded-3xl bg-gradient-to-br from-white/10 to-transparent shadow-2xl">
               <div className="bg-slate-900/60 backdrop-blur-xl rounded-[23px] p-6 space-y-6">
                 <div className="flex items-center justify-between">
-                  <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-500">Controles Maestros</h3>
+                  <h3 className="text-xs font-black uppercase tracking-[0.2em] text-slate-500 notranslate" translate="no">Panel de Control</h3>
                   <Zap className="w-4 h-4 text-cyan-500/50" />
                 </div>
 
@@ -176,7 +176,7 @@ function App() {
                         <ActionButton
                           onClick={() => connect()}
                           icon={Zap}
-                          label="Inicializar Balanza"
+                          label={<span className="notranslate" translate="no">Activar Balanza</span>}
                           variant="primary"
                           loading={isConnecting}
                         />
@@ -184,7 +184,7 @@ function App() {
                         <ActionButton
                           onClick={isConnected ? disconnect : () => setIsSimulating(false)}
                           icon={LogOut}
-                          label={isConnected ? "Apagar Sistema" : "Parar Simulación"}
+                          label={isConnected ? <span className="notranslate" translate="no">Apagar Sistema</span> : <span className="notranslate" translate="no">Parar Simulación</span>}
                           variant="danger"
                         />
                       )}
@@ -192,7 +192,7 @@ function App() {
                       <ActionButton
                         onClick={() => serialService.send('W')}
                         icon={RotateCcw}
-                        label="Reinicio Forzado (W)"
+                        label={<span className="notranslate" translate="no">Reinicio de Hardware (W)</span>}
                       />
                     </>
                   )}
@@ -204,28 +204,28 @@ function App() {
               <ActionCard
                 onClick={() => setIsInventoryOpen(true)}
                 icon={Box}
-                label="Registrar Equipo"
-                sub="Registro"
+                label={<span className="notranslate" translate="no">Registrar Equipo</span>}
+                sub={<span className="notranslate" translate="no">FICHA_TÉCNICA</span>}
               />
               <ActionCard
                 onClick={() => setIsInventoryListOpen(true)}
                 icon={ClipboardCheck}
-                label="Base de Datos"
-                sub="Inventario"
+                label={<span className="notranslate" translate="no">Inventario General</span>}
+                sub={<span className="notranslate" translate="no">BASE_DATOS</span>}
                 highlight
               />
               <ActionCard
                 onClick={() => setIsIssueOpen(true)}
                 icon={AlertTriangle}
-                label="Falla"
-                sub="Reportar"
+                label={<span className="notranslate" translate="no">Reportar Falla</span>}
+                sub={<span className="notranslate" translate="no">INCIDENCIAS</span>}
                 variant="danger"
               />
               <ActionCard
                 onClick={() => setIsHistoryOpen(true)}
                 icon={History}
-                label="Historial"
-                sub="Archivos"
+                label={<span className="notranslate" translate="no">Historial</span>}
+                sub={<span className="notranslate" translate="no">BIBLIOTECA</span>}
               />
             </div>
 
@@ -245,8 +245,8 @@ function App() {
                         <ClipboardCheck className="w-6 h-6" />
                       </div>
                       <div className="text-left">
-                        <span className="block text-sm font-black text-white tracking-wide">Calibración 3-Puntos</span>
-                        <span className="block text-[10px] text-slate-500 uppercase tracking-widest mt-0.5">Verificación de Hardware</span>
+                        <span className="block text-sm font-black text-white tracking-wide notranslate" translate="no">Calibración Industrial (3-P)</span>
+                        <span className="block text-[10px] text-slate-500 uppercase tracking-widest mt-0.5 notranslate" translate="no">VERIFICACIÓN_EQUIPOS</span>
                       </div>
                     </div>
                     <Box className="w-5 h-5 text-slate-700 group-hover:text-cyan-500/50 transition-colors" />
@@ -262,8 +262,8 @@ function App() {
                       <Shield className="w-6 h-6" />
                     </div>
                     <div className="text-left">
-                      <span className="block text-sm font-black text-white tracking-wide">Gestión de Usuarios</span>
-                      <span className="block text-[10px] text-slate-500 uppercase tracking-widest mt-0.5">Control de Acceso RBAC</span>
+                      <span className="block text-sm font-black text-white tracking-wide notranslate" translate="no">Panel de Usuarios</span>
+                      <span className="block text-[10px] text-slate-500 uppercase tracking-widest mt-0.5 notranslate" translate="no">ACCESO_RBAC</span>
                     </div>
                   </div>
                   <Users className="w-5 h-5 text-slate-700 group-hover:text-blue-500/50 transition-colors" />

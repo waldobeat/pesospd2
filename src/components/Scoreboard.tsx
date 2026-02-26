@@ -36,7 +36,7 @@ export const Scoreboard: React.FC<ScoreboardProps> = ({
                     <div className="space-y-1">
                         <div className="flex items-center gap-2 text-cyan-500/80">
                             <Scale className="w-4 h-4" />
-                            <span className="text-[10px] font-black tracking-[0.2em] uppercase opacity-70">Núcleo Industrial</span>
+                            <span className="text-[10px] font-black tracking-[0.2em] uppercase opacity-70 notranslate" translate="no">Núcleo Industrial</span>
                         </div>
                         <h2 className="text-xl font-extrabold tracking-tight text-white/90">SISDEPE <span className="text-white/30 font-light">v2.0</span></h2>
                     </div>
@@ -78,7 +78,7 @@ export const Scoreboard: React.FC<ScoreboardProps> = ({
 
                         {!error && (
                             <div className="absolute bottom-6 right-10 flex flex-col items-end">
-                                <span className="text-[10px] font-black text-white/20 tracking-[0.3em] mb-1 uppercase italic">Unidad de Medida</span>
+                                <span className="text-[10px] font-black text-white/20 tracking-[0.3em] mb-1 uppercase italic notranslate" translate="no">Unidad de Medida</span>
                                 <span className="text-2xl md:text-3xl font-black text-cyan-500/40">{unit.toUpperCase()}</span>
                             </div>
                         )}
@@ -121,9 +121,9 @@ const StatusPill = ({ label, active, activeColor }: { label: string, active: boo
                 : "bg-black/20 border-white/5"
         )}>
             <span className={clsx(
-                "text-[9px] font-black tracking-[0.2em] transition-colors duration-500",
+                "text-[9px] font-black tracking-[0.2em] transition-colors duration-500 notranslate",
                 active ? "text-white/80" : "text-white/20"
-            )}>
+            )} translate="no">
                 {label}
             </span>
             <div className="relative w-full h-1.5 bg-slate-900 rounded-full overflow-hidden">
