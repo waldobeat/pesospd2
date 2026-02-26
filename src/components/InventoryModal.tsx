@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { X, Save, Box, AlertCircle, CheckCircle, Loader2, AlertTriangle, Truck } from 'lucide-react';
+import { X, Save, Box, AlertCircle, CheckCircle, Loader2, AlertTriangle, Truck, Hash } from 'lucide-react';
 import { inventoryService, ALL_BRANCHES, BRANCH_LABELS } from '../services/InventoryService';
 import { notificationService } from '../services/NotificationService';
 import type { InventoryStatus, PendingTransfer } from '../services/InventoryService';
