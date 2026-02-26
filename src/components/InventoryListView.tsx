@@ -208,43 +208,44 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
 
     return (
         <>
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-2 md:p-6 bg-slate-950/40 backdrop-blur-md animate-in fade-in duration-500">
-                <div className="relative w-full max-w-7xl h-[90vh] group">
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-0 md:p-6 bg-slate-950/40 backdrop-blur-md animate-in fade-in duration-500">
+                <div className="relative w-full max-w-7xl h-full md:h-[90vh] group">
                     {/* Outer Glow */}
-                    <div className="absolute -inset-1 bg-gradient-to-br from-blue-500/10 to-transparent rounded-[2.5rem] blur-2xl opacity-50 group-hover:opacity-100 transition-opacity duration-700" />
+                    <div className="absolute -inset-1 bg-gradient-to-br from-blue-500/10 to-transparent rounded-none md:rounded-[2.5rem] blur-2xl opacity-50 group-hover:opacity-100 transition-opacity duration-700" />
 
-                    <div className="relative h-full bg-slate-900/80 backdrop-blur-2xl border border-white/10 rounded-[2rem] shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col">
+                    <div className="relative h-full bg-slate-900/80 backdrop-blur-2xl border-x-0 md:border border-white/10 rounded-none md:rounded-[2rem] shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col">
 
                         {/* Header */}
-                        <div className="relative p-8 border-b border-white/5 flex flex-col md:flex-row md:justify-between md:items-center gap-6 shrink-0">
+                        <div className="relative p-4 md:p-8 border-b border-white/5 flex flex-col md:flex-row md:justify-between md:items-center gap-4 md:gap-6 shrink-0">
                             <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-blue-500/50 to-transparent" />
-                            <div className="flex items-center gap-5">
-                                <div className="w-12 h-12 bg-slate-800 border border-white/10 rounded-2xl flex items-center justify-center shadow-inner">
-                                    <BarChart3 className="w-6 h-6 text-blue-400" />
+                            <div className="flex items-center gap-4 md:gap-5">
+                                <div className="w-10 h-10 md:w-12 md:h-12 bg-slate-800 border border-white/10 rounded-xl md:rounded-2xl flex items-center justify-center shadow-inner">
+                                    <BarChart3 className="w-5 h-5 md:w-6 md:h-6 text-blue-400" />
                                 </div>
                                 <div>
-                                    <h2 className="text-xl font-black text-white tracking-tight leading-none uppercase">
-                                        INVENTARIO DE EQUIPOS
+                                    <h2 className="text-lg md:text-xl font-black text-white tracking-tight leading-none uppercase">
+                                        INVENTARIO
                                     </h2>
-                                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-2 flex items-center gap-2">
+                                    <p className="text-[9px] md:text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-1 md:mt-2 flex items-center gap-2">
                                         <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
                                         {isMaster
-                                            ? 'VISTA ADMINISTRATIVA // ACCESO TOTAL'
-                                            : `NODO LOCAL // ${(BRANCH_LABELS[userPrefix] || userPrefix).toUpperCase()}`}
+                                            ? 'ADMIN // ACCESO TOTAL'
+                                            : `NODO // ${(BRANCH_LABELS[userPrefix] || userPrefix).toUpperCase()}`}
                                     </p>
                                 </div>
                             </div>
-                            <div className="flex items-center gap-3">
+                            <div className="flex items-center gap-2 md:gap-3">
                                 <button
                                     onClick={handleExportCSV}
-                                    className="h-11 px-5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 rounded-2xl font-black text-[10px] tracking-[0.2em] transition-all flex items-center gap-3 active:scale-95"
+                                    className="h-10 md:h-11 px-3 md:px-5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 rounded-xl md:rounded-2xl font-black text-[9px] md:text-[10px] tracking-[0.1em] md:tracking-[0.2em] transition-all flex items-center gap-2 md:gap-3 active:scale-95"
                                 >
-                                    <Download className="w-4 h-4" />
-                                    EXPORTAR_DATOS
+                                    <Download className="w-3.5 h-3.5 md:w-4 md:h-4" />
+                                    <span className="hidden sm:inline">EXPORTAR</span>
+                                    <span className="sm:hidden">CSV</span>
                                 </button>
                                 <button
                                     onClick={onClose}
-                                    className="h-11 w-11 flex items-center justify-center bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-slate-500 hover:text-white transition-all active:scale-95"
+                                    className="h-10 w-10 md:h-11 md:w-11 flex items-center justify-center bg-white/5 hover:bg-white/10 border border-white/10 rounded-xl md:rounded-2xl text-slate-500 hover:text-white transition-all active:scale-95"
                                 >
                                     <X className="w-5 h-5" />
                                 </button>
@@ -252,7 +253,7 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
                         </div>
 
                         {/* KPI Cards */}
-                        <div className="px-8 py-6 border-b border-white/5 bg-slate-900/50 flex flex-wrap gap-4 shrink-0">
+                        <div className="px-4 md:px-8 py-4 md:py-6 border-b border-white/5 bg-slate-900/50 flex overflow-x-auto no-scrollbar gap-3 md:gap-4 shrink-0">
                             {KPI_CARDS.map(({ label, key, icon: Icon, color }) => {
                                 const val = stats[key as keyof typeof stats];
                                 const numVal = typeof val === 'number' ? val : 0;
@@ -266,20 +267,20 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
                                             handleFilterChange('status', isActive ? '' : targetStatus);
                                         }}
                                         className={clsx(
-                                            'relative flex-1 min-w-[120px] h-20 px-4 rounded-2xl border transition-all duration-300 group/kpi overflow-hidden',
+                                            'relative shrink-0 w-28 md:flex-1 md:min-w-[120px] h-16 md:h-20 px-3 md:px-4 rounded-xl md:rounded-2xl border transition-all duration-300 group/kpi overflow-hidden',
                                             isActive
                                                 ? 'bg-blue-500/10 border-blue-500/30'
                                                 : 'bg-white/[0.02] border-white/5 hover:border-white/10'
                                         )}
                                     >
-                                        <div className="relative z-10 flex flex-col justify-between h-full py-3">
+                                        <div className="relative z-10 flex flex-col justify-between h-full py-2 md:py-3">
                                             <div className="flex items-center justify-between">
-                                                <Icon className={clsx('w-3.5 h-3.5 opacity-50', color)} />
-                                                <div className={clsx('text-lg font-black leading-none tracking-tighter', color)}>
+                                                <Icon className={clsx('w-3 md:w-3.5 h-3 md:h-3.5 opacity-50', color)} />
+                                                <div className={clsx('text-sm md:text-lg font-black leading-none tracking-tighter', color)}>
                                                     {numVal.toString().padStart(2, '0')}
                                                 </div>
                                             </div>
-                                            <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest text-left">
+                                            <div className="text-[8px] md:text-[9px] font-bold text-slate-500 uppercase tracking-widest text-left truncate">
                                                 {label}
                                             </div>
                                         </div>
@@ -292,18 +293,18 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
                         </div>
 
                         {/* Toolbar */}
-                        <div className="px-8 py-5 border-b border-white/5 bg-slate-900/30 flex flex-col gap-4 shrink-0">
-                            <div className="flex items-center gap-4">
+                        <div className="px-4 md:px-8 py-4 md:py-5 border-b border-white/5 bg-slate-900/30 flex flex-col gap-3 md:gap-4 shrink-0">
+                            <div className="flex items-center gap-3 md:gap-4">
                                 <div className="relative flex-1 group">
                                     <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
-                                        <Search className="w-4 h-4 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
+                                        <Search className="w-3.5 h-3.5 md:w-4 md:h-4 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
                                     </div>
                                     <input
                                         type="text"
-                                        placeholder="BUSCAR_REGISTRO // SERIAL // MODELO..."
+                                        placeholder="BUSCAR..."
                                         value={filters.searchTerm || ''}
                                         onChange={(e) => handleFilterChange('searchTerm', e.target.value)}
-                                        className="w-full h-11 bg-slate-950/50 border border-white/5 rounded-xl pl-12 pr-10 text-[11px] font-bold text-white uppercase tracking-wider outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 placeholder-slate-600 transition-all"
+                                        className="w-full h-10 md:h-11 bg-slate-950/50 border border-white/5 rounded-xl pl-11 md:pl-12 pr-10 text-[10px] md:text-[11px] font-bold text-white uppercase tracking-wider outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 placeholder-slate-600 transition-all"
                                     />
                                     {filters.searchTerm && (
                                         <button
@@ -318,14 +319,14 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
                                 <button
                                     onClick={() => setShowFilters((v: boolean) => !v)}
                                     className={clsx(
-                                        'h-11 px-6 rounded-xl text-[10px] font-black tracking-[0.2em] border transition-all flex items-center gap-3',
+                                        'h-10 md:h-11 px-4 md:px-6 rounded-xl text-[9px] md:text-[10px] font-black tracking-[0.1em] md:tracking-[0.2em] border transition-all flex items-center gap-2 md:gap-3',
                                         showFilters || activeFilterCount > 0
                                             ? 'bg-blue-500/10 border-blue-500/30 text-blue-400'
                                             : 'bg-white/5 border-white/5 text-slate-500 hover:text-white hover:border-white/10'
                                     )}
                                 >
-                                    <Filter className="w-3.5 h-3.5" />
-                                    FILTROS_AVANZADOS
+                                    <Filter className="w-3 md:w-3.5 h-3 md:h-3.5" />
+                                    <span className="hidden sm:inline">FILTROS</span>
                                     {activeFilterCount > 0 && (
                                         <span className="w-4 h-4 rounded-md bg-blue-500 text-white text-[8px] flex items-center justify-center font-black">
                                             {activeFilterCount}
@@ -502,25 +503,34 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
                             </table>
 
                             {/* Mobile Grid */}
-                            <div className="grid grid-cols-1 gap-4 p-6 md:hidden">
+                            <div className="grid grid-cols-1 gap-3 p-4 md:hidden">
                                 {pagedItems.map((item) => (
-                                    <div key={item.id} className="p-6 bg-slate-900/50 border border-white/5 rounded-[1.5rem] space-y-4">
-                                        <div className="flex justify-between items-start">
-                                            <div className="space-y-1">
-                                                <div className="text-[11px] font-black text-white uppercase tracking-wider">{item.scaleModel}</div>
-                                                <code className="text-[9px] font-bold text-blue-400/80">{item.serialNumber}</code>
+                                    <div key={item.id} className="p-4 bg-slate-900/50 border border-white/5 rounded-2xl relative overflow-hidden">
+                                        <div className="flex justify-between items-start gap-4">
+                                            <div className="space-y-1 min-w-0 flex-1">
+                                                <div className="text-[10px] font-black text-white uppercase tracking-wider truncate">{item.scaleModel}</div>
+                                                <div className="flex items-center gap-2">
+                                                    <code className="text-[8px] font-bold text-blue-400/80 uppercase">{item.serialNumber}</code>
+                                                    <span className="text-[8px] font-bold text-slate-500 uppercase tracking-tighter">• {BRANCH_LABELS[item.branch] || item.branch}</span>
+                                                </div>
                                             </div>
                                             <span className={clsx(
-                                                'px-2 py-1 rounded-lg text-[8px] font-black tracking-widest border',
+                                                'px-2 py-1 rounded-lg text-[8px] font-black tracking-widest border shrink-0',
                                                 STATUS_STYLES[item.status]
                                             )}>
                                                 {item.status}
                                             </span>
                                         </div>
-                                        <div className="flex justify-between items-center pt-4 border-t border-white/5">
-                                            <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">
-                                                {BRANCH_LABELS[item.branch] || item.branch}
-                                            </span>
+
+                                        {/* Transit Info for Mobile */}
+                                        {item.hasPendingTransfer && item.pendingTransfer && (
+                                            <div className="mt-2 text-[7px] font-black text-amber-500 uppercase tracking-[0.15em] flex items-center gap-1.5 bg-amber-500/5 p-1.5 rounded-md border border-amber-500/10">
+                                                <Truck className="w-2.5 h-2.5" />
+                                                {item.pendingTransfer.from} » {item.pendingTransfer.to}
+                                            </div>
+                                        )}
+
+                                        <div className="flex items-center gap-2 mt-4 pt-4 border-t border-white/5">
                                             <button
                                                 onClick={() => setSelectedItem({
                                                     id: item.id,
@@ -530,23 +540,39 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
                                                     branch: item.branch,
                                                     lastBranch: item.lastBranch
                                                 })}
-                                                className="h-8 px-4 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-lg text-[8px] font-black uppercase tracking-widest"
+                                                className="flex-1 h-9 bg-blue-500/10 hover:bg-blue-500 text-blue-400 hover:text-white border border-blue-500/20 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all flex items-center justify-center gap-2"
                                             >
+                                                <Pencil className="w-3.5 h-3.5" />
                                                 EDITAR
                                             </button>
+                                            {isMaster && (
+                                                <button
+                                                    onClick={(e) => handleDeleteItem(item, e)}
+                                                    disabled={deletingId === item.id}
+                                                    className="h-9 w-9 flex items-center justify-center bg-red-500/5 hover:bg-red-500 text-red-400/50 hover:text-white border border-red-500/10 rounded-xl transition-all disabled:opacity-50"
+                                                >
+                                                    <Trash2 className="w-3.5 h-3.5" />
+                                                </button>
+                                            )}
                                         </div>
                                     </div>
                                 ))}
+                                {pagedItems.length === 0 && (
+                                    <div className="py-20 text-center">
+                                        <Box className="w-10 h-10 text-slate-800 mx-auto mb-4" />
+                                        <p className="text-[10px] font-black text-slate-600 uppercase tracking-widest">No se encontraron registros</p>
+                                    </div>
+                                )}
                             </div>
                         </div>
 
                         {/* Pagination */}
                         {totalPages > 1 && (
-                            <div className="px-8 py-4 border-t border-white/5 bg-slate-950/40 flex items-center justify-between shrink-0">
-                                <div className="text-[9px] font-black text-slate-600 uppercase tracking-widest">
-                                    Página {page.toString().padStart(2, '0')} // Total {totalPages.toString().padStart(2, '0')} // Resultados {filteredItems.length}
+                            <div className="px-4 md:px-8 py-4 border-t border-white/5 bg-slate-950/40 flex items-center justify-between shrink-0">
+                                <div className="text-[8px] md:text-[9px] font-black text-slate-600 uppercase tracking-widest">
+                                    <span className="hidden sm:inline">Página</span> {page.toString().padStart(2, '0')} // {totalPages.toString().padStart(2, '0')}
                                 </div>
-                                <div className="flex gap-2">
+                                <div className="flex gap-1.5 md:gap-2">
                                     {[1, page - 1, page + 1, totalPages].map((p, i) => {
                                         const disabled = p < 1 || p > totalPages || p === page;
                                         const icons = ['««', '«', '»', '»»'];
@@ -555,7 +581,7 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
                                                 key={i}
                                                 disabled={disabled}
                                                 onClick={() => setPage(p)}
-                                                className="h-9 w-12 flex items-center justify-center bg-white/5 hover:bg-white/10 disabled:opacity-20 text-slate-400 hover:text-white rounded-xl text-[10px] font-bold transition-all"
+                                                className="h-8 md:h-9 w-10 md:w-12 flex items-center justify-center bg-white/5 hover:bg-white/10 disabled:opacity-20 text-slate-400 hover:text-white rounded-lg md:rounded-xl text-[9px] md:text-[10px] font-bold transition-all"
                                             >
                                                 {icons[i]}
                                             </button>
