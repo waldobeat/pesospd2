@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { useScale } from './hooks/useScale';
 import { Scoreboard } from './components/Scoreboard';
 import { TestWeightWindow } from './components/TestWeightWindow';
