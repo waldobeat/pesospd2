@@ -102,6 +102,19 @@ export interface InventoryFilter {
     searchTerm?: string;
 }
 
+const sanitize = (val: any) => {
+    if (val === null || val === undefined) return null;
+    if (typeof val !== 'object') return val;
+    const cleaned = { ...val };
+    Object.keys(cleaned).forEach((key) => {
+        if (cleaned[key] === undefined) delete cleaned[key];
+        else if (cleaned[key] && typeof cleaned[key] === 'object' && !cleaned[key].toDate) {
+            cleaned[key] = sanitize(cleaned[key]);
+        }
+    });
+    return cleaned;
+};
+
 export const inventoryService = {
 
     /** Validates that a serial number is unique in Firestore */
@@ -125,14 +138,14 @@ export const inventoryService = {
     addInventory: async (item: Omit<InventoryItem, 'id' | 'timestamp' | 'updatedAt' | 'updatedBy'>) => {
         try {
             const now = Timestamp.now();
-            const docRef = await addDoc(collection(db, 'inventory'), {
+            const docRef = await addDoc(collection(db, 'inventory'), sanitize({
                 ...item,
                 serialNumber: item.serialNumber.trim().toUpperCase(),
                 timestamp: now,
                 updatedAt: now,
                 updatedBy: item.recordedBy,
                 hasPendingTransfer: false,
-            });
+            }));
             return docRef.id;
         } catch (error) {
             console.error('Error adding inventory item: ', error);
@@ -157,7 +170,7 @@ export const inventoryService = {
             const from = itemData.branch;
             const originalStatus = itemData.status;
 
-            await updateDoc(doc(db, 'inventory', id), {
+            await updateDoc(doc(db, 'inventory', id), sanitize({
                 status: 'EN TRÁNSITO' satisfies InventoryStatus,
                 updatedAt: Timestamp.now(),
                 updatedBy: initiatedBy,
@@ -170,7 +183,7 @@ export const inventoryService = {
                     notes: notes || '',
                     originalStatus,
                 } satisfies PendingTransfer,
-            });
+            }));
         } catch (error) {
             console.error('Error initiating transfer:', error);
             throw error;
@@ -193,7 +206,7 @@ export const inventoryService = {
             const destination = item.pendingTransfer?.to || item.branch;
             const sourceBranch = item.pendingTransfer?.from || item.branch;
 
-            await updateDoc(doc(db, 'inventory', id), {
+            await updateDoc(doc(db, 'inventory', id), sanitize({
                 status: newStatus,
                 branch: destination,
                 lastBranch: sourceBranch, // Save for later status-change notifications
@@ -201,7 +214,7 @@ export const inventoryService = {
                 updatedBy: confirmedBy,
                 hasPendingTransfer: false,
                 pendingTransfer: null,
-            });
+            }));
         } catch (error) {
             console.error('Error confirming transfer:', error);
             throw error;
@@ -224,7 +237,7 @@ export const inventoryService = {
                 updatedBy: updatedBy || 'Sistema',
             };
             if (newBranch) updates.branch = newBranch;
-            await updateDoc(docRef, updates);
+            await updateDoc(docRef, sanitize(updates));
         } catch (error) {
             console.error('Error updating inventory status: ', error);
             throw error;
@@ -235,10 +248,10 @@ export const inventoryService = {
     updateItem: async (id: string, updates: Partial<InventoryItem>) => {
         try {
             const docRef = doc(db, 'inventory', id);
-            await updateDoc(docRef, {
+            await updateDoc(docRef, sanitize({
                 ...updates,
                 updatedAt: Timestamp.now(),
-            });
+            }));
         } catch (error) {
             console.error('Error updating inventory item:', error);
             throw error;

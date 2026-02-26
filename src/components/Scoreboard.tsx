@@ -22,79 +22,118 @@ export const Scoreboard: React.FC<ScoreboardProps> = ({
     error
 }) => {
     return (
-        <div className="relative w-full max-w-2xl mx-auto p-6 md:p-8 rounded-3xl bg-black/40 backdrop-blur-xl border border-white/10 shadow-2xl overflow-hidden transition-all duration-300 hover:shadow-blue-900/10 hover:border-white/20">
-            {/* Background Glow */}
-            <div className="absolute top-0 left-1/2 -translate-x-1/2 w-3/4 h-32 bg-blue-500/10 blur-3xl rounded-full -z-10 animate-pulse" />
+        <div className="relative w-full max-w-3xl mx-auto p-1px rounded-[2rem] bg-gradient-to-b from-slate-700/50 to-slate-900/50 shadow-2xl overflow-hidden group">
+            {/* Animated Border Glow */}
+            <div className={clsx(
+                "absolute -inset-[2px] opacity-20 blur-xl transition-all duration-1000 group-hover:opacity-40",
+                isConnected ? "bg-cyan-500" : "bg-red-500"
+            )} />
 
-            {/* Header */}
-            <div className="flex justify-between items-center mb-6 text-white/60">
-                <div className="flex items-center gap-2">
-                    <Scale className="w-5 h-5 text-blue-400" />
-                    <span className="text-xs md:text-sm font-bold tracking-wider">SISDEPES INTERFACE</span>
-                </div>
-                <div className={clsx(
-                    "flex items-center gap-2 px-3 py-1 rounded-full text-[10px] md:text-xs font-bold transition-all border border-transparent",
-                    isConnected
-                        ? "bg-green-500/10 text-green-400 border-green-500/20 shadow-[0_0_10px_rgba(34,197,94,0.1)]"
-                        : "bg-red-500/10 text-red-400 border-red-500/20"
-                )}>
-                    <Activity className="w-3 h-3" />
-                    {isConnected ? "ONLINE" : "OFFLINE"}
-                </div>
-            </div>
+            <div className="relative p-6 md:p-10 rounded-[1.95rem] bg-slate-950/90 backdrop-blur-3xl border border-white/5 flex flex-col gap-8">
 
-            {/* Main Display */}
-            <div className="relative bg-black/50 rounded-2xl p-6 md:p-10 border border-white/5 shadow-inner mb-6 flex flex-col items-center justify-center min-h-[160px] md:min-h-[200px]">
-                <div className={clsx(
-                    "font-mono font-bold text-center tabular-nums tracking-tighter transition-all leading-none",
-                    error ? "text-red-500 text-5xl md:text-6xl" : "text-white text-6xl md:text-8xl lg:text-9xl"
-                )}>
-                    {error ? "ERROR" : weight.toFixed(2)}
+                {/* Header: System Labels */}
+                <div className="flex justify-between items-end">
+                    <div className="space-y-1">
+                        <div className="flex items-center gap-2 text-cyan-500/80">
+                            <Scale className="w-4 h-4" />
+                            <span className="text-[10px] font-black tracking-[0.2em] uppercase opacity-70">Industrial Core</span>
+                        </div>
+                        <h2 className="text-xl font-extrabold tracking-tight text-white/90">SISDEPE <span className="text-white/30 font-light">v2.0</span></h2>
+                    </div>
+
+                    <div className={clsx(
+                        "flex items-center gap-3 px-4 py-2 rounded-2xl border transition-all duration-500",
+                        isConnected
+                            ? "bg-cyan-500/5 border-cyan-500/20 text-cyan-400 shadow-[0_0_20px_rgba(6,182,212,0.1)]"
+                            : "bg-red-500/5 border-red-500/20 text-red-400"
+                    )}>
+                        <Activity className={clsx("w-4 h-4", isConnected && "animate-pulse")} />
+                        <span className="text-xs font-black tracking-widest">{isConnected ? "ONLINE" : "OFFLINE"}</span>
+                    </div>
                 </div>
-                {!error && (
-                    <div className="absolute bottom-4 right-6 text-xl md:text-2xl font-bold text-white/20">
-                        {unit.toUpperCase()}
+
+                {/* Main OLED-Style Display */}
+                <div className="relative isolate group/display">
+                    {/* Inner Glow Background */}
+                    <div className={clsx(
+                        "absolute -inset-10 blur-[80px] opacity-20 -z-10 transition-colors duration-1000",
+                        error ? "bg-red-500" : isStable ? "bg-cyan-500" : "bg-orange-500/50"
+                    )} />
+
+                    <div className="relative bg-black/80 rounded-3xl p-8 md:p-12 border border-white/5 shadow-[inset_0_2px_20px_rgba(0,0,0,0.8)] flex flex-col items-center justify-center min-h-[220px] overflow-hidden">
+                        {/* Scanline Effect */}
+                        <div className="absolute inset-0 pointer-events-none opacity-[0.03]"
+                            style={{ backgroundImage: 'repeating-linear-gradient(0deg, #fff, #fff 1px, transparent 1px, transparent 2px)', backgroundSize: '100% 2px' }} />
+
+                        <div className={clsx(
+                            "font-mono font-bold text-center tabular-nums tracking-tighter transition-all duration-500 leading-none select-none",
+                            error
+                                ? "text-red-500 text-5xl md:text-7xl drop-shadow-[0_0_15px_rgba(239,68,68,0.5)]"
+                                : isStable
+                                    ? "text-cyan-400 text-7xl md:text-9xl lg:text-[10rem] drop-shadow-[0_0_25px_rgba(6,182,212,0.4)]"
+                                    : "text-white/90 text-7xl md:text-9xl lg:text-[10rem]"
+                        )}>
+                            {error ? "SYSTEM_ERR" : weight.toFixed(2)}
+                        </div>
+
+                        {!error && (
+                            <div className="absolute bottom-6 right-10 flex flex-col items-end">
+                                <span className="text-[10px] font-black text-white/20 tracking-[0.3em] mb-1 uppercase italic">Metric Unit</span>
+                                <span className="text-2xl md:text-3xl font-black text-cyan-500/40">{unit.toUpperCase()}</span>
+                            </div>
+                        )}
+
+                        {/* Floating Decoration */}
+                        <div className="absolute top-4 left-6 flex gap-1">
+                            {[...Array(3)].map((_, i) => (
+                                <div key={i} className="w-1 h-3 bg-white/10 rounded-full" />
+                            ))}
+                        </div>
+                    </div>
+                </div>
+
+                {/* Industrial Indicator Bars */}
+                <div className="grid grid-cols-3 gap-4">
+                    <StatusPill label="STABLE" active={isStable} activeColor="bg-cyan-400" />
+                    <StatusPill label="ZERO" active={isZero} activeColor="bg-blue-400" />
+                    <StatusPill label="NET" active={isNet} activeColor="bg-orange-400" />
+                </div>
+
+                {/* Reactive Error Bar */}
+                {error && (
+                    <div className="animate-glow-pulse flex items-center gap-4 p-4 bg-red-500/5 border border-red-500/20 rounded-2xl text-red-400">
+                        <div className="w-2 h-2 rounded-full bg-red-500 shadow-[0_0_10px_rgba(239,68,68,0.8)]" />
+                        <ArrowRightLeft className="w-4 h-4 shrink-0" />
+                        <span className="font-bold text-[11px] tracking-wider uppercase">{error}</span>
                     </div>
                 )}
             </div>
-
-            {/* Indicators */}
-            <div className="flex justify-between md:justify-around gap-2 px-2">
-                <Indicator label="STABLE" active={isStable} color="green" />
-                <Indicator label="ZERO" active={isZero} color="blue" />
-                <Indicator label="NET" active={isNet} color="yellow" />
-            </div>
-
-            {/* Error Message */}
-            {error && (
-                <div className="mt-6 p-4 bg-red-500/10 border border-red-500/20 rounded-xl flex items-center gap-3 text-red-400">
-                    <ArrowRightLeft className="w-5 h-5 shrink-0" />
-                    <span className="font-medium text-sm">{error}</span>
-                </div>
-            )}
         </div>
     );
 };
 
-const Indicator = ({ label, active, color }: { label: string, active: boolean, color: 'green' | 'blue' | 'yellow' }) => {
-    const colorClasses = {
-        green: active ? "bg-green-500 shadow-[0_0_15px_rgba(34,197,94,0.6)] scale-110" : "bg-green-900/20 opacity-50",
-        blue: active ? "bg-blue-500 shadow-[0_0_15px_rgba(59,130,246,0.6)] scale-110" : "bg-blue-900/20 opacity-50",
-        yellow: active ? "bg-yellow-500 shadow-[0_0_15px_rgba(234,179,8,0.6)] scale-110" : "bg-yellow-900/20 opacity-50",
-    };
-
+const StatusPill = ({ label, active, activeColor }: { label: string, active: boolean, activeColor: string }) => {
     return (
-        <div className="flex flex-col items-center gap-2 p-2 rounded-lg transition-all duration-300">
-            <div className={clsx(
-                "w-3 h-3 md:w-4 md:h-4 rounded-full transition-all duration-300",
-                colorClasses[color]
-            )} />
+        <div className={clsx(
+            "relative group/pill p-4 rounded-2xl border transition-all duration-500 flex flex-col gap-2 items-center",
+            active
+                ? "bg-slate-800/50 border-white/10 shadow-lg"
+                : "bg-black/20 border-white/5"
+        )}>
             <span className={clsx(
-                "text-[10px] md:text-xs font-bold tracking-widest transition-colors",
-                active ? "text-white" : "text-white/20"
+                "text-[9px] font-black tracking-[0.2em] transition-colors duration-500",
+                active ? "text-white/80" : "text-white/20"
             )}>
                 {label}
             </span>
+            <div className="relative w-full h-1.5 bg-slate-900 rounded-full overflow-hidden">
+                <div className={clsx(
+                    "absolute inset-0 transition-all duration-700 ease-out rounded-full",
+                    active ? activeColor : "bg-transparent w-0",
+                    active && "shadow-[0_0_10px_rgba(255,255,255,0.3)]"
+                )} style={{ width: active ? '100%' : '0%' }} />
+            </div>
         </div>
     );
 };
+

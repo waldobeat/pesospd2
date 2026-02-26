@@ -25,6 +25,19 @@ export interface AppNotification {
 
 const COLLECTION = 'notifications';
 
+const sanitize = (val: any) => {
+    if (val === null || val === undefined) return null;
+    if (typeof val !== 'object') return val;
+    const cleaned = { ...val };
+    Object.keys(cleaned).forEach((key) => {
+        if (cleaned[key] === undefined) delete cleaned[key];
+        else if (cleaned[key] && typeof cleaned[key] === 'object' && !cleaned[key].toDate) {
+            cleaned[key] = sanitize(cleaned[key]);
+        }
+    });
+    return cleaned;
+};
+
 export const notificationService = {
 
     /** Create a new notification */
@@ -32,12 +45,12 @@ export const notificationService = {
         payload: Omit<AppNotification, 'id' | 'createdAt' | 'read' | 'resolved'>
     ): Promise<string> => {
         try {
-            const ref = await addDoc(collection(db, COLLECTION), {
+            const ref = await addDoc(collection(db, COLLECTION), sanitize({
                 ...payload,
                 createdAt: Timestamp.now(),
                 read: false,
                 resolved: false,
-            });
+            }));
             return ref.id;
         } catch (error) {
             console.error('Error creating notification:', error);

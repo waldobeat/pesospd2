@@ -134,14 +134,14 @@ function sendWhatsAppAlert(group, notification) {
     const branchName = BRANCH_NAMES[targetBranch?.toLowerCase()] || targetBranch || 'N/A';
 
     // Formatear el mensaje exactamente como pidió el usuario (Solo en el BOT)
-    const waMessage = `📢 *MENSAJE DEL SISTEMA*\n` +
+    const waMessage = `📢 *SISDEPE*\n` +
         `📍 *SUCURSAL:* ${branchName.toUpperCase()}\n\n` +
         `🛠️ *${title.replace('🛠️ ', '').toUpperCase()}*\n` +
         `📦 *EQUIPO:* ${relatedModel || 'N/A'}\n` +
         `🔢 *SERIAL:* ${relatedSerial || 'N/A'}\n` +
-        `👤 *ATENDIDO POR:* Taller Central\n` +
+        `👤 *TÉCNICO:* Jesús Infante\n` +
         `📝 *ESTADO:* ${message}\n\n` +
-        `_Sistema de Inventario Automatizado_`;
+        `_Jesús Infante_`;
 
     group.sendMessage(waMessage).then(() => {
         console.log(`🚀 Mensaje enviado a WhatsApp: ${relatedSerial}`);

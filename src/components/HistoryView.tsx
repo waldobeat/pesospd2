@@ -22,10 +22,10 @@ interface HistoryViewProps {
 
 // ── Type metadata ─────────────────────────────────────────────────────────────
 const TYPE_META = {
-    calibration: { icon: CheckCircle, color: 'text-blue-400', bg: 'bg-blue-500/20', label: 'Calibración', border: 'border-blue-500/30' },
-    repair: { icon: Wrench, color: 'text-orange-400', bg: 'bg-orange-500/20', label: 'Reparación', border: 'border-orange-500/30' },
-    issue: { icon: AlertTriangle, color: 'text-red-400', bg: 'bg-red-500/20', label: 'Avería', border: 'border-red-500/30' },
-    inventory_op: { icon: RefreshCw, color: 'text-purple-400', bg: 'bg-purple-500/20', label: 'Op. Inventario', border: 'border-purple-500/30' },
+    calibration: { icon: CheckCircle, color: 'text-cyan-400', bg: 'bg-cyan-500/10', label: 'Calibration', border: 'border-cyan-500/20' },
+    repair: { icon: Wrench, color: 'text-blue-400', bg: 'bg-blue-500/10', label: 'Maintenance', border: 'border-blue-500/20' },
+    issue: { icon: AlertTriangle, color: 'text-red-400', bg: 'bg-red-500/10', label: 'System_Fail', border: 'border-red-500/20' },
+    inventory_op: { icon: RefreshCw, color: 'text-emerald-400', bg: 'bg-emerald-500/10', label: 'Logic_Flow', border: 'border-emerald-500/20' },
 };
 
 // ── Detail panel ──────────────────────────────────────────────────────────────
@@ -47,21 +47,24 @@ function DetailPanel({ record, onClose }: { record: HistoryItem; onClose: () => 
     };
 
     return (
-        <div className="w-80 shrink-0 flex flex-col border-l border-white/10 bg-black/30 animate-in slide-in-from-right-2 duration-200">
+        <div className="w-80 shrink-0 flex flex-col border-l border-white/5 bg-slate-900/40 backdrop-blur-xl animate-in slide-in-from-right-2 duration-300">
             {/* Panel header */}
-            <div className={clsx('px-5 py-4 border-b border-white/10 flex items-center justify-between', meta.bg + '/30')}>
-                <div className="flex items-center gap-2">
-                    <div className={clsx('w-7 h-7 rounded-lg flex items-center justify-center shrink-0', meta.bg)}>
-                        <Icon className={clsx('w-3.5 h-3.5', meta.color)} />
+            <div className="relative px-6 py-5 border-b border-white/5 overflow-hidden">
+                <div className={clsx('absolute inset-0 opacity-10', meta.bg)} />
+                <div className="relative flex items-center justify-between">
+                    <div className="flex items-center gap-3">
+                        <div className={clsx('w-9 h-9 rounded-xl flex items-center justify-center border', meta.border, meta.bg)}>
+                            <Icon className={clsx('w-4 h-4', meta.color)} />
+                        </div>
+                        <div>
+                            <div className={clsx('text-[10px] font-black uppercase tracking-widest', meta.color)}>{meta.label}</div>
+                            <div className="text-white font-black text-xs tracking-tight uppercase">{record.model}</div>
+                        </div>
                     </div>
-                    <div>
-                        <div className={clsx('text-xs font-bold', meta.color)}>{meta.label}</div>
-                        <div className="text-white font-semibold text-sm">{record.model}</div>
-                    </div>
+                    <button onClick={onClose} className="p-2 hover:bg-white/5 rounded-xl transition-all text-slate-500 hover:text-white border border-transparent hover:border-white/10">
+                        <X className="w-4 h-4" />
+                    </button>
                 </div>
-                <button onClick={onClose} className="p-1.5 hover:bg-white/10 rounded-lg transition-colors text-white/40 hover:text-white">
-                    <X className="w-4 h-4" />
-                </button>
             </div>
 
             {/* Fields */}
@@ -218,198 +221,248 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
     if (!isOpen) return null;
 
     return (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-            <div className="bg-[#18181b] w-full max-w-7xl rounded-3xl border border-white/10 shadow-2xl overflow-hidden flex flex-col max-h-[90vh]">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-6 bg-slate-950/40 backdrop-blur-md animate-in fade-in duration-500">
+            <div className="relative w-full max-w-7xl h-[85vh] group">
+                {/* Outer Glow */}
+                <div className="absolute -inset-1 bg-gradient-to-br from-cyan-500/10 to-blue-500/10 rounded-[2.5rem] blur-2xl opacity-50 group-hover:opacity-100 transition-opacity duration-700" />
 
-                {/* Header */}
-                <div className="p-5 border-b border-white/10 flex justify-between items-center bg-white/5 shrink-0">
-                    <div>
-                        <h2 className="text-xl font-bold text-white flex items-center gap-2">
-                            <FileText className="w-5 h-5 text-blue-400" />
-                            Historial de Operaciones
-                        </h2>
-                        <p className="text-white/40 text-xs mt-0.5">
-                            Registro unificado · {filteredRecords.length} registros
-                        </p>
-                    </div>
-                    <div className="flex items-center gap-2">
-                        <button
-                            onClick={handleExportPDF}
-                            className="px-3 py-1.5 bg-blue-600/20 hover:bg-blue-600/40 text-blue-300 rounded-lg transition-colors text-xs font-bold flex items-center gap-1.5"
-                        >
-                            <FileDown className="w-3.5 h-3.5" /> Exportar PDF
-                        </button>
-                        <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-full transition-colors text-white/50 hover:text-white">
-                            <X className="w-5 h-5" />
-                        </button>
-                    </div>
-                </div>
+                <div className="relative h-full bg-slate-900/80 backdrop-blur-2xl border border-white/10 rounded-[2rem] shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col">
 
-                {/* Toolbar */}
-                <div className="px-4 py-3 border-b border-white/10 bg-black/20 flex gap-3 shrink-0">
-                    {/* Search */}
-                    <div className="relative flex-1">
-                        <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30" />
-                        <input
-                            type="text"
-                            placeholder="Buscar por serial, modelo, nota..."
-                            value={searchTerm}
-                            onChange={(e) => setSearchTerm(e.target.value)}
-                            className="w-full bg-black/50 border border-white/10 rounded-xl pl-10 pr-4 py-2 text-white outline-none focus:border-blue-500/50 text-sm"
-                        />
-                    </div>
-                    {/* Type filter */}
-                    <div className="relative">
-                        <select
-                            value={typeFilter}
-                            onChange={(e) => setTypeFilter(e.target.value as typeof typeFilter)}
-                            className="appearance-none bg-black/50 border border-white/10 rounded-xl px-4 py-2 text-white/70 outline-none focus:border-blue-500/50 text-sm pr-8"
-                        >
-                            <option value="">Todos los tipos</option>
-                            <option value="calibration">Calibraciones</option>
-                            <option value="repair">Reparaciones</option>
-                            <option value="issue">Averías</option>
-                            <option value="inventory_op">Operaciones Inv.</option>
-                        </select>
-                        <ChevronDown className="absolute right-2.5 top-1/2 -translate-y-1/2 w-3.5 h-3.5 text-white/30 pointer-events-none" />
-                    </div>
-                </div>
-
-                {/* Content area: table + detail panel */}
-                <div className="flex flex-1 overflow-hidden min-h-0">
-
-                    {/* Table */}
-                    <div className="flex-1 overflow-x-auto overflow-y-auto bg-black/40 relative">
-                        {loading && (
-                            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm z-20 flex items-center justify-center text-white text-sm">
-                                Cargando...
+                    {/* Header */}
+                    <div className="relative p-8 border-b border-white/5 flex justify-between items-center shrink-0">
+                        <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-cyan-500/50 to-transparent" />
+                        <div className="flex items-center gap-5">
+                            <div className="w-12 h-12 bg-slate-800 border border-white/10 rounded-2xl flex items-center justify-center shadow-inner">
+                                <FileText className="w-6 h-6 text-cyan-400" />
                             </div>
-                        )}
-                        <table className="w-full text-left border-collapse min-w-[600px]">
-                            <thead className="bg-white/5 sticky top-0 backdrop-blur-md z-10">
-                                <tr>
-                                    <th className="p-3 px-4 text-[10px] font-bold text-white/40 uppercase tracking-wider w-10"></th>
-                                    <th className="p-3 px-4 text-[10px] font-bold text-white/40 uppercase tracking-wider">Fecha</th>
-                                    <th className="p-3 px-4 text-[10px] font-bold text-white/40 uppercase tracking-wider">Usuario</th>
-                                    <th className="p-3 px-4 text-[10px] font-bold text-white/40 uppercase tracking-wider">Modelo / Serial</th>
-                                    <th className="p-3 px-4 text-[10px] font-bold text-white/40 uppercase tracking-wider">Estado</th>
-                                    <th className="p-3 px-4 text-[10px] font-bold text-white/40 uppercase tracking-wider">Resumen</th>
-                                    <th className="p-3 px-4 text-[10px] font-bold text-white/40 uppercase tracking-wider text-center w-12"></th>
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-white/5">
-                                {filteredRecords.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={7} className="p-12 text-center text-white/20 text-sm">
-                                            {loading ? '...' : 'No hay registros encontrados.'}
-                                        </td>
-                                    </tr>
-                                ) : (
-                                    filteredRecords.map((record) => {
-                                        const meta = TYPE_META[record.type] ?? TYPE_META.calibration;
-                                        const Icon = meta.icon;
-                                        const isSelected = selectedRecord?.id === record.id;
-
-                                        // Summary text
-                                        let summary = record.note || '';
-                                        if (record.type === 'repair') summary = (record as RepairRecord).diagnosis;
-                                        if (record.type === 'issue') summary = (record as IssueRecord).description;
-                                        if (record.type === 'inventory_op' && (record as InventoryOpRecord).destination)
-                                            summary = `→ ${(record as InventoryOpRecord).destination}`;
-
-                                        // Status badge
-                                        let statusBadge = null;
-                                        if (record.type === 'calibration') {
-                                            statusBadge = <span className={clsx('text-[10px] px-2 py-0.5 rounded-full font-bold border', record.passed ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20')}>{record.passed ? 'Aprobado' : 'Fallido'}</span>;
-                                        } else if (record.type === 'repair') {
-                                            statusBadge = <span className={clsx('text-[10px] px-2 py-0.5 rounded-full font-bold border', (record as RepairRecord).repaired ? 'bg-green-500/10 text-green-400 border-green-500/20' : 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20')}>{(record as RepairRecord).repaired ? 'Reparado' : 'Pendiente'}</span>;
-                                        } else if (record.type === 'issue') {
-                                            const st = (record as IssueRecord).status;
-                                            statusBadge = <span className={clsx('text-[10px] px-2 py-0.5 rounded-full font-bold border', st === 'resolved' ? 'bg-green-500/10 text-green-400 border-green-500/20' : st === 'in_repair' ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20')}>{st === 'resolved' ? 'Resuelto' : st === 'in_repair' ? 'En Taller' : 'Abierto'}</span>;
-                                        } else {
-                                            statusBadge = <span className="text-[10px] px-2 py-0.5 rounded-full font-bold border bg-purple-500/10 text-purple-400 border-purple-500/20">{(record as InventoryOpRecord).status}</span>;
-                                        }
-
-                                        return (
-                                            <tr
-                                                key={record.id}
-                                                onClick={() => setSelectedRecord(isSelected ? null : record)}
-                                                className={clsx(
-                                                    'transition-colors cursor-pointer group',
-                                                    isSelected ? 'bg-white/10 border-l-2 border-l-blue-500' : 'hover:bg-white/5'
-                                                )}
-                                            >
-                                                {/* Type icon */}
-                                                <td className="p-3 px-4">
-                                                    <div className={clsx('w-7 h-7 rounded-lg flex items-center justify-center', meta.bg)}>
-                                                        <Icon className={clsx('w-3.5 h-3.5', meta.color)} />
-                                                    </div>
-                                                </td>
-
-                                                {/* Date */}
-                                                <td className="p-3 px-4 text-white/60 text-xs whitespace-nowrap">
-                                                    <div>{new Date(record.date).toLocaleDateString('es-VE')}</div>
-                                                    <div className="text-white/30">{new Date(record.date).toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit' })}</div>
-                                                </td>
-
-                                                {/* User */}
-                                                <td className="p-3 px-4 max-w-[130px]">
-                                                    <div className="text-xs font-medium text-white/70 truncate">{record.user?.split('@')[0] ?? 'N/A'}</div>
-                                                    <div className="text-[10px] text-white/30 truncate">{record.branch ?? ''}</div>
-                                                </td>
-
-                                                {/* Model / Serial */}
-                                                <td className="p-3 px-4">
-                                                    <div className="font-bold text-white text-sm">{record.model}</div>
-                                                    <div className="text-xs text-white/40 font-mono">{record.serial}</div>
-                                                </td>
-
-                                                {/* Status */}
-                                                <td className="p-3 px-4">{statusBadge}</td>
-
-                                                {/* Summary */}
-                                                <td className="p-3 px-4 max-w-[200px]">
-                                                    <div className="text-xs text-white/50 truncate">{summary}</div>
-                                                </td>
-
-                                                {/* Actions */}
-                                                <td className="p-3 px-4 text-center">
-                                                    <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
-                                                        <button
-                                                            onClick={(e) => { e.stopPropagation(); setSelectedRecord(isSelected ? null : record); }}
-                                                            className="p-1.5 hover:bg-white/10 rounded-lg text-white/30 hover:text-white transition-colors"
-                                                            title="Ver detalles"
-                                                        >
-                                                            <ChevronRight className="w-3.5 h-3.5" />
-                                                        </button>
-                                                        {isAdmin && (
-                                                            <button
-                                                                onClick={(e) => handleDelete(record.id, e)}
-                                                                className="p-1.5 hover:bg-red-500/20 rounded-lg text-white/20 hover:text-red-400 transition-colors"
-                                                                title="Eliminar"
-                                                            >
-                                                                <Trash2 className="w-3.5 h-3.5" />
-                                                            </button>
-                                                        )}
-                                                    </div>
-                                                </td>
-                                            </tr>
-                                        );
-                                    })
-                                )}
-                            </tbody>
-                        </table>
+                            <div>
+                                <h2 className="text-xl font-black text-white tracking-tight leading-none uppercase">
+                                    Operation_Archives
+                                </h2>
+                                <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-2 flex items-center gap-2">
+                                    <span className="w-1.5 h-1.5 bg-cyan-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(6,182,212,0.8)]" />
+                                    SISDEPE_CORE_LOGS // {filteredRecords.length} ENTRIES
+                                </p>
+                            </div>
+                        </div>
+                        <div className="flex items-center gap-3">
+                            <button
+                                onClick={handleExportPDF}
+                                className="h-11 px-5 bg-slate-800 hover:bg-slate-700 text-slate-300 hover:text-white border border-white/5 rounded-2xl font-black text-[10px] tracking-[0.2em] transition-all flex items-center gap-3 active:scale-95"
+                            >
+                                <FileDown className="w-4 h-4 text-cyan-400" />
+                                EXPORT_PDF
+                            </button>
+                            <button
+                                onClick={onClose}
+                                className="h-11 w-11 flex items-center justify-center bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-slate-500 hover:text-white transition-all active:scale-95"
+                            >
+                                <X className="w-5 h-5" />
+                            </button>
+                        </div>
                     </div>
 
-                    {/* Detail panel */}
-                    {selectedRecord && (
-                        <DetailPanel record={selectedRecord} onClose={() => setSelectedRecord(null)} />
-                    )}
-                </div>
+                    {/* Toolbar */}
+                    <div className="px-8 py-4 bg-slate-950/20 border-b border-white/5 flex gap-4 shrink-0">
+                        {/* Search */}
+                        <div className="relative flex-1 group">
+                            <Search className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 group-focus-within:text-cyan-400 transition-colors" />
+                            <input
+                                type="text"
+                                placeholder="IDENTIFY_SERIAL_OR_MODEL..."
+                                value={searchTerm}
+                                onChange={(e) => setSearchTerm(e.target.value)}
+                                className="w-full bg-slate-900/60 border border-white/5 rounded-2xl pl-12 pr-4 py-3.5 text-white placeholder:text-slate-600 outline-none focus:border-cyan-500/30 focus:ring-1 focus:ring-cyan-500/10 text-xs font-bold tracking-widest uppercase transition-all"
+                            />
+                        </div>
+                        {/* Type filter */}
+                        <div className="relative">
+                            <select
+                                value={typeFilter}
+                                onChange={(e) => setTypeFilter(e.target.value as typeof typeFilter)}
+                                className="appearance-none bg-slate-900 border border-white/5 rounded-2xl px-6 py-3.5 text-slate-400 outline-none focus:border-cyan-500/30 text-[10px] font-black tracking-[0.2em] uppercase pr-10 hover:bg-slate-800 transition-colors cursor-pointer"
+                            >
+                                <option value="">ALL_FLOWS</option>
+                                <option value="calibration">CALIBRATION</option>
+                                <option value="repair">MAINTENANCE</option>
+                                <option value="issue">FAILURES</option>
+                                <option value="inventory_op">LOGIC_OPS</option>
+                            </select>
+                            <ChevronDown className="absolute right-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-600 pointer-events-none" />
+                        </div>
+                    </div>
 
-                {/* Footer */}
-                <div className="px-5 py-2.5 bg-white/5 border-t border-white/10 text-center text-[11px] text-white/20 shrink-0">
-                    Sincronizado con Firebase Cloud · Haz clic en una fila para ver detalles completos
+                    {/* Content area: table + detail panel */}
+                    <div className="flex flex-1 overflow-hidden min-h-0">
+
+                        {/* Table */}
+                        <div className="flex-1 overflow-x-auto overflow-y-auto bg-black/40 relative">
+                            {loading && (
+                                <div className="absolute inset-0 bg-black/50 backdrop-blur-sm z-20 flex items-center justify-center text-white text-sm">
+                                    Cargando...
+                                </div>
+                            )}
+                            <table className="w-full text-left border-collapse min-w-[800px]">
+                                <thead className="bg-slate-950/40 sticky top-0 backdrop-blur-md z-10 border-b border-white/5">
+                                    <tr>
+                                        <th className="p-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] w-14">REF</th>
+                                        <th className="p-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Timestamp</th>
+                                        <th className="p-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Operator</th>
+                                        <th className="p-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Hardware_ID</th>
+                                        <th className="p-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Live_Status</th>
+                                        <th className="p-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Operation_Notes</th>
+                                        <th className="p-5 text-center w-20"></th>
+                                    </tr>
+                                </thead>
+                                <tbody className="divide-y divide-white/5">
+                                    {filteredRecords.length === 0 ? (
+                                        <tr>
+                                            <td colSpan={7} className="p-12 text-center text-white/20 text-sm">
+                                                {loading ? '...' : 'No hay registros encontrados.'}
+                                            </td>
+                                        </tr>
+                                    ) : (
+                                        filteredRecords.map((record) => {
+                                            const meta = TYPE_META[record.type] ?? TYPE_META.calibration;
+                                            const Icon = meta.icon;
+                                            const isSelected = selectedRecord?.id === record.id;
+
+                                            // Summary text
+                                            let summary = record.note || '';
+                                            if (record.type === 'repair') summary = (record as RepairRecord).diagnosis;
+                                            if (record.type === 'issue') summary = (record as IssueRecord).description;
+                                            if (record.type === 'inventory_op' && (record as InventoryOpRecord).destination)
+                                                summary = `→ ${(record as InventoryOpRecord).destination}`;
+
+                                            // Status badge
+                                            let statusBadge = null;
+                                            if (record.type === 'calibration') {
+                                                statusBadge = (
+                                                    <div className={clsx('inline-flex items-center px-3 py-1 rounded-full border text-[9px] font-black tracking-widest uppercase',
+                                                        record.passed ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20')}>
+                                                        <span className={clsx('w-1 h-1 rounded-full mr-2', record.passed ? 'bg-emerald-400' : 'bg-red-400')} />
+                                                        {record.passed ? 'Passed' : 'Failed'}
+                                                    </div>
+                                                );
+                                            } else if (record.type === 'repair') {
+                                                const rep = (record as RepairRecord).repaired;
+                                                statusBadge = (
+                                                    <div className={clsx('inline-flex items-center px-3 py-1 rounded-full border text-[9px] font-black tracking-widest uppercase',
+                                                        rep ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' : 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20')}>
+                                                        <span className={clsx('w-1 h-1 rounded-full mr-2', rep ? 'bg-blue-400' : 'bg-yellow-400')} />
+                                                        {rep ? 'Restored' : 'In_Work'}
+                                                    </div>
+                                                );
+                                            } else if (record.type === 'issue') {
+                                                const st = (record as IssueRecord).status;
+                                                statusBadge = (
+                                                    <div className={clsx('inline-flex items-center px-3 py-1 rounded-full border text-[9px] font-black tracking-widest uppercase',
+                                                        st === 'resolved' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                                                            st === 'in_repair' ? 'bg-orange-500/10 text-orange-400 border-orange-500/20' : 'bg-red-500/10 text-red-400 border-red-500/20')}>
+                                                        <span className={clsx('w-1 h-1 rounded-full mr-2', st === 'resolved' ? 'bg-emerald-400' : st === 'in_repair' ? 'bg-orange-400' : 'bg-red-400')} />
+                                                        {st.toUpperCase()}
+                                                    </div>
+                                                );
+                                            } else {
+                                                statusBadge = (
+                                                    <div className="inline-flex items-center px-3 py-1 rounded-full border bg-emerald-500/10 text-emerald-400 border-emerald-500/20 text-[9px] font-black tracking-widest uppercase">
+                                                        {(record as InventoryOpRecord).status}
+                                                    </div>
+                                                );
+                                            }
+
+                                            return (
+                                                <tr
+                                                    key={record.id}
+                                                    onClick={() => setSelectedRecord(isSelected ? null : record)}
+                                                    className={clsx(
+                                                        'transition-colors cursor-pointer group',
+                                                        isSelected ? 'bg-white/10 border-l-2 border-l-blue-500' : 'hover:bg-white/5'
+                                                    )}
+                                                >
+                                                    <td className="p-5">
+                                                        <div className={clsx('w-9 h-9 rounded-xl flex items-center justify-center border transition-all duration-300',
+                                                            isSelected ? 'bg-white/10 border-white/20' : 'bg-slate-900 border-white/5 group-hover:bg-slate-800')}>
+                                                            <Icon className={clsx('w-4 h-4', meta.color)} />
+                                                        </div>
+                                                    </td>
+
+                                                    {/* Date */}
+                                                    <td className="p-5">
+                                                        <div className="text-[11px] font-black text-white/80 tracking-tight">{new Date(record.date).toLocaleDateString('es-VE')}</div>
+                                                        <div className="text-[10px] font-bold text-slate-500 mt-0.5">{new Date(record.date).toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit' })}</div>
+                                                    </td>
+
+                                                    {/* User */}
+                                                    <td className="p-5">
+                                                        <div className="flex items-center gap-2">
+                                                            <div className="w-5 h-5 bg-slate-800 rounded-md flex items-center justify-center border border-white/5">
+                                                                <User className="w-2.5 h-2.5 text-slate-400" />
+                                                            </div>
+                                                            <div className="min-w-0">
+                                                                <div className="text-[11px] font-black text-white truncate uppercase tracking-tighter">{record.user?.split('@')[0] ?? 'N/A'}</div>
+                                                                <div className="text-[9px] font-bold text-cyan-500/50 truncate uppercase tracking-widest">{record.branch ?? 'UNKNOWN'}</div>
+                                                            </div>
+                                                        </div>
+                                                    </td>
+
+                                                    {/* Model / Serial */}
+                                                    <td className="p-5">
+                                                        <div className="text-[11px] font-black text-white uppercase tracking-tight">{record.model}</div>
+                                                        <div className="text-[10px] font-bold text-slate-500 mt-0.5 font-mono tracking-widest">{record.serial}</div>
+                                                    </td>
+
+                                                    {/* Status */}
+                                                    <td className="p-5">{statusBadge}</td>
+
+                                                    {/* Summary */}
+                                                    <td className="p-5 min-w-[200px]">
+                                                        <div className="text-[11px] font-bold text-slate-400 line-clamp-2 leading-relaxed italic">{summary}</div>
+                                                    </td>
+
+                                                    {/* Actions */}
+                                                    <td className="p-5 text-center">
+                                                        <div className="flex items-center justify-center gap-1 opacity-0 group-hover:opacity-100 transition-all transform translate-x-2 group-hover:translate-x-0">
+                                                            <button
+                                                                onClick={(e) => { e.stopPropagation(); setSelectedRecord(isSelected ? null : record); }}
+                                                                className="p-2 hover:bg-white/10 rounded-xl text-slate-500 hover:text-white transition-all border border-transparent hover:border-white/10"
+                                                            >
+                                                                <ChevronRight className="w-4 h-4" />
+                                                            </button>
+                                                            {isAdmin && (
+                                                                <button
+                                                                    onClick={(e) => handleDelete(record.id, e)}
+                                                                    className="p-2 hover:bg-red-500/10 rounded-xl text-slate-600 hover:text-red-400 transition-all border border-transparent hover:border-red-500/20"
+                                                                >
+                                                                    <Trash2 className="w-4 h-4" />
+                                                                </button>
+                                                            )}
+                                                        </div>
+                                                    </td>
+                                                </tr>
+                                            );
+                                        })
+                                    )}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* Detail panel */}
+                        {selectedRecord && (
+                            <DetailPanel record={selectedRecord} onClose={() => setSelectedRecord(null)} />
+                        )}
+                    </div>
+
+                    {/* Footer */}
+                    <div className="px-8 py-4 bg-slate-950/40 border-t border-white/5 flex items-center justify-between shrink-0">
+                        <div className="flex items-center gap-2 text-[10px] font-black text-slate-600 uppercase tracking-widest">
+                            <RefreshCw className="w-3 h-3 animate-spin-slow" />
+                            Live_Stream // Real-Time DB Connected
+                        </div>
+                        <div className="text-[10px] font-bold text-slate-500 uppercase tracking-widest">
+                            Select Entry to View Full Telemetry
+                        </div>
+                    </div>
                 </div>
             </div>
         </div>

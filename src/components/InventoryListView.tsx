@@ -26,26 +26,16 @@ type SortField = 'status' | 'scaleModel' | 'serialNumber' | 'branch' | 'updatedA
 type SortDir = 'asc' | 'desc';
 
 const STATUS_STYLES: Record<string, string> = {
-    'OPERATIVO': 'bg-green-500/10 text-green-400 border-green-500/20',
-    'DAÑADO': 'bg-red-500/10 text-red-400 border-red-500/20',
-    'EN TALLER': 'bg-orange-500/10 text-orange-400 border-orange-500/20',
-    'EN ESPERA': 'bg-yellow-500/10 text-yellow-400 border-yellow-500/20',
-    'ENVIADO': 'bg-purple-500/10 text-purple-400 border-purple-500/20',
-    'TRANSFERIDO': 'bg-blue-500/10 text-blue-400 border-blue-500/20',
-    'DADO DE BAJA': 'bg-neutral-500/10 text-neutral-400 border-neutral-500/20',
-    'REPARANDO': 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20',
-    'REPARADO': 'bg-green-500/10 text-green-400 border-green-500/20',
-    'EN TRÁNSITO': 'bg-amber-500/10 text-amber-400 border-amber-500/30',
-};
-
-const ROW_SHADOW: Record<string, string> = {
-    'DAÑADO': 'bg-red-500/5',
-    'EN TALLER': 'bg-orange-500/5',
-    'EN ESPERA': 'bg-yellow-500/5',
-    'REPARANDO': 'bg-cyan-500/5',
-    'REPARADO': 'bg-green-500/5',
-    'EN TRÁNSITO': 'bg-amber-500/5',
-    'DADO DE BAJA': 'bg-neutral-900/60',
+    'OPERATIVO': 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]',
+    'DAÑADO': 'bg-red-500/10 text-red-400 border-red-500/20 shadow-[0_0_10px_rgba(239,68,68,0.1)]',
+    'EN TALLER': 'bg-orange-500/10 text-orange-400 border-orange-500/20 shadow-[0_0_10px_rgba(249,115,22,0.1)]',
+    'EN ESPERA': 'bg-yellow-500/10 text-yellow-500 border-yellow-500/20 shadow-[0_0_10px_rgba(234,179,8,0.1)]',
+    'ENVIADO': 'bg-indigo-500/10 text-indigo-400 border-indigo-500/20 shadow-[0_0_10px_rgba(99,102,241,0.1)]',
+    'TRANSFERIDO': 'bg-blue-500/10 text-blue-400 border-blue-500/20 shadow-[0_0_10px_rgba(59,130,246,0.1)]',
+    'DADO DE BAJA': 'bg-slate-500/10 text-slate-400 border-slate-500/20',
+    'REPARANDO': 'bg-cyan-500/10 text-cyan-400 border-cyan-500/20 shadow-[0_0_10px_rgba(6,182,212,0.1)]',
+    'REPARADO': 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20 shadow-[0_0_10px_rgba(16,185,129,0.1)]',
+    'EN TRÁNSITO': 'bg-amber-500/10 text-amber-400 border-amber-500/30 shadow-[0_0_10px_rgba(245,158,11,0.1)]',
 };
 
 const STATUS_MAP: Record<string, string> = {
@@ -135,7 +125,7 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
     const scopedItems = useMemo(() => {
         if (isMaster) return allItems;
         return allItems.filter(
-            (i) => i.branch === userPrefix ||
+            (i: InventoryItem) => i.branch === userPrefix ||
                 i.recordedBy?.includes(userPrefix)
         );
     }, [allItems, isMaster, userPrefix]);
@@ -178,7 +168,7 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
     // ── Helpers ────────────────────────────────────────────────────────────
     const handleSort = (field: SortField) => {
         if (sortField === field) {
-            setSortDir((d) => (d === 'asc' ? 'desc' : 'asc'));
+            setSortDir((d: SortDir) => (d === 'asc' ? 'desc' : 'asc'));
         } else {
             setSortField(field);
             setSortDir('asc');
@@ -187,7 +177,7 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
     };
 
     const handleFilterChange = (key: keyof InventoryFilter, val: string) => {
-        setFilters((prev) => ({ ...prev, [key]: val }));
+        setFilters((prev: InventoryFilter) => ({ ...prev, [key]: val }));
         setPage(1);
     };
 
@@ -215,384 +205,272 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
 
     const fmtDate = (ts?: { toDate: () => Date }) =>
         ts ? new Date(ts.toDate()).toLocaleDateString('es-VE') : '—';
-    const fmtTime = (ts?: { toDate: () => Date }) =>
-        ts ? new Date(ts.toDate()).toLocaleTimeString('es-VE', { hour: '2-digit', minute: '2-digit' }) : '';
 
     return (
         <>
-            <div className="fixed inset-0 z-50 flex items-center justify-center p-2 md:p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
-                <div className="bg-[#18181b] w-full max-w-7xl rounded-3xl border border-white/10 shadow-2xl overflow-hidden flex flex-col max-h-[95vh]">
+            <div className="fixed inset-0 z-50 flex items-center justify-center p-2 md:p-6 bg-slate-950/40 backdrop-blur-md animate-in fade-in duration-500">
+                <div className="relative w-full max-w-7xl h-[90vh] group">
+                    {/* Outer Glow */}
+                    <div className="absolute -inset-1 bg-gradient-to-br from-blue-500/10 to-transparent rounded-[2.5rem] blur-2xl opacity-50 group-hover:opacity-100 transition-opacity duration-700" />
 
-                    {/* ── Header ─────────────────────────────────────────────── */}
-                    <div className="p-5 border-b border-white/10 flex flex-col md:flex-row md:justify-between md:items-center gap-3 bg-white/5">
-                        <div>
-                            <h2 className="text-xl font-bold text-white flex items-center gap-3">
-                                <BarChart3 className="w-6 h-6 text-blue-400" />
-                                Base de Inventario Físico
-                            </h2>
-                            <p className="text-white/40 text-xs mt-1">
-                                {isMaster
-                                    ? '👁️ Modo Maestro — Visualización completa de todas las sucursales'
-                                    : `📍 Sucursal: ${(BRANCH_LABELS[userPrefix] || userPrefix).toUpperCase()}`}
-                            </p>
-                        </div>
-                        <div className="flex items-center gap-2">
-                            <button
-                                onClick={handleExportCSV}
-                                title="Exportar a CSV"
-                                className="flex items-center gap-2 px-3 py-2 bg-green-600/10 hover:bg-green-600/20 border border-green-500/30 text-green-400 rounded-xl text-xs font-bold transition-all"
-                            >
-                                <Download className="w-4 h-4" />
-                                CSV
-                            </button>
-                            <button
-                                onClick={onClose}
-                                className="p-2 hover:bg-white/10 rounded-full transition-colors text-white/50 hover:text-white"
-                            >
-                                <X className="w-6 h-6" />
-                            </button>
-                        </div>
-                    </div>
+                    <div className="relative h-full bg-slate-900/80 backdrop-blur-2xl border border-white/10 rounded-[2rem] shadow-[0_0_50px_rgba(0,0,0,0.5)] overflow-hidden flex flex-col">
 
-                    {/* ── KPI Cards ──────────────────────────────────────────── */}
-                    <div className="grid grid-cols-4 md:grid-cols-7 gap-2 p-4 border-b border-white/10 bg-black/20">
-                        {KPI_CARDS.map(({ label, key, icon: Icon, color, bg }) => {
-                            const val = stats[key as keyof typeof stats];
-                            const numVal = typeof val === 'number' ? val : 0;
-                            const targetStatus = STATUS_MAP[key] ?? '';
-
-                            return (
+                        {/* Header */}
+                        <div className="relative p-8 border-b border-white/5 flex flex-col md:flex-row md:justify-between md:items-center gap-6 shrink-0">
+                            <div className="absolute top-0 inset-x-0 h-px bg-gradient-to-r from-transparent via-blue-500/50 to-transparent" />
+                            <div className="flex items-center gap-5">
+                                <div className="w-12 h-12 bg-slate-800 border border-white/10 rounded-2xl flex items-center justify-center shadow-inner">
+                                    <BarChart3 className="w-6 h-6 text-blue-400" />
+                                </div>
+                                <div>
+                                    <h2 className="text-xl font-black text-white tracking-tight leading-none uppercase">
+                                        Hardware_Inventory
+                                    </h2>
+                                    <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-2 flex items-center gap-2">
+                                        <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
+                                        {isMaster
+                                            ? 'SYSTEM_MASTER_VIEW // ALL_ACCESS'
+                                            : `LOCAL_NODE // ${(BRANCH_LABELS[userPrefix] || userPrefix).toUpperCase()}`}
+                                    </p>
+                                </div>
+                            </div>
+                            <div className="flex items-center gap-3">
                                 <button
-                                    key={key}
-                                    onClick={() => {
-                                        handleFilterChange('status', filters.status === targetStatus && targetStatus !== '' ? '' : targetStatus);
-                                    }}
+                                    onClick={handleExportCSV}
+                                    className="h-11 px-5 bg-emerald-500/10 hover:bg-emerald-500/20 text-emerald-400 border border-emerald-500/20 rounded-2xl font-black text-[10px] tracking-[0.2em] transition-all flex items-center gap-3 active:scale-95"
+                                >
+                                    <Download className="w-4 h-4" />
+                                    EXPORT_DATA
+                                </button>
+                                <button
+                                    onClick={onClose}
+                                    className="h-11 w-11 flex items-center justify-center bg-white/5 hover:bg-white/10 border border-white/10 rounded-2xl text-slate-500 hover:text-white transition-all active:scale-95"
+                                >
+                                    <X className="w-5 h-5" />
+                                </button>
+                            </div>
+                        </div>
+
+                        {/* KPI Cards */}
+                        <div className="px-8 py-6 border-b border-white/5 bg-slate-900/50 flex flex-wrap gap-4 shrink-0">
+                            {KPI_CARDS.map(({ label, key, icon: Icon, color }) => {
+                                const val = stats[key as keyof typeof stats];
+                                const numVal = typeof val === 'number' ? val : 0;
+                                const targetStatus = STATUS_MAP[key] ?? '';
+                                const isActive = filters.status === targetStatus && targetStatus !== '';
+
+                                return (
+                                    <button
+                                        key={key}
+                                        onClick={() => {
+                                            handleFilterChange('status', isActive ? '' : targetStatus);
+                                        }}
+                                        className={clsx(
+                                            'relative flex-1 min-w-[120px] h-20 px-4 rounded-2xl border transition-all duration-300 group/kpi overflow-hidden',
+                                            isActive
+                                                ? 'bg-blue-500/10 border-blue-500/30'
+                                                : 'bg-white/[0.02] border-white/5 hover:border-white/10'
+                                        )}
+                                    >
+                                        <div className="relative z-10 flex flex-col justify-between h-full py-3">
+                                            <div className="flex items-center justify-between">
+                                                <Icon className={clsx('w-3.5 h-3.5 opacity-50', color)} />
+                                                <div className={clsx('text-lg font-black leading-none tracking-tighter', color)}>
+                                                    {numVal.toString().padStart(2, '0')}
+                                                </div>
+                                            </div>
+                                            <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest text-left">
+                                                {label}
+                                            </div>
+                                        </div>
+                                        {isActive && (
+                                            <div className="absolute inset-0 bg-gradient-to-br from-blue-500/5 to-transparent animate-pulse" />
+                                        )}
+                                    </button>
+                                );
+                            })}
+                        </div>
+
+                        {/* Toolbar */}
+                        <div className="px-8 py-5 border-b border-white/5 bg-slate-900/30 flex flex-col gap-4 shrink-0">
+                            <div className="flex items-center gap-4">
+                                <div className="relative flex-1 group">
+                                    <div className="absolute inset-y-0 left-4 flex items-center pointer-events-none">
+                                        <Search className="w-4 h-4 text-slate-500 group-focus-within:text-blue-400 transition-colors" />
+                                    </div>
+                                    <input
+                                        type="text"
+                                        placeholder="SEARCH_REGISTRY // SERIAL_NUMBER // MODEL_ID..."
+                                        value={filters.searchTerm || ''}
+                                        onChange={(e) => handleFilterChange('searchTerm', e.target.value)}
+                                        className="w-full h-11 bg-slate-950/50 border border-white/5 rounded-xl pl-12 pr-10 text-[11px] font-bold text-white uppercase tracking-wider outline-none focus:border-blue-500/50 focus:ring-1 focus:ring-blue-500/20 placeholder-slate-600 transition-all"
+                                    />
+                                    {filters.searchTerm && (
+                                        <button
+                                            onClick={() => handleFilterChange('searchTerm', '')}
+                                            className="absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 hover:text-white"
+                                        >
+                                            <X className="w-3 h-3" />
+                                        </button>
+                                    )}
+                                </div>
+
+                                <button
+                                    onClick={() => setShowFilters((v: boolean) => !v)}
                                     className={clsx(
-                                        'flex flex-col items-center justify-center gap-1 p-2 md:p-3 rounded-xl border transition-all',
-                                        bg,
-                                        (filters.status === targetStatus)
-                                            ? 'border-white/30 scale-105'
-                                            : 'border-white/5 hover:border-white/20'
+                                        'h-11 px-6 rounded-xl text-[10px] font-black tracking-[0.2em] border transition-all flex items-center gap-3',
+                                        showFilters || activeFilterCount > 0
+                                            ? 'bg-blue-500/10 border-blue-500/30 text-blue-400'
+                                            : 'bg-white/5 border-white/5 text-slate-500 hover:text-white hover:border-white/10'
                                     )}
                                 >
-                                    <Icon className={clsx('w-4 h-4', color)} />
-                                    <span className={clsx('text-lg font-black leading-none', color)}>{numVal}</span>
-                                    <span className="text-[9px] text-white/40 font-medium uppercase tracking-wide leading-none">{label}</span>
+                                    <Filter className="w-3.5 h-3.5" />
+                                    ADVANCED_FILTERS
+                                    {activeFilterCount > 0 && (
+                                        <span className="w-4 h-4 rounded-md bg-blue-500 text-white text-[8px] flex items-center justify-center font-black">
+                                            {activeFilterCount}
+                                        </span>
+                                    )}
                                 </button>
-                            );
-                        })}
-                    </div>
-
-                    {/* ── Toolbar ────────────────────────────────────────────── */}
-                    <div className="p-3 border-b border-white/10 bg-black/20 flex flex-col gap-2">
-                        <div className="flex gap-2">
-                            {/* Search */}
-                            <div className="relative flex-1">
-                                <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-white/40" />
-                                <input
-                                    type="text"
-                                    placeholder="Buscar serial, modelo, sucursal, estatus..."
-                                    value={filters.searchTerm || ''}
-                                    onChange={(e) => handleFilterChange('searchTerm', e.target.value)}
-                                    className="w-full bg-black/50 border border-white/10 rounded-xl pl-9 pr-4 py-2 text-white text-sm outline-none focus:border-blue-500/50 placeholder-white/30"
-                                />
-                                {filters.searchTerm && (
-                                    <button
-                                        onClick={() => handleFilterChange('searchTerm', '')}
-                                        className="absolute right-3 top-1/2 -translate-y-1/2 text-white/30 hover:text-white"
-                                    >
-                                        <X className="w-3.5 h-3.5" />
-                                    </button>
-                                )}
                             </div>
 
-                            {/* Filter Toggle */}
-                            <button
-                                onClick={() => setShowFilters((v) => !v)}
-                                className={clsx(
-                                    'flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-bold border transition-all',
-                                    showFilters || activeFilterCount > 0
-                                        ? 'bg-blue-600/20 border-blue-500/40 text-blue-400'
-                                        : 'bg-white/5 border-white/10 text-white/50 hover:text-white'
-                                )}
-                            >
-                                <Filter className="w-3.5 h-3.5" />
-                                FILTROS
-                                {activeFilterCount > 0 && (
-                                    <span className="bg-blue-500 text-white rounded-full w-4 h-4 flex items-center justify-center text-[9px]">
-                                        {activeFilterCount}
-                                    </span>
-                                )}
-                            </button>
-
-                            {/* Results count */}
-                            <div className="hidden md:flex items-center text-white/40 text-xs font-mono px-2">
-                                {filteredItems.length} / {scopedItems.length}
-                            </div>
-                        </div>
-
-                        {/* Expanded Filters */}
-                        {showFilters && (
-                            <div className="grid grid-cols-1 md:grid-cols-3 gap-2 animate-in fade-in slide-in-from-top-2 duration-150">
-                                {/* Branch filter */}
-                                {isMaster && (
-                                    <div className="flex flex-col gap-1">
-                                        <label className="text-[10px] font-bold text-white/30 uppercase tracking-wide pl-1">Sucursal</label>
+                            {showFilters && (
+                                <div className="grid grid-cols-1 md:grid-cols-4 gap-4 p-5 bg-slate-950/40 border border-white/5 rounded-[1.5rem] animate-in slide-in-from-top-4 duration-500">
+                                    {isMaster && (
+                                        <div className="space-y-2">
+                                            <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest pl-1">Target_Branch</label>
+                                            <select
+                                                value={filters.branch || ''}
+                                                onChange={(e) => handleFilterChange('branch', e.target.value)}
+                                                className="w-full h-10 bg-slate-900 border border-white/5 rounded-xl px-4 text-[10px] font-bold text-slate-300 outline-none focus:border-blue-500/30"
+                                            >
+                                                <option value="">ALL_STATIONS</option>
+                                                {ALL_BRANCHES.map((b) => (
+                                                    <option key={b} value={b}>{BRANCH_LABELS[b] || b}</option>
+                                                ))}
+                                            </select>
+                                        </div>
+                                    )}
+                                    <div className="space-y-2">
+                                        <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest pl-1">System_Status</label>
                                         <select
-                                            value={filters.branch || ''}
-                                            onChange={(e) => handleFilterChange('branch', e.target.value)}
-                                            className="bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-blue-500/50"
+                                            value={filters.status || ''}
+                                            onChange={(e) => handleFilterChange('status', e.target.value)}
+                                            className="w-full h-10 bg-slate-900 border border-white/5 rounded-xl px-4 text-[10px] font-bold text-slate-300 outline-none focus:border-blue-500/30"
                                         >
-                                            <option value="">Todas las sucursales</option>
-                                            {ALL_BRANCHES.map((b) => (
-                                                <option key={b} value={b}>{BRANCH_LABELS[b] || b}</option>
+                                            <option value="">ALL_MODES</option>
+                                            {Object.keys(STATUS_STYLES).map(s => (
+                                                <option key={s} value={s}>{s}</option>
                                             ))}
                                         </select>
                                     </div>
-                                )}
-
-                                {/* Status filter */}
-                                <div className="flex flex-col gap-1">
-                                    <label className="text-[10px] font-bold text-white/30 uppercase tracking-wide pl-1">Estatus</label>
-                                    <select
-                                        value={filters.status || ''}
-                                        onChange={(e) => handleFilterChange('status', e.target.value)}
-                                        className="bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-blue-500/50"
-                                    >
-                                        <option value="">Todos los estatus</option>
-                                        <option value="OPERATIVO">OPERATIVO</option>
-                                        <option value="DAÑADO">DAÑADO</option>
-                                        <option value="EN TALLER">EN TALLER</option>
-                                        <option value="EN ESPERA">EN ESPERA</option>
-                                        <option value="REPARANDO">REPARANDO</option>
-                                        <option value="REPARADO">REPARADO</option>
-                                        <option value="ENVIADO">ENVIADO</option>
-                                        <option value="TRANSFERIDO">TRANSFERIDO</option>
-                                        <option value="DADO DE BAJA">DADO DE BAJA</option>
-                                    </select>
-                                </div>
-
-                                {/* Type filter */}
-                                <div className="flex flex-col gap-1">
-                                    <label className="text-[10px] font-bold text-white/30 uppercase tracking-wide pl-1">Tipo</label>
-                                    <select
-                                        value={filters.weightType || ''}
-                                        onChange={(e) => handleFilterChange('weightType', e.target.value)}
-                                        className="bg-black/50 border border-white/10 rounded-lg px-3 py-2 text-white text-sm outline-none focus:border-blue-500/50"
-                                    >
-                                        <option value="">Todos los tipos</option>
-                                        <option value="PESO">PESO</option>
-                                        <option value="BALANZA">BALANZA</option>
-                                    </select>
-                                </div>
-
-                                {/* Clear */}
-                                {activeFilterCount > 0 && (
-                                    <button
-                                        onClick={() => setFilters({ searchTerm: filters.searchTerm, branch: '', status: '', weightType: '' })}
-                                        className="md:col-span-3 text-xs text-red-400/70 hover:text-red-400 text-left pl-1 transition-colors"
-                                    >
-                                        ✕ Limpiar filtros activos ({activeFilterCount})
-                                    </button>
-                                )}
-                            </div>
-                        )}
-                    </div>
-
-                    {/* ── Table ──────────────────────────────────────────────── */}
-                    <div className="overflow-x-auto overflow-y-auto flex-1 relative">
-                        {loading && (
-                            <div className="absolute inset-0 bg-black/60 backdrop-blur-sm z-20 flex flex-col items-center justify-center gap-3 text-white">
-                                <RefreshCw className="w-6 h-6 animate-spin text-blue-400" />
-                                <span className="text-sm text-white/50">Cargando inventario en tiempo real...</span>
-                            </div>
-                        )}
-
-                        {/* Desktop Table */}
-                        <table className="w-full text-left border-collapse min-w-[900px] hidden md:table">
-                            <thead className="bg-white/5 sticky top-0 backdrop-blur-md z-10 border-b border-white/10">
-                                <tr>
-                                    {[
-                                        { label: 'Estatus', field: 'status' as SortField, w: 'w-[130px]' },
-                                        { label: 'Modelo / Tipo', field: 'scaleModel' as SortField },
-                                        { label: 'Serial', field: 'serialNumber' as SortField },
-                                        { label: 'Sucursal', field: 'branch' as SortField },
-                                        { label: 'Registrado', field: 'timestamp' as SortField },
-                                        { label: 'Últ. Mod.', field: 'updatedAt' as SortField },
-                                        { label: 'Control', field: null, },
-                                    ].map(({ label, field, w }) => (
-                                        <th
-                                            key={label}
-                                            onClick={field ? () => handleSort(field) : undefined}
-                                            className={clsx(
-                                                'p-3 px-4 text-[10px] font-bold text-white/40 uppercase tracking-wider',
-                                                w,
-                                                field && 'cursor-pointer hover:text-white/70 select-none'
-                                            )}
+                                    <div className="space-y-2">
+                                        <label className="text-[9px] font-black text-slate-600 uppercase tracking-widest pl-1">Module_Type</label>
+                                        <select
+                                            value={filters.weightType || ''}
+                                            onChange={(e) => handleFilterChange('weightType', e.target.value)}
+                                            className="w-full h-10 bg-slate-900 border border-white/5 rounded-xl px-4 text-[10px] font-bold text-slate-300 outline-none focus:border-blue-500/30"
                                         >
-                                            <div className="flex items-center gap-1">
-                                                {label}
-                                                {field && <SortIcon field={field} />}
-                                            </div>
-                                        </th>
-                                    ))}
-                                </tr>
-                            </thead>
-                            <tbody className="divide-y divide-white/5">
-                                {filteredItems.length === 0 ? (
-                                    <tr>
-                                        <td colSpan={7} className="p-16 text-center text-white/20">
-                                            {loading ? '...' : '— No se encontraron equipos con los filtros aplicados —'}
-                                        </td>
+                                            <option value="">ALL_TYPES</option>
+                                            <option value="PESO">WEIGHT_MODULE</option>
+                                            <option value="BALANZA">SCALE_DEVICE</option>
+                                        </select>
+                                    </div>
+                                    <div className="flex items-end">
+                                        <button
+                                            onClick={() => setFilters({ searchTerm: filters.searchTerm, branch: '', status: '', weightType: '' })}
+                                            className="h-10 w-full bg-red-500/5 hover:bg-red-500/10 text-red-400/50 hover:text-red-400 border border-red-500/10 rounded-xl text-[9px] font-black tracking-widest transition-all"
+                                        >
+                                            RESET_FILTERS
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
+                        </div>
+
+                        {/* Table Section */}
+                        <div className="flex-1 overflow-auto relative">
+                            {loading && (
+                                <div className="absolute inset-0 bg-slate-950/60 backdrop-blur-md z-30 flex flex-col items-center justify-center gap-4">
+                                    <div className="w-12 h-12 border-2 border-blue-500/20 border-t-blue-500 rounded-full animate-spin" />
+                                    <span className="text-[10px] font-black text-blue-400 uppercase tracking-[0.3em] animate-pulse">Syncing_Database</span>
+                                </div>
+                            )}
+
+                            {/* Desktop Table */}
+                            <table className="w-full border-separate border-spacing-0 hidden md:table">
+                                <thead className="sticky top-0 z-20">
+                                    <tr className="bg-slate-900/90 backdrop-blur-xl">
+                                        {[
+                                            { label: 'Status_Node', field: 'status' as SortField, w: '180px' },
+                                            { label: 'Hardware_Model', field: 'scaleModel' as SortField },
+                                            { label: 'System_Serial', field: 'serialNumber' as SortField },
+                                            { label: 'Deployment_Zone', field: 'branch' as SortField },
+                                            { label: 'Registry_Date', field: 'timestamp' as SortField },
+                                            { label: 'Last_Update', field: 'updatedAt' as SortField },
+                                            { label: 'Action_Control', field: null, w: '180px' },
+                                        ].map(({ label, field, w }) => (
+                                            <th
+                                                key={label}
+                                                onClick={field ? () => handleSort(field) : undefined}
+                                                style={{ width: w }}
+                                                className={clsx(
+                                                    'h-14 px-6 text-left text-[9px] font-black text-slate-500 uppercase tracking-[0.2em] border-b border-white/5 transition-colors',
+                                                    field && 'cursor-pointer hover:text-blue-400 select-none'
+                                                )}
+                                            >
+                                                <div className="flex items-center gap-2">
+                                                    {label}
+                                                    {field && <SortIcon field={field} />}
+                                                </div>
+                                            </th>
+                                        ))}
                                     </tr>
-                                ) : (
-                                    pagedItems.map((item) => (
+                                </thead>
+                                <tbody className="divide-y divide-white/[0.02]">
+                                    {pagedItems.map((item) => (
                                         <tr
                                             key={item.id}
-                                            className={clsx(
-                                                'hover:bg-white/5 transition-colors group',
-                                                ROW_SHADOW[item.status] || ''
-                                            )}
+                                            className="group hover:bg-white/[0.02] transition-colors relative"
                                         >
-                                            {/* Status */}
-                                            <td className="p-3 px-4">
+                                            <td className="h-20 px-6">
                                                 <span className={clsx(
-                                                    'inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-[10px] font-bold tracking-wide border',
+                                                    'inline-flex items-center gap-2 px-3 py-1.5 rounded-lg text-[9px] font-black tracking-widest border transition-all',
                                                     STATUS_STYLES[item.status]
                                                 )}>
                                                     {item.status === 'OPERATIVO' ? <Activity className="w-3 h-3" /> : <RefreshCw className="w-3 h-3" />}
-                                                    {item.status}
+                                                    {item.status.toUpperCase()}
                                                 </span>
-                                                {/* Transit badge */}
+                                                {/* Transit Information */}
                                                 {item.hasPendingTransfer && item.pendingTransfer && (
-                                                    <div className="mt-1 text-[9px] text-amber-400 flex items-center gap-1 animate-pulse">
-                                                        <Truck className="w-2.5 h-2.5" />
-                                                        {BRANCH_LABELS[item.pendingTransfer.from] ?? item.pendingTransfer.from}
-                                                        {' → '}
-                                                        {BRANCH_LABELS[item.pendingTransfer.to] ?? item.pendingTransfer.to}
+                                                    <div className="mt-2 flex items-center gap-2 text-[8px] font-black text-amber-500 uppercase tracking-widest animate-pulse">
+                                                        <Truck className="w-3 h-3" />
+                                                        <span>{item.pendingTransfer.from} » {item.pendingTransfer.to}</span>
                                                     </div>
                                                 )}
                                             </td>
-
-                                            {/* Model */}
-                                            <td className="p-3 px-4">
-                                                <div className="font-bold text-white text-sm">{item.scaleModel}</div>
-                                                <div className="text-[10px] text-white/40 uppercase tracking-wide">{item.weightType}</div>
+                                            <td className="px-6">
+                                                <div className="text-[11px] font-black text-white uppercase tracking-wider">{item.scaleModel}</div>
+                                                <div className="text-[9px] font-bold text-slate-500 uppercase tracking-widest mt-1">{item.weightType}</div>
                                             </td>
-
-                                            {/* Serial */}
-                                            <td className="p-3 px-4 font-mono text-sm text-white/80">{item.serialNumber}</td>
-
-                                            {/* Branch */}
-                                            <td className="p-3 px-4 text-sm text-white/70 capitalize">
+                                            <td className="px-6">
+                                                <code className="text-[10px] font-bold text-blue-400/80 bg-blue-500/5 px-2 py-1 rounded border border-blue-500/10">
+                                                    {item.serialNumber}
+                                                </code>
+                                            </td>
+                                            <td className="px-6 text-[10px] font-bold text-slate-400 uppercase tracking-widest">
                                                 {BRANCH_LABELS[item.branch] || item.branch}
                                             </td>
-
-                                            {/* Registered */}
-                                            <td className="p-3 px-4 text-white/40 text-xs">
-                                                <div>{fmtDate(item.timestamp)}</div>
-                                                <div className="opacity-50">{fmtTime(item.timestamp)}</div>
-                                                {item.recordedBy && (
-                                                    <div className="text-[10px] text-white/25 mt-0.5 truncate max-w-[100px]">{item.recordedBy}</div>
-                                                )}
+                                            <td className="px-6">
+                                                <div className="text-[10px] font-bold text-slate-400">{fmtDate(item.timestamp)}</div>
+                                                <div className="text-[9px] font-bold text-slate-600 mt-1">{item.recordedBy || 'SYSTEM'}</div>
                                             </td>
-
-                                            {/* Last Updated */}
-                                            <td className="p-3 px-4 text-white/40 text-xs">
-                                                <div>{fmtDate(item.updatedAt || item.timestamp)}</div>
-                                                <div className="opacity-50">{fmtTime(item.updatedAt || item.timestamp)}</div>
-                                                {item.updatedBy && (
-                                                    <div className="text-[10px] text-white/25 mt-0.5 truncate max-w-[100px]">{item.updatedBy}</div>
-                                                )}
+                                            <td className="px-6">
+                                                <div className="text-[10px] font-bold text-slate-400">{fmtDate(item.updatedAt || item.timestamp)}</div>
+                                                <div className="text-[9px] font-bold text-slate-600 mt-1">{item.updatedBy || 'N/A'}</div>
                                             </td>
-
-                                            {/* Control */}
-                                            <td className="p-3 px-4 text-center">
-                                                <div className="flex items-center justify-center gap-1.5">
-                                                    {(() => {
-                                                        const isWorkshopManaged = ['EN TALLER', 'REPARANDO', 'EN ESPERA', 'ENVIADO', 'TRANSFERIDO', 'EN TRÁNSITO'].includes(item.status);
-                                                        const canEdit = isMaster || !isWorkshopManaged;
-
-                                                        return (
-                                                            <button
-                                                                onClick={() => setSelectedItem({
-                                                                    id: item.id,
-                                                                    serialNumber: item.serialNumber,
-                                                                    model: item.scaleModel,
-                                                                    currentStatus: item.status,
-                                                                    branch: item.branch,
-                                                                    lastBranch: item.lastBranch,
-                                                                    recordedBy: item.recordedBy,
-                                                                })}
-                                                                disabled={!canEdit}
-                                                                className={clsx(
-                                                                    "inline-flex items-center justify-center gap-1 px-2.5 py-1.5 rounded-lg transition-all text-[10px] font-bold opacity-70 group-hover:opacity-100 border",
-                                                                    canEdit
-                                                                        ? "bg-blue-600/15 hover:bg-blue-600 border-blue-500/25 hover:border-blue-500 text-blue-400 hover:text-white"
-                                                                        : "bg-white/5 border-white/10 text-white/20 cursor-not-allowed"
-                                                                )}
-                                                                title={canEdit ? "Actualizar estado" : "Solo el Taller puede editar equipos en este estado"}
-                                                            >
-                                                                <Pencil className="w-3 h-3" />
-                                                                {canEdit ? 'EDITAR' : 'BLOQUEADO'}
-                                                            </button>
-                                                        );
-                                                    })()}
-                                                    {isMaster && (
-                                                        <button
-                                                            onClick={(e) => handleDeleteItem(item, e)}
-                                                            disabled={deletingId === item.id}
-                                                            className="inline-flex items-center justify-center p-1.5 bg-red-500/10 hover:bg-red-600 border border-red-500/20 hover:border-red-500 text-red-400 hover:text-white rounded-lg transition-all opacity-0 group-hover:opacity-100 disabled:opacity-50"
-                                                            title="Eliminar equipo"
-                                                        >
-                                                            <Trash2 className="w-3.5 h-3.5" />
-                                                        </button>
-                                                    )}
-                                                </div>
-                                            </td>
-                                        </tr>
-                                    ))
-                                )}
-                            </tbody>
-                        </table>
-
-                        {/* Mobile Cards */}
-                        <div className="flex flex-col divide-y divide-white/5 md:hidden">
-                            {filteredItems.length === 0 ? (
-                                <div className="p-12 text-center text-white/20 text-sm">
-                                    {loading ? 'Cargando...' : '— No se encontraron equipos —'}
-                                </div>
-                            ) : (
-                                pagedItems.map((item) => (
-                                    <div
-                                        key={item.id}
-                                        className={clsx(
-                                            'p-4 flex flex-col gap-2',
-                                            ROW_SHADOW[item.status] || ''
-                                        )}
-                                    >
-                                        <div className="flex justify-between items-start">
-                                            <div>
-                                                <div className="font-bold text-white">{item.scaleModel}</div>
-                                                <div className="font-mono text-xs text-white/50">{item.serialNumber}</div>
-                                            </div>
-                                            <span className={clsx(
-                                                'text-[10px] font-bold px-2 py-1 rounded-full border',
-                                                STATUS_STYLES[item.status]
-                                            )}>
-                                                {item.status}
-                                            </span>
-                                        </div>
-                                        <div className="text-xs text-white/40 flex gap-4">
-                                            <span>📍 {BRANCH_LABELS[item.branch] || item.branch}</span>
-                                            <span>📅 {fmtDate(item.updatedAt || item.timestamp)}</span>
-                                        </div>
-                                        <div className="flex gap-2 mt-1">
-                                            {(() => {
-                                                const isWorkshopManaged = ['EN TALLER', 'REPARANDO', 'EN ESPERA', 'ENVIADO', 'TRANSFERIDO', 'EN TRÁNSITO'].includes(item.status);
-                                                const canEdit = isMaster || !isWorkshopManaged;
-
-                                                return (
+                                            <td className="px-6 text-right">
+                                                <div className="flex items-center gap-2 opacity-0 group-hover:opacity-100 transition-opacity justify-end">
                                                     <button
                                                         onClick={() => setSelectedItem({
                                                             id: item.id,
@@ -600,67 +478,102 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
                                                             model: item.scaleModel,
                                                             currentStatus: item.status,
                                                             branch: item.branch,
-                                                            lastBranch: item.lastBranch,
-                                                            recordedBy: item.recordedBy,
+                                                            lastBranch: item.lastBranch
                                                         })}
-                                                        disabled={!canEdit}
-                                                        className={clsx(
-                                                            "flex-1 py-2 rounded-lg text-xs font-bold transition-all flex items-center justify-center gap-1 border",
-                                                            canEdit
-                                                                ? "bg-blue-600/20 border-blue-500/30 text-blue-400 hover:bg-blue-600 hover:text-white"
-                                                                : "bg-white/5 border-white/10 text-white/20 cursor-not-allowed"
-                                                        )}
+                                                        className="h-9 px-4 bg-blue-500/10 hover:bg-blue-500 text-blue-400 hover:text-white border border-blue-500/20 rounded-xl text-[9px] font-black uppercase tracking-widest transition-all inline-flex items-center gap-2"
                                                     >
                                                         <Pencil className="w-3.5 h-3.5" />
-                                                        {canEdit ? 'EDITAR ESTADO' : 'BLOQUEADO POR TALLER'}
+                                                        EDIT
                                                     </button>
-                                                );
-                                            })()}
-                                            {isMaster && (
-                                                <button
-                                                    onClick={(e) => handleDeleteItem(item, e)}
-                                                    disabled={deletingId === item.id}
-                                                    className="py-2 px-3 bg-red-500/10 border border-red-500/20 text-red-400 rounded-lg text-xs font-bold transition-all hover:bg-red-600 hover:text-white disabled:opacity-50"
-                                                    title="Eliminar"
-                                                >
-                                                    <Trash2 className="w-3.5 h-3.5" />
-                                                </button>
-                                            )}
+                                                    {isMaster && (
+                                                        <button
+                                                            onClick={(e) => handleDeleteItem(item, e)}
+                                                            disabled={deletingId === item.id}
+                                                            className="h-9 w-9 flex items-center justify-center bg-red-500/10 hover:bg-red-500 text-red-500 hover:text-white border border-red-500/20 rounded-xl transition-all disabled:opacity-50"
+                                                        >
+                                                            <Trash2 className="w-4 h-4" />
+                                                        </button>
+                                                    )}
+                                                </div>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+
+                            {/* Mobile Grid */}
+                            <div className="grid grid-cols-1 gap-4 p-6 md:hidden">
+                                {pagedItems.map((item) => (
+                                    <div key={item.id} className="p-6 bg-slate-900/50 border border-white/5 rounded-[1.5rem] space-y-4">
+                                        <div className="flex justify-between items-start">
+                                            <div className="space-y-1">
+                                                <div className="text-[11px] font-black text-white uppercase tracking-wider">{item.scaleModel}</div>
+                                                <code className="text-[9px] font-bold text-blue-400/80">{item.serialNumber}</code>
+                                            </div>
+                                            <span className={clsx(
+                                                'px-2 py-1 rounded-lg text-[8px] font-black tracking-widest border',
+                                                STATUS_STYLES[item.status]
+                                            )}>
+                                                {item.status}
+                                            </span>
+                                        </div>
+                                        <div className="flex justify-between items-center pt-4 border-t border-white/5">
+                                            <span className="text-[9px] font-black text-slate-600 uppercase tracking-widest">
+                                                {BRANCH_LABELS[item.branch] || item.branch}
+                                            </span>
+                                            <button
+                                                onClick={() => setSelectedItem({
+                                                    id: item.id,
+                                                    serialNumber: item.serialNumber,
+                                                    model: item.scaleModel,
+                                                    currentStatus: item.status,
+                                                    branch: item.branch,
+                                                    lastBranch: item.lastBranch
+                                                })}
+                                                className="h-8 px-4 bg-blue-500/10 text-blue-400 border border-blue-500/20 rounded-lg text-[8px] font-black uppercase tracking-widest"
+                                            >
+                                                EDIT
+                                            </button>
                                         </div>
                                     </div>
-                                ))
-                            )}
-                        </div>
-                    </div>
-
-                    {/* ── Pagination ─────────────────────────────────────────── */}
-                    {totalPages > 1 && (
-                        <div className="p-3 border-t border-white/10 bg-black/20 flex items-center justify-between text-xs text-white/40">
-                            <span>
-                                Pág. {page} / {totalPages} — {filteredItems.length} equipos
-                            </span>
-                            <div className="flex gap-1">
-                                <button disabled={page === 1} onClick={() => setPage(1)}
-                                    className="px-2 py-1 rounded bg-white/5 hover:bg-white/10 disabled:opacity-30 transition-colors">‹‹</button>
-                                <button disabled={page === 1} onClick={() => setPage((p) => p - 1)}
-                                    className="px-2 py-1 rounded bg-white/5 hover:bg-white/10 disabled:opacity-30 transition-colors">‹</button>
-                                <button disabled={page === totalPages} onClick={() => setPage((p) => p + 1)}
-                                    className="px-2 py-1 rounded bg-white/5 hover:bg-white/10 disabled:opacity-30 transition-colors">›</button>
-                                <button disabled={page === totalPages} onClick={() => setPage(totalPages)}
-                                    className="px-2 py-1 rounded bg-white/5 hover:bg-white/10 disabled:opacity-30 transition-colors">››</button>
+                                ))}
                             </div>
                         </div>
-                    )}
-                </div>
-            </div>
 
-            {/* Status Update Modal */}
-            <InventoryStatusModal
-                isOpen={!!selectedItem}
-                onClose={() => setSelectedItem(null)}
-                user={user}
-                inventoryItem={selectedItem}
-            />
+                        {/* Pagination */}
+                        {totalPages > 1 && (
+                            <div className="px-8 py-4 border-t border-white/5 bg-slate-950/40 flex items-center justify-between shrink-0">
+                                <div className="text-[9px] font-black text-slate-600 uppercase tracking-widest">
+                                    Page {page.toString().padStart(2, '0')} // Total {totalPages.toString().padStart(2, '0')} // Result_Count {filteredItems.length}
+                                </div>
+                                <div className="flex gap-2">
+                                    {[1, page - 1, page + 1, totalPages].map((p, i) => {
+                                        const disabled = p < 1 || p > totalPages || p === page;
+                                        const icons = ['««', '«', '»', '»»'];
+                                        return (
+                                            <button
+                                                key={i}
+                                                disabled={disabled}
+                                                onClick={() => setPage(p)}
+                                                className="h-9 w-12 flex items-center justify-center bg-white/5 hover:bg-white/10 disabled:opacity-20 text-slate-400 hover:text-white rounded-xl text-[10px] font-bold transition-all"
+                                            >
+                                                {icons[i]}
+                                            </button>
+                                        );
+                                    })}
+                                </div>
+                            </div>
+                        )}
+                    </div>
+                </div>
+
+                <InventoryStatusModal
+                    isOpen={!!selectedItem}
+                    onClose={() => setSelectedItem(null)}
+                    user={user}
+                    inventoryItem={selectedItem}
+                />
+            </div>
         </>
     );
 }
