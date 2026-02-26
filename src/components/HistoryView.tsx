@@ -116,7 +116,7 @@ function DetailPanel({ record, onClose }: { record: HistoryItem; onClose: () => 
                                 open: '🔴 Abierto',
                                 in_repair: '🟠 En Taller',
                                 resolved: '🟢 Resuelto',
-                            }[(record as IssueRecord).status] ?? (record as IssueRecord).status} />
+                            }[record.status] ?? record.status} />
                     </>
                 )}
 
@@ -237,11 +237,11 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                             </div>
                             <div>
                                 <h2 className="text-xl font-black text-white tracking-tight leading-none uppercase">
-                                    Archivos_Operación
+                                    HISTORIAL DE OPERACIONES
                                 </h2>
                                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-2 flex items-center gap-2">
                                     <span className="w-1.5 h-1.5 bg-cyan-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(6,182,212,0.8)]" />
-                                    SISTEMA_HISTORIAL // LOG_AUDITORÍA
+                                    REGISTRO GENERAL // LOG_AUDITORÍA
                                 </p>
                             </div>
                         </div>
@@ -306,9 +306,9 @@ export const HistoryView: React.FC<HistoryViewProps> = ({ isOpen, onClose }) => 
                                 <thead className="bg-slate-950/40 sticky top-0 backdrop-blur-md z-10 border-b border-white/5">
                                     <tr>
                                         <th className="p-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] w-14">REF</th>
-                                        <th className="p-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Timestamp</th>
-                                        <th className="p-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Operator</th>
-                                        <th className="p-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Hardware_ID</th>
+                                        <th className="p-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Fecha / Hora</th>
+                                        <th className="p-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">Operador</th>
+                                        <th className="p-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">ID_Hardware</th>
                                         <th className="p-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">ESTADO_ACTUAL</th>
                                         <th className="p-5 text-[10px] font-black text-slate-500 uppercase tracking-[0.2em]">NOTAS_OPERACIÓN</th>
                                         <th className="p-5 text-center w-20"></th>

@@ -184,7 +184,7 @@ function App() {
                         <ActionButton
                           onClick={isConnected ? disconnect : () => setIsSimulating(false)}
                           icon={LogOut}
-                          label={isConnected ? "Apagar Sistema" : "Detener Simulación"}
+                          label={isConnected ? "Apagar Sistema" : "Parar Simulación"}
                           variant="danger"
                         />
                       )}
@@ -204,7 +204,7 @@ function App() {
               <ActionCard
                 onClick={() => setIsInventoryOpen(true)}
                 icon={Box}
-                label="Nuevo Equipo"
+                label="Registrar Equipo"
                 sub="Registro"
               />
               <ActionCard
@@ -224,8 +224,8 @@ function App() {
               <ActionCard
                 onClick={() => setIsHistoryOpen(true)}
                 icon={History}
-                label="Archivos"
-                sub="Historial"
+                label="Historial"
+                sub="Archivos"
               />
             </div>
 

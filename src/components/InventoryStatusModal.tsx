@@ -242,7 +242,7 @@ export function InventoryStatusModal({ isOpen, onClose, user, inventoryItem }: I
                         </div>
                         <div>
                             <h2 className="text-base font-bold text-white leading-tight">Actualizar Equipo</h2>
-                            <p className="text-xs text-white/30">Registro de operación de inventario</p>
+                            <p className="text-xs text-white/30">Registro oficial de operaciones</p>
                         </div>
                     </div>
                     <button onClick={onClose} className="p-2 hover:bg-white/10 rounded-lg text-white/50 transition-colors">

@@ -224,13 +224,13 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
                                 </div>
                                 <div>
                                     <h2 className="text-xl font-black text-white tracking-tight leading-none uppercase">
-                                        Inventario_Hardware
+                                        INVENTARIO DE EQUIPOS
                                     </h2>
                                     <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-2 flex items-center gap-2">
                                         <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
                                         {isMaster
-                                            ? 'VISTA_MAESTRA // ACCESO_TOTAL'
-                                            : `NODO_LOCAL // ${(BRANCH_LABELS[userPrefix] || userPrefix).toUpperCase()}`}
+                                            ? 'VISTA ADMINISTRATIVA // ACCESO TOTAL'
+                                            : `NODO LOCAL // ${(BRANCH_LABELS[userPrefix] || userPrefix).toUpperCase()}`}
                                     </p>
                                 </div>
                             </div>
@@ -402,13 +402,13 @@ export function InventoryListView({ isOpen, onClose, user }: InventoryListViewPr
                                 <thead className="sticky top-0 z-20">
                                     <tr className="bg-slate-900/90 backdrop-blur-xl">
                                         {[
-                                            { label: 'Nodo_Estatus', field: 'status' as SortField, w: '180px' },
-                                            { label: 'Modelo_Hardware', field: 'scaleModel' as SortField },
-                                            { label: 'Serial_Sistema', field: 'serialNumber' as SortField },
-                                            { label: 'Zona_Despliegue', field: 'branch' as SortField },
-                                            { label: 'Fecha_Registro', field: 'timestamp' as SortField },
-                                            { label: 'Ultima_Actualización', field: 'updatedAt' as SortField },
-                                            { label: 'Control_Acción', field: null, w: '180px' },
+                                            { label: 'ESTADO', field: 'status' as SortField, w: '180px' },
+                                            { label: 'MODELO', field: 'scaleModel' as SortField },
+                                            { label: 'SERIAL', field: 'serialNumber' as SortField },
+                                            { label: 'SUCURSAL', field: 'branch' as SortField },
+                                            { label: 'FECHA REGISTRO', field: 'timestamp' as SortField },
+                                            { label: 'ÚLTIMA MOD.', field: 'updatedAt' as SortField },
+                                            { label: 'ACCIONES', field: null, w: '180px' },
                                         ].map(({ label, field, w }) => (
                                             <th
                                                 key={label}

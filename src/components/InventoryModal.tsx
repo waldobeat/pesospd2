@@ -211,11 +211,11 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
                             </div>
                             <div>
                                 <h2 className="text-xl font-black text-white tracking-tight leading-none uppercase">
-                                    {isUpdateMode ? 'Actualización_Activo' : 'Nuevo_Registro'}
+                                    {isUpdateMode ? 'ACTUALIZAR EQUIPO' : 'REGISTRAR EQUIPO'}
                                 </h2>
                                 <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest mt-2 flex items-center gap-2">
                                     <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.8)]" />
-                                    {isUpdateMode ? 'EDITAR_PROPIEDADES_HARDWARE' : 'NUEVO_NODO_EN_SISTEMA'}
+                                    {isUpdateMode ? 'EDITAR PROPIEDADES HARDWARE' : 'NUEVO NODO EN SISTEMA'}
                                 </p>
                             </div>
                         </div>
@@ -240,7 +240,7 @@ export function InventoryModal({ isOpen, onClose, user }: InventoryModalProps) {
                         {success && (
                             <div className="bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 p-4 rounded-2xl flex items-center gap-3 text-xs font-bold animate-in zoom-in-95">
                                 <CheckCircle className="w-5 h-5" />
-                                {isUpdateMode ? 'ASSET_STATUS_UPDATED' : 'ASSET_REGISTERED_SUCCESSFULLY'}
+                                {isUpdateMode ? 'ESTADO ACTUALIZADO CORRECTAMENTE' : 'EQUIPO REGISTRADO EXITOSAMENTE'}
                             </div>
                         )}
                         {existingFoundMsg && !success && (
