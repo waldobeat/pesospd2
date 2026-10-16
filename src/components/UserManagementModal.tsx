@@ -4,7 +4,7 @@ import { collection, getDocs, updateDoc, doc, deleteDoc, setDoc } from 'firebase
 import { initializeApp, deleteApp } from 'firebase/app';
 import { getAuth, createUserWithEmailAndPassword, signOut } from 'firebase/auth';
 import { X, UserPlus, Shield, User, Trash2, CheckCircle, Loader2 } from 'lucide-react';
-import { UserProfile } from '../hooks/useAuthRole';
+import type { UserProfile } from '../hooks/useAuthRole';
 
 interface UserManagementModalProps {
     isOpen: boolean;

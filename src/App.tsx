@@ -6,7 +6,7 @@ import { CalibrationTest } from './components/CalibrationTest';
 import { HistoryView } from './components/HistoryView';
 import { ReportIssueModal } from './components/ReportIssueModal';
 import { RepairModule } from './components/RepairModule';
-import { Zap, Activity, LayoutDashboard, ClipboardCheck, History, Wrench, LogOut, AlertTriangle, Shield, Users, Box, Megaphone, RotateCcw, Scale } from 'lucide-react';
+import { Zap, Activity, LayoutDashboard, ClipboardCheck, History, Wrench, LogOut, AlertTriangle, Shield, Users, Box, Megaphone, RotateCcw, Scale, FileBarChart2 } from 'lucide-react';
 import clsx from 'clsx';
 import { serialService } from './services/SerialService';
 import { auth } from './firebase';
@@ -18,8 +18,35 @@ import { GlobalNotifications } from './components/GlobalNotifications';
 import { BroadcastModal } from './components/BroadcastModal';
 import { UserManagementModal } from './components/UserManagementModal';
 import { useAuthRole } from './hooks/useAuthRole';
+import { ReportsPage } from './components/ReportsPage';
+
+const getRouteFromLocation = (): 'home' | 'reportes' => {
+  const path = window.location.pathname.toLowerCase();
+  const hash = window.location.hash.toLowerCase();
+  const search = window.location.search.toLowerCase();
+  if (path.startsWith('/reportes') || hash.startsWith('#/reportes') || search.includes('reportes')) {
+    return 'reportes';
+  }
+  return 'home';
+};
 
 function App() {
+  // Navigation / Routing State
+  const [currentRoute, setCurrentRoute] = useState<'home' | 'reportes'>(getRouteFromLocation);
+
+  useEffect(() => {
+    const handlePopState = () => {
+      setCurrentRoute(getRouteFromLocation());
+    };
+    window.addEventListener('popstate', handlePopState);
+    return () => window.removeEventListener('popstate', handlePopState);
+  }, []);
+
+  const navigateTo = (route: string) => {
+    window.history.pushState({}, '', route);
+    setCurrentRoute(getRouteFromLocation());
+  };
+
   // Auth State
   const [user, setUser] = useState<User | null>(null);
   const [authLoading, setAuthLoading] = useState(true);
@@ -73,6 +100,11 @@ function App() {
     };
   }, [isSimulating]);
 
+  // Si la ruta es /reportes, renderizar módulo dedicado de reportes
+  if (currentRoute === 'reportes') {
+    return <ReportsPage onNavigateHome={() => navigateTo('/')} />;
+  }
+
   if (authLoading) {
     return (
       <div className="min-h-screen bg-[#09090b] flex items-center justify-center text-white">
@@ -100,7 +132,16 @@ function App() {
           </div>
         </div>
 
-        <div className="flex items-center gap-4">
+        <div className="flex items-center gap-3">
+          <button
+            onClick={() => navigateTo('/reportes')}
+            className="px-3.5 py-2 bg-gradient-to-r from-cyan-600/20 to-blue-600/20 hover:from-cyan-600/40 hover:to-blue-600/40 border border-cyan-500/40 text-cyan-300 rounded-xl transition-all flex items-center gap-2 text-xs font-bold"
+            title="Ir al Módulo de Reportes de Sucursales"
+          >
+            <FileBarChart2 className="w-4 h-4 text-cyan-400" />
+            <span className="hidden sm:inline">REPORTES SUCURSALES</span>
+          </button>
+
           <button
             onClick={() => signOut(auth)}
             className="p-2 hover:bg-white/10 rounded-lg text-white/50 hover:text-red-400 transition-colors flex items-center gap-2"
@@ -208,6 +249,14 @@ function App() {
           >
             <AlertTriangle className="w-5 h-5" />
             REPORTAR AVERÍA
+          </button>
+
+          <button
+            onClick={() => navigateTo('/reportes')}
+            className="col-span-1 md:col-span-2 px-6 py-4 bg-gradient-to-r from-cyan-950/60 via-blue-950/40 to-slate-900 border border-cyan-500/40 hover:border-cyan-400 text-cyan-300 hover:text-white rounded-xl transition-all duration-300 font-bold flex items-center justify-center gap-2 uppercase tracking-widest shadow-lg shadow-cyan-950/40"
+          >
+            <FileBarChart2 className="w-5 h-5 text-cyan-400" />
+            CONTROL Y REPORTES DE SUCURSALES (TUCACAS • SAN DIEGO • SAN JUAN)
           </button>
 
           <button
